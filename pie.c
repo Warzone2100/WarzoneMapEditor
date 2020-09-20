@@ -66,7 +66,7 @@ struct PIEobject ReadPIE(char* path) {
 	fclose(f);
 
 	char fbufer[1024] = {0};
-	snprintf(fbufer, 1023, "/home/max/warzone2100/data/base/texpages/%s", texturepagepath);
+	snprintf(fbufer, 1023, "../warzone2100/data/base/texpages/%s", texturepagepath);
 	o.texture = read_png_file(fbufer);
 
 	size_t pfillc = 0;
