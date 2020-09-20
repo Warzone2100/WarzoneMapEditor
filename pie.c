@@ -83,10 +83,11 @@ struct PIEobject ReadPIE(char* path) {
 			abort();
 		}
 		for(int j=0; j<o.polygons[i].pcount; j++) {
-			o.GLvertexes[pfillc+0] = o.points[o.polygons[i].porder[j]].x/16;
-			o.GLvertexes[pfillc+1] = o.points[o.polygons[i].porder[j]].y/16;
-			o.GLvertexes[pfillc+2] = o.points[o.polygons[i].porder[j]].z/16;
+			o.GLvertexes[pfillc+0] = o.points[o.polygons[i].porder[j]].x;
+			o.GLvertexes[pfillc+1] = o.points[o.polygons[i].porder[j]].y;
+			o.GLvertexes[pfillc+2] = o.points[o.polygons[i].porder[j]].z;
 			pfillc+=3;
+			log_info("%f %f %f", o.GLvertexes[pfillc+0], o.GLvertexes[pfillc+1], o.GLvertexes[pfillc+2]);
 		}
 	}
 	log_info("%d", pfillc);
