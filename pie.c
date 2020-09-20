@@ -72,7 +72,10 @@ struct PIEobject ReadPIE(char* path) {
 	size_t pfillc = 0;
 	size_t pfillmax = 0;
 	for(int i=0; i<o.polygonscount; i++) {
-		pfillmax += o.polygons[i].pcount*3;
+		for(int j=0; j<o.polygons[i].pcount; j++) {
+			pfillmax += 3;
+
+		}
 	}
 	log_info("%d", pfillmax);
 	o.GLvertexes = (float*)malloc(pfillmax*sizeof(float));
@@ -86,8 +89,8 @@ struct PIEobject ReadPIE(char* path) {
 			o.GLvertexes[pfillc+0] = o.points[o.polygons[i].porder[j]].x;
 			o.GLvertexes[pfillc+1] = o.points[o.polygons[i].porder[j]].y;
 			o.GLvertexes[pfillc+2] = o.points[o.polygons[i].porder[j]].z;
-			pfillc+=3;
 			log_info("%f %f %f", o.GLvertexes[pfillc+0], o.GLvertexes[pfillc+1], o.GLvertexes[pfillc+2]);
+			pfillc+=3;
 		}
 	}
 	log_info("%d", pfillc);

@@ -33,6 +33,7 @@ void RenderPIE(struct PIEobject o, float rx, float ry, float rz) {
 		for(int j=0; j<o.polygons[i].pcount; j++) {
 			glColor3f(rand()%255/(float)255, rand()%255/(float)255, rand()%255/(float)255);
 			glVertex3f(o.points[o.polygons[i].porder[j]].x/16, o.points[o.polygons[i].porder[j]].y/16, o.points[o.polygons[i].porder[j]].z/16);
+			log_info("%f %f %f", o.points[o.polygons[i].porder[j]].x/16, o.points[o.polygons[i].porder[j]].y/16, o.points[o.polygons[i].porder[j]].z/16);
 		}
 	}
 	glEnd();
