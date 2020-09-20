@@ -4,10 +4,10 @@
 #include "glad/glad.h"
 #include <SDL2/SDL.h>
 
-
 #include "mypng.h"
 #include "log.hpp"
 #include "myshader.h"
+#include "pie.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -17,104 +17,6 @@ int width = 640;
 int height = 480;
 
 const char* demopieobjectpath = "./vtolfactory_module1.pie";
-
-struct PIEpoint {
-	float x, y, z;
-};
-struct PIEpolygon {
-	int flags;
-	int pcount;
-	int porder[6];
-	float texcoords[12];
-};
-
-
-struct PIEobject {
-	struct PIEpoint* points;
-	int pointscount;
-	struct PIEpolygon* polygons;
-	int polygonscount;
-	int valid;
-	struct mpng texture;
-};
-
-struct PIEobject ReadPIE() {
-	FILE* f = fopen(demopieobjectpath, "r");
-	struct PIEobject o;
-	o.valid = 0;
-	if(f == NULL) {
-		log_error("Error opening file");
-		return o;
-	}
-
-	int ver, type, dummy, pointscount, ret;
-	char texturepagepath[512];
-	ret = fscanf(f, "PIE %d\nTYPE %d\nTEXTURE %d %s %d %d\nLEVELS %d\nLEVEL %d\nPOINTS %d\n", &ver, &type, &dummy, texturepagepath, &dummy, &dummy, &dummy, &dummy, &pointscount);
-	if(ret!=9) {
-		log_error("PIE scanf 1 %d", ret);
-		abort();
-	}
-	o.points = (struct PIEpoint*)malloc(pointscount*sizeof(struct PIEpoint));
-	for(int i=0; i<pointscount; i++) {
-		ret = fscanf(f, "\t%f %f %f\n", &o.points[i].x, &o.points[i].y, &o.points[i].z);
-		if(ret!=3) {
-			log_error("PIE scanf 2 %d", ret);
-			abort();
-		}
-		//printf("Point %f %f %f\n", o.points[i].x, o.points[i].y, o.points[i].z);
-	}
-	o.pointscount = pointscount;
-
-	int polycount;
-	ret = fscanf(f, "POLYGONS %d", &polycount);
-	if(ret!=1) {
-		log_error("PIE scanf 3 %d", ret);
-		abort();
-	}
-	o.polygons = (struct PIEpolygon*)malloc(polycount*sizeof(struct PIEpolygon));
-	o.polygonscount = polycount;
-	for(int i=0; i<polycount; i++) {
-		ret = fscanf(f, "\t%d %d", &o.polygons[i].flags, &o.polygons[i].pcount);
-		if(ret!=2) {
-			log_error("PIE scanf 4 %d (%d)", ret, i);
-			abort();
-		}
-		for(int j=0; j<o.polygons[i].pcount; j++) {
-			ret = fscanf(f, " %d", &o.polygons[i].porder[j]);
-			if(ret!=1) {
-				log_error("PIE scanf 5 %d (%d) (%d)", ret, i, j);
-				abort();
-			}
-		}
-		if(o.polygons[i].flags!=200) {
-			log_error("Polygons bad");
-			abort();
-		}
-		for(int j=0; j<o.polygons[i].pcount*2; j++) {
-			ret = fscanf(f, " %f", &o.polygons[i].texcoords[j]);
-			if(ret!=1) {
-				log_error("PIE scanf 6 %d (%d) (%d)\n", ret, i, j);
-				abort();
-			}
-		}
-	}
-	fclose(f);
-	char fbufer[1024] = {0};
-	snprintf(fbufer, 1023, "/home/max/warzone2100/data/base/texpages/%s", texturepagepath);
-	o.texture = read_png_file(fbufer);
-	o.valid = 1;
-	return o;
-}
-
-void FreePIE(struct PIEobject* o) {
-	if(o->valid) {
-		free(o->polygons);
-		o->polygons = NULL;
-		free(o->points);
-		o->points = NULL;
-	}
-	return;
-}
 
 void RenderPIE(struct PIEobject o, float rx, float ry, float rz) {
 	glTranslatef(0.0f, 0.0f, -35.0f);
@@ -140,7 +42,7 @@ int main(int argc, char** argv) {
 	time_t t;
 	srand((unsigned) time(&t));
 	log_info("Hello world!");
-	PIEobject m = ReadPIE();
+	PIEobject m = ReadPIE((char*)demopieobjectpath);
 	log_info("Reading done");
 
 	glfwInit();
@@ -181,6 +83,16 @@ int main(int argc, char** argv) {
 	gluPerspective(45.0f, (float)width/(float)height, 0.1f, 400.0f);
 	glMatrixMode(GL_MODELVIEW);
 
+	unsigned int VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float)*m.GLvertexesCount, m.GLvertexes, GL_STATIC_DRAW);
+
+	mshader shad("vertex.vs", "fragment.frag");
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
 	// glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 	// glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
 	// glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
@@ -220,7 +132,6 @@ int main(int argc, char** argv) {
 	// // log_info("glGenerateMipmap is %p", glGenerateMipmap);
 	// glGenerateMipmap(GL_TEXTURE_2D);
 
-	//mshader shad("vertex.vs", "fragment.frag");
 	//glUniform1i(glGetUniformLocation(shad.program, "texture1"), 1);
 	bool r=1;
 	SDL_Event ev;
@@ -271,7 +182,7 @@ int main(int argc, char** argv) {
 		glLoadIdentity();
         // glActiveTexture(GL_TEXTURE0);
         // glBindTexture(GL_TEXTURE_2D, texture1);
-		// shad.use();
+		shad.use();
 		// GLfloat radius = 10.0f;
 		// GLfloat camX = sin(SDL_GetTicks()) * radius;
 		// GLfloat camZ = cos(SDL_GetTicks()) * radius;
@@ -285,8 +196,8 @@ int main(int argc, char** argv) {
 		// glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 		// glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		//
-		// glDrawArrays(GL_TRIANGLES, 0, 36);
-		RenderPIE(m, crx, cry, crz);
+		glDrawArrays(GL_TRIANGLES, 0, m.GLvertexesCount);
+		// RenderPIE(m, crx, cry, crz);
 
 		glFlush();
 		SDL_GL_SwapWindow(window);
