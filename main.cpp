@@ -16,7 +16,7 @@
 int width = 640;
 int height = 480;
 
-const char* demopieobjectpath = "/home/max/warzone2100/data/base/structs/vtolfactory_module1.pie";
+const char* demopieobjectpath = "./vtolfactory_module1.pie";
 
 struct PIEpoint {
 	float x, y, z;
