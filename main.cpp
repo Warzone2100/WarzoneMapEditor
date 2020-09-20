@@ -46,6 +46,7 @@ int main(int argc, char** argv) {
 	log_info("Reading done");
 
 	glfwInit();
+	log_info("glfw init done");
 
 	if(SDL_Init(SDL_INIT_EVERYTHING)<0) {
 		log_fatal("SDL init error: %s", SDL_GetError());
@@ -83,15 +84,18 @@ int main(int argc, char** argv) {
 	gluPerspective(45.0f, (float)width/(float)height, 0.1f, 400.0f);
 	glMatrixMode(GL_MODELVIEW);
 
-	unsigned int VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float)*m.GLvertexesCount, m.GLvertexes, GL_STATIC_DRAW);
-
 	mshader shad("vertex.vs", "fragment.frag");
 
+	unsigned int VBO, VAO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, m.GLvertexesCount, m.GLvertexes, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
 	// glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 	// glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -179,10 +183,11 @@ int main(int argc, char** argv) {
 		// crz += 0.6f;
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glLoadIdentity();
+		// glLoadIdentity();
         // glActiveTexture(GL_TEXTURE0);
         // glBindTexture(GL_TEXTURE_2D, texture1);
 		shad.use();
+		glBindVertexArray(VAO);
 		// GLfloat radius = 10.0f;
 		// GLfloat camX = sin(SDL_GetTicks()) * radius;
 		// GLfloat camZ = cos(SDL_GetTicks()) * radius;

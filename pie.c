@@ -72,9 +72,11 @@ struct PIEobject ReadPIE(char* path) {
 	size_t pfillc = 0;
 	size_t pfillmax = 0;
 	for(int i=0; i<o.polygonscount; i++) {
-		pfillmax += o.polygons[i].pcount;
+		pfillmax += o.polygons[i].pcount*3;
 	}
+	log_info("%d", pfillmax);
 	o.GLvertexes = (float*)malloc(pfillmax*sizeof(float));
+	o.GLvertexesCount = pfillmax;
 	for(int i=0; i<o.polygonscount; i++) {
 		if(o.polygons[i].pcount != 3) {
 			log_fatal("Polygon converter error!");
@@ -87,6 +89,7 @@ struct PIEobject ReadPIE(char* path) {
 			pfillc+=3;
 		}
 	}
+	log_info("%d", pfillc);
 
 	o.valid = 1;
 	return o;
