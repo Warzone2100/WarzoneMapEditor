@@ -72,9 +72,15 @@ int main(int argc, char** argv) {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	float vertices[] = {
-        -0.5f, -0.5f, 0.0f, // left
-         0.5f, -0.5f, 0.0f, // right
-         0.0f,  0.5f, 0.0f  // top
+		// FIRST TRIANGLE OF MODEL
+        0.0f, 1.0f, -0.5f, // left
+        0.0f, 0.0f, -0.5f, // right
+        0.0f, 0.0f, -0.25f,  // top
+
+		// EXAMPLE VERTICES
+        // -0.5f, -0.5f, 0.0f, // left
+        //  0.5f, -0.5f, 0.0f, // right
+        //  0.0f,  0.5f, 0.0f  // top
     };
 	
 	mshader shad("vertex.vs", "fragment.frag");
@@ -84,7 +90,11 @@ int main(int argc, char** argv) {
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	printf("A: %.3f, %.3f, %.3f\n", m.points[0].x, m.points[0].y, m.points[0].z);
+	printf("B: %.3f, %.3f, %.3f\n", m.points[1].x, m.points[1].y, m.points[1].z);
+	printf("C: %.3f, %.3f, %.3f\n", m.points[2].x, m.points[2].y, m.points[2].z);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), m.points, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -114,6 +124,7 @@ int main(int argc, char** argv) {
 		glFlush();
 		SDL_GL_SwapWindow(window);
 	}
+
 	FreePIE(&m);
 	SDL_GL_DeleteContext(glcontext);
 	SDL_DestroyWindow(window);
