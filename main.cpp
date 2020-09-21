@@ -71,17 +71,23 @@ int main(int argc, char** argv) {
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-	float vertices[] = {
+	glm::vec3 vertices[] = {
 		// FIRST TRIANGLE OF MODEL
         // 0.0f, 1.0f, -0.5f, // left
         // 0.0f, 0.0f, -0.5f, // right
         // 0.0f, 0.0f, -0.25f,  // top
 
 		// EXAMPLE VERTICES
-        -0.5f, -0.5f, 0.0f, // left
-         0.5f, -0.5f, 0.0f, // right
-         0.0f,  0.5f, 0.0f  // top
+		glm::vec3(-0.5f, -0.5f, 0.0f), // left
+        glm::vec3(0.5f, -0.5f, 0.0f), // right
+        glm::vec3(0.0f,  0.5f, 0.0f),  // top
     };
+
+	glm::mat4 matrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 1, 0));
+
+	for(auto i = 0; i < 3; i++){
+		vertices[i] = glm::vec3(matrix * glm::vec4(vertices[i], 1));
+	}
 
 	mshader shad("vertex.vs", "fragment.frag");
 	unsigned int VBO, VAO;
@@ -89,12 +95,6 @@ int main(int argc, char** argv) {
 	glGenBuffers(1, &VBO);
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	glm::mat4 trans = glm::mat4(1.0f);
-	// trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
-	// trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
-	unsigned int transformLoc = glGetUniformLocation(shad.program, "transform");
-	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
 	printf("A: %.3f, %.3f, %.3f\n", m.points[0].x, m.points[0].y, m.points[0].z);
 	printf("B: %.3f, %.3f, %.3f\n", m.points[1].x, m.points[1].y, m.points[1].z);
@@ -121,8 +121,6 @@ int main(int argc, char** argv) {
 				break;
 			}
 		}
-
-		//trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shad.use();
