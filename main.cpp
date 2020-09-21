@@ -78,12 +78,20 @@ int main(int argc, char** argv) {
         // 0.0f, 0.0f, -0.25f,  // top
 
 		// EXAMPLE VERTICES
-		glm::vec3(-0.5f, -0.5f, 0.0f), // left
-        glm::vec3(0.5f, -0.5f, 0.0f), // right
-        glm::vec3(0.0f,  0.5f, 0.0f),  // top
+		// glm::vec3(-0.5f, -0.5f, 0.0f), // left
+        // glm::vec3(0.5f, -0.5f, 0.0f), // right
+        // glm::vec3(0.0f,  0.5f, 0.0f),  // top
+		glm::vec3(m.points[0].x, m.points[0].y, m.points[0].z),
+		glm::vec3(m.points[1].x, m.points[1].y, m.points[1].z),
+		glm::vec3(m.points[2].x, m.points[2].y, m.points[2].z),
     };
 
-	glm::mat4 matrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 1, 0));
+	printf("A: %.3f, %.3f, %.3f\n", vertices[0].x, vertices[0].y, vertices[0].z);
+	printf("B: %.3f, %.3f, %.3f\n", vertices[1].x, vertices[1].y, vertices[1].z);
+	printf("C: %.3f, %.3f, %.3f\n", vertices[2].x, vertices[2].y, vertices[2].z);
+
+
+	glm::mat4 matrix = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1, 0, 0));
 
 	for(auto i = 0; i < 3; i++){
 		vertices[i] = glm::vec3(matrix * glm::vec4(vertices[i], 1));
@@ -95,10 +103,6 @@ int main(int argc, char** argv) {
 	glGenBuffers(1, &VBO);
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	printf("A: %.3f, %.3f, %.3f\n", m.points[0].x, m.points[0].y, m.points[0].z);
-	printf("B: %.3f, %.3f, %.3f\n", m.points[1].x, m.points[1].y, m.points[1].z);
-	printf("C: %.3f, %.3f, %.3f\n", m.points[2].x, m.points[2].y, m.points[2].z);
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
