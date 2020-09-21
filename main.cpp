@@ -90,18 +90,30 @@ int main(int argc, char** argv) {
 	printf("B: %.3f, %.3f, %.3f\n", vertices[1].x, vertices[1].y, vertices[1].z);
 	printf("C: %.3f, %.3f, %.3f\n", vertices[2].x, vertices[2].y, vertices[2].z);
 
-
-	glm::mat4 matrix = 
-		glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1, 0, 0))
-		*
-		glm::scale(glm::mat4(1.0f), glm::vec3(1.0f/178))
-		;
+	glm::mat4 matrix1 = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f/178));
 
 	for(auto i = 0; i < 3; i++){
-		vertices[i] = glm::vec3(matrix * glm::vec4(vertices[i], 1));
+		vertices[i] = glm::vec3(matrix1 * glm::vec4(vertices[i], 1));
 	}
 
-	printf("--- AFTER TRANSFORM ---\n");
+	printf("--- AFTER SCALE ---\n");
+
+	printf("A: %.3f, %.3f, %.3f\n", vertices[0].x, vertices[0].y, vertices[0].z);
+	printf("B: %.3f, %.3f, %.3f\n", vertices[1].x, vertices[1].y, vertices[1].z);
+	printf("C: %.3f, %.3f, %.3f\n", vertices[2].x, vertices[2].y, vertices[2].z);
+
+	glm::mat4 matrix2 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1, 0, 0));
+
+	printf("--- AFTER ROTATE ---\n");
+
+	printf("A: %.3f, %.3f, %.3f\n", vertices[0].x, vertices[0].y, vertices[0].z);
+	printf("B: %.3f, %.3f, %.3f\n", vertices[1].x, vertices[1].y, vertices[1].z);
+	printf("C: %.3f, %.3f, %.3f\n", vertices[2].x, vertices[2].y, vertices[2].z);
+	for(auto i = 0; i < 3; i++){
+		vertices[i] = glm::vec3(matrix2 * glm::vec4(vertices[i], 1));
+	}
+
+	printf("--- AFTER ROTATE ---\n");
 
 	printf("A: %.3f, %.3f, %.3f\n", vertices[0].x, vertices[0].y, vertices[0].z);
 	printf("B: %.3f, %.3f, %.3f\n", vertices[1].x, vertices[1].y, vertices[1].z);
