@@ -86,6 +86,8 @@ int main(int argc, char** argv) {
 		glm::vec3(m.points[2].x, m.points[2].y, m.points[2].z),
     };
 
+	printf("--- ORIGINAL ---\n");
+
 	printf("A: %.3f, %.3f, %.3f\n", vertices[0].x, vertices[0].y, vertices[0].z);
 	printf("B: %.3f, %.3f, %.3f\n", vertices[1].x, vertices[1].y, vertices[1].z);
 	printf("C: %.3f, %.3f, %.3f\n", vertices[2].x, vertices[2].y, vertices[2].z);
@@ -104,11 +106,6 @@ int main(int argc, char** argv) {
 
 	glm::mat4 matrix2 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1, 0, 0));
 
-	printf("--- AFTER ROTATE ---\n");
-
-	printf("A: %.3f, %.3f, %.3f\n", vertices[0].x, vertices[0].y, vertices[0].z);
-	printf("B: %.3f, %.3f, %.3f\n", vertices[1].x, vertices[1].y, vertices[1].z);
-	printf("C: %.3f, %.3f, %.3f\n", vertices[2].x, vertices[2].y, vertices[2].z);
 	for(auto i = 0; i < 3; i++){
 		vertices[i] = glm::vec3(matrix2 * glm::vec4(vertices[i], 1));
 	}
