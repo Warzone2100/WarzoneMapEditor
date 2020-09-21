@@ -93,6 +93,8 @@ int main(int argc, char** argv) {
 
 	glm::mat4 matrix = 
 		glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1, 0, 0))
+		*
+		glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, 1))
 		;
 
 	for(auto i = 0; i < 3; i++){
