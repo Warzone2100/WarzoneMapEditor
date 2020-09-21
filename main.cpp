@@ -91,7 +91,9 @@ int main(int argc, char** argv) {
 	printf("C: %.3f, %.3f, %.3f\n", vertices[2].x, vertices[2].y, vertices[2].z);
 
 
-	glm::mat4 matrix = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(1, 0, 0));
+	glm::mat4 matrix = 
+		glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1, 0, 0))
+		;
 
 	for(auto i = 0; i < 3; i++){
 		vertices[i] = glm::vec3(matrix * glm::vec4(vertices[i], 1));
