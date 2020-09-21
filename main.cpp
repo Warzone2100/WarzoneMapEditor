@@ -97,6 +97,12 @@ int main(int argc, char** argv) {
 		vertices[i] = glm::vec3(matrix * glm::vec4(vertices[i], 1));
 	}
 
+	printf("--- AFTER TRANSFORM ---\n");
+
+	printf("A: %.3f, %.3f, %.3f\n", vertices[0].x, vertices[0].y, vertices[0].z);
+	printf("B: %.3f, %.3f, %.3f\n", vertices[1].x, vertices[1].y, vertices[1].z);
+	printf("C: %.3f, %.3f, %.3f\n", vertices[2].x, vertices[2].y, vertices[2].z);
+
 	mshader shad("vertex.vs", "fragment.frag");
 	unsigned int VBO, VAO;
 	glGenVertexArrays(1, &VAO);
