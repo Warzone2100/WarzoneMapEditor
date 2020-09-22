@@ -118,6 +118,8 @@ int main(int argc, char** argv) {
 	// glBufferData(GL_ARRAY_BUFFER, m.GLvertexesCount, m.GLvertexes, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(shad.program, "Coordinates"), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "Coordinates"));
+	glVertexAttribPointer(glGetAttribLocation(shad.program, "TexCoordinates"), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "TexCoordinates"));
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
 	bool r=1;
