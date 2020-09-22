@@ -71,22 +71,22 @@ int main(int argc, char** argv) {
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-	glm::vec3 vertices[] = {
+	float vertices[] = {
 		// FIRST TRIANGLE OF MODEL
         // 0.0f, 1.0f, -0.5f, // left
         // 0.0f, 0.0f, -0.5f, // right
         // 0.0f, 0.0f, -0.25f,  // top
 
 		// EXAMPLE VERTICES
-		glm::vec3(-0.5f, -0.5f, 0.0f), // left
-        glm::vec3(0.5f, -0.5f, 0.0f), // right
-        glm::vec3(0.0f,  0.5f, 0.0f),  // top
+		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // left 
+        0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // right 
+        0.0f,  0.5f, 0.0f, 1.0f, 1.0f,  // top 
 		// glm::vec3(m.points[0].x, m.points[0].y, m.points[0].z),
 		// glm::vec3(m.points[1].x, m.points[1].y, m.points[1].z),
 		// glm::vec3(m.points[2].x, m.points[2].y, m.points[2].z),
     };
 
-	float demotexturevert[] = {
+	float texturecoordinates[] = {
 		0.0f, 0.0f,
 		1.0f, 0.0f,
 		1.0f, 1.0f,
@@ -110,10 +110,10 @@ int main(int argc, char** argv) {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	// glBufferData(GL_ARRAY_BUFFER, m.GLvertexesCount, m.GLvertexes, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(glGetAttribLocation(shad.program, "Coordinates"), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	
+	glVertexAttribPointer(glGetAttribLocation(shad.program, "Coordinates"), 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "Coordinates"));
-	glVertexAttribPointer(glGetAttribLocation(shad.program, "TexCoordinates"), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(glGetAttribLocation(shad.program, "TexCoordinates"), 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "TexCoordinates"));
 
 	bool r=1;
