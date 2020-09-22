@@ -108,7 +108,6 @@ int main(int argc, char** argv) {
 	glBindVertexArray(VAO_vertices);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices);
 
-	// glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	// glBufferData(GL_ARRAY_BUFFER, m.GLvertexesCount, m.GLvertexes, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices);
@@ -142,6 +141,7 @@ int main(int argc, char** argv) {
 		// glm::mat4 matrix2 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0));
 		glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1)));
 
+		// glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		glDrawArrays(GL_TRIANGLES, 0, m.GLvertexesCount);
 
 		glFlush();
