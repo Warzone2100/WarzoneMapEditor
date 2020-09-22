@@ -78,12 +78,12 @@ int main(int argc, char** argv) {
         // 0.0f, 0.0f, -0.25f,  // top
 
 		// EXAMPLE VERTICES
-		glm::vec3(-0.5f, -0.5f, 0.0f), // left
-        glm::vec3(0.5f, -0.5f, 0.0f), // right
-        glm::vec3(0.0f,  0.5f, 0.0f),  // top
-		// glm::vec3(m.points[0].x, m.points[0].y, m.points[0].z),
-		// glm::vec3(m.points[1].x, m.points[1].y, m.points[1].z),
-		// glm::vec3(m.points[2].x, m.points[2].y, m.points[2].z),
+		// glm::vec3(-0.5f, -0.5f, 0.0f), // left
+        // glm::vec3(0.5f, -0.5f, 0.0f), // right
+        // glm::vec3(0.0f,  0.5f, 0.0f),  // top
+		glm::vec3(m.points[0].x, m.points[0].y, m.points[0].z),
+		glm::vec3(m.points[1].x, m.points[1].y, m.points[1].z),
+		glm::vec3(m.points[2].x, m.points[2].y, m.points[2].z),
     };
 
 	printf("--- ORIGINAL ---\n");
@@ -124,10 +124,7 @@ int main(int argc, char** argv) {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
 
-	// glm::mat4 trans = matrix2 * matrix1;
-	glm::mat4 trans = glm::mat4(1);
-	unsigned int transformLoc = glGetUniformLocation(shad.program, "t");
-	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+	glm::mat4 trans = matrix2 * matrix1;
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -153,6 +150,9 @@ int main(int argc, char** argv) {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shad.use();
+		// glm::mat4 trans = glm::mat4(1);
+		unsigned int transformLoc = glGetUniformLocation(shad.program, "t");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, m.GLvertexesCount);
 

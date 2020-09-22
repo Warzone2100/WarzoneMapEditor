@@ -6,5 +6,5 @@ uniform mat4 t;
 void main()
 {
     gl_Position = t * vec4(aPos, 1.0f);
-	// gl_Position = vec4(aPos, 1.0f);
+	// gl_Position = mat4(1) * vec4(aPos, 1.0f);
 }
