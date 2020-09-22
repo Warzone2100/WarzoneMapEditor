@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
 
 
 	glm::mat4 trans = matrix2 * matrix1;
-
+	// glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	// glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glBufferData(GL_ARRAY_BUFFER, m.GLvertexesCount, m.GLvertexes, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
