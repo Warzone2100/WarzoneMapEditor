@@ -101,26 +101,27 @@ int main(int argc, char** argv) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m.texture.width, m.texture.height, 0, GL_RGB, GL_UNSIGNED_BYTE, m.texture.rgbpixels);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	glm::mat4 matrix1 = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f/178));
-	glm::mat4 matrix2 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0));
+	// glm::mat4 matrix1 = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f/178));
+	// glm::mat4 matrix2 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0));
 
 	mshader shad("vertex.vs", "fragment.frag");
-	unsigned int VBO, VAO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	unsigned int VBO_vertices, VAO_vertices;
+	glGenVertexArrays(1, &VAO_vertices);
+	glGenBuffers(1, &VBO_vertices);
+	glBindVertexArray(VAO_vertices);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices);
 
 	glm::mat4 trans = glm::mat4(1);
 	// glm::mat4 trans = matrix1 * matrix2;
 	// glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	// glBufferData(GL_ARRAY_BUFFER, m.GLvertexesCount, m.GLvertexes, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices);
+
 	glVertexAttribPointer(glGetAttribLocation(shad.program, "Coordinates"), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "Coordinates"));
 	glVertexAttribPointer(glGetAttribLocation(shad.program, "TexCoordinates"), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "TexCoordinates"));
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
 	bool r=1;
 	SDL_Event ev;
@@ -139,9 +140,9 @@ int main(int argc, char** argv) {
 		}
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		shad.use();
 		glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(trans));
-		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, m.GLvertexesCount);
 
 		glFlush();
