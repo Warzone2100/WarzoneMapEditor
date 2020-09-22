@@ -5,6 +5,8 @@ attribute vec2 TexCoordinates;
 
 uniform mat4 Transform;
 
+varying vec2 texCoordinates;
+
 void main()
 {
     gl_Position = Transform * Coordinates;
