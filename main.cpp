@@ -136,6 +136,7 @@ int main(int argc, char** argv) {
 
 		shad.use();
 
+		glUniform1i(glGetUniformLocation(shad.program, "Texture"), 0);
 		// glm::mat4 matrix1 = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f/178));
 		// glm::mat4 matrix2 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0));
 		glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1)));
