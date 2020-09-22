@@ -71,6 +71,21 @@ int main(int argc, char** argv) {
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
+	glm::vec3 vertices[] = {
+		// FIRST TRIANGLE OF MODEL
+        // 0.0f, 1.0f, -0.5f, // left
+        // 0.0f, 0.0f, -0.5f, // right
+        // 0.0f, 0.0f, -0.25f,  // top
+
+		// EXAMPLE VERTICES
+		glm::vec3(-0.5f, -0.5f, 0.0f), // left
+        glm::vec3(0.5f, -0.5f, 0.0f), // right
+        glm::vec3(0.0f,  0.5f, 0.0f),  // top
+		// glm::vec3(m.points[0].x, m.points[0].y, m.points[0].z),
+		// glm::vec3(m.points[1].x, m.points[1].y, m.points[1].z),
+		// glm::vec3(m.points[2].x, m.points[2].y, m.points[2].z),
+    };
+
 	glm::mat4 matrix1 = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f/178));
 	glm::mat4 matrix2 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0));
 
@@ -81,9 +96,11 @@ int main(int argc, char** argv) {
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-	glm::mat4 trans = matrix2 * matrix1;
+	glm::mat4 trans = glm::mat4(1);
+	// glm::mat4 trans = matrix1 * matrix2;
 	// glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-	glBufferData(GL_ARRAY_BUFFER, m.GLvertexesCount, m.GLvertexes, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	// glBufferData(GL_ARRAY_BUFFER, m.GLvertexesCount, m.GLvertexes, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
