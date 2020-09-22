@@ -1,6 +1,8 @@
 #version 330 core
 layout (location = 0) in vec3 aPos;
 
+//attribute vec4 c;
+
 uniform mat4 t;
 
 void main()
