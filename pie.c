@@ -55,8 +55,10 @@ struct PIEobject ReadPIE(char* path) {
 			log_error("Polygons bad");
 			abort();
 		}
+		log_info("Tex coords:");
 		for(int j=0; j<o.polygons[i].pcount*2; j++) {
 			ret = fscanf(f, " %f", &o.polygons[i].texcoords[j]);
+			log_info("%f", o.polygons[i].texcoords[j]);
 			if(ret!=1) {
 				log_error("PIE scanf 6 %d (%d) (%d)\n", ret, i, j);
 				abort();
@@ -75,8 +77,8 @@ struct PIEobject ReadPIE(char* path) {
 	size_t pfillmax = 0;
 	for(int i=0; i<o.polygonscount; i++) {
 		for(int j=0; j<o.polygons[i].pcount; j++) {
-			pfillmax += 3;
-
+			pfillmax += 3 + 2;
+			// 3 FOR VERTEX 2 FOR TEXTURE COORD
 		}
 	}
 	log_info("%d", pfillmax);
@@ -91,8 +93,10 @@ struct PIEobject ReadPIE(char* path) {
 			o.GLvertexes[pfillc+0] = o.points[o.polygons[i].porder[j]].x;
 			o.GLvertexes[pfillc+1] = o.points[o.polygons[i].porder[j]].y;
 			o.GLvertexes[pfillc+2] = o.points[o.polygons[i].porder[j]].z;
+			o.GLvertexes[pfillc+3] = o.polygons[i].texcoords[j*2+0];
+			o.GLvertexes[pfillc+4] = o.polygons[i].texcoords[j*2+1];
 			// log_info("%f %f %f", o.GLvertexes[pfillc+0], o.GLvertexes[pfillc+1], o.GLvertexes[pfillc+2]);
-			pfillc+=3;
+			pfillc+=5;
 		}
 	}
 	log_info("%d", pfillc);
