@@ -78,12 +78,12 @@ int main(int argc, char** argv) {
         // 0.0f, 0.0f, -0.25f,  // top
 
 		// EXAMPLE VERTICES
-		// glm::vec3(-0.5f, -0.5f, 0.0f), // left
-        // glm::vec3(0.5f, -0.5f, 0.0f), // right
-        // glm::vec3(0.0f,  0.5f, 0.0f),  // top
-		glm::vec3(m.points[0].x, m.points[0].y, m.points[0].z),
-		glm::vec3(m.points[1].x, m.points[1].y, m.points[1].z),
-		glm::vec3(m.points[2].x, m.points[2].y, m.points[2].z),
+		glm::vec3(-0.5f, -0.5f, 0.0f), // left
+        glm::vec3(0.5f, -0.5f, 0.0f), // right
+        glm::vec3(0.0f,  0.5f, 0.0f),  // top
+		// glm::vec3(m.points[0].x, m.points[0].y, m.points[0].z),
+		// glm::vec3(m.points[1].x, m.points[1].y, m.points[1].z),
+		// glm::vec3(m.points[2].x, m.points[2].y, m.points[2].z),
     };
 
 	printf("--- ORIGINAL ---\n");
@@ -94,9 +94,9 @@ int main(int argc, char** argv) {
 
 	glm::mat4 matrix1 = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f/178));
 
-	for(auto i = 0; i < 3; i++){
-		vertices[i] = glm::vec3(matrix1 * glm::vec4(vertices[i], 1));
-	}
+	// for(auto i = 0; i < 3; i++){
+	// 	vertices[i] = glm::vec3(matrix1 * glm::vec4(vertices[i], 1));
+	// }
 
 	printf("--- AFTER SCALE ---\n");
 
@@ -106,9 +106,9 @@ int main(int argc, char** argv) {
 
 	glm::mat4 matrix2 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0));
 
-	for(auto i = 0; i < 3; i++){
-		vertices[i] = glm::vec3(matrix2 * glm::vec4(vertices[i], 1));
-	}
+	// for(auto i = 0; i < 3; i++){
+	// 	vertices[i] = glm::vec3(matrix2 * glm::vec4(vertices[i], 1));
+	// }
 
 	printf("--- AFTER ROTATE ---\n");
 
@@ -124,7 +124,8 @@ int main(int argc, char** argv) {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
 
-	glm::mat4 trans = matrix2 * matrix1;
+	// glm::mat4 trans = matrix2 * matrix1;
+	glm::mat4 trans = glm::mat4(1);
 	unsigned int transformLoc = glGetUniformLocation(shad.program, "t");
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
