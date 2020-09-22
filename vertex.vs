@@ -1,10 +1,10 @@
 #version 330 core
 
-attribute vec4 c;
+attribute vec4 Coordinates;
 
-uniform mat4 t;
+uniform mat4 Transform;
 
 void main()
 {
-    gl_Position = t * c;
+    gl_Position = Transform * Coordinates;
 }

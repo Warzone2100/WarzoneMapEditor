@@ -116,8 +116,8 @@ int main(int argc, char** argv) {
 	// glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	// glBufferData(GL_ARRAY_BUFFER, m.GLvertexesCount, m.GLvertexes, GL_STATIC_DRAW);
-	glVertexAttribPointer(glGetAttribLocation(shad.program, "c"), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "c"));
+	glVertexAttribPointer(glGetAttribLocation(shad.program, "Coordinates"), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "Coordinates"));
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
 	bool r=1;
@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shad.use();
-		glUniformMatrix4fv(glGetUniformLocation(shad.program, "t"), 1, GL_FALSE, glm::value_ptr(trans));
+		glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(trans));
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, m.GLvertexesCount);
 
