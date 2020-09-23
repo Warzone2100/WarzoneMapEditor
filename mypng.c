@@ -67,7 +67,7 @@ struct mpng read_png_file(char *filename) {
   png_destroy_read_struct(&png, &info, NULL);
   o.rgbpixels = (unsigned char*)malloc(4*o.height*o.width);
   for(int y = 0; y < o.height; y++) {
-    png_bytep row = o.row_pointers[y];
+    png_bytep row = o.row_pointers[o.height - y -1];
     for(int x = 0; x < o.width; x++) {
       png_bytep px = &(row[x * 4]);
 	  o.rgbpixels[(y*o.height+x)*4+0] = px[0];
