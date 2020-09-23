@@ -112,8 +112,8 @@ int main(int argc, char** argv) {
 	SDL_GL_BindTexture(newTexture, &texw, &texh);
 	log_info("Tex size: %f %f", texw, texh);
 	// glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m.texture.width, m.texture.height, 0, GL_RGB, GL_UNSIGNED_BYTE, m.texture.rgbpixels);
-	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m.texture.width, m.texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m.texture.rgbpixels);
+	// glGenerateMipmap(GL_TEXTURE_2D);
 
 	mshader shad("vertex.vs", "fragment.frag");
 
