@@ -17,7 +17,7 @@
 int width = 640;
 int height = 480;
 
-const char* demopieobjectpath = "./vtolfactory_module1.pie";
+const char* demopieobjectpath = "./blbrbgen.pie";
 
 void RenderPIE(struct PIEobject o, float rx, float ry, float rz) {
 	glTranslatef(0.0f, 0.0f, -35.0f);
@@ -52,6 +52,11 @@ int main(int argc, char** argv) {
 	if(SDL_Init(SDL_INIT_EVERYTHING)<0) {
 		log_fatal("SDL init error: %s", SDL_GetError());
 	}
+	if(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)) {log_fatal("attr error");}
+	if(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5)) {log_fatal("attr error");}
+	if(SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6)) {log_fatal("attr error");}
+	if(SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5)) {log_fatal("attr error");}
+	if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3)) {log_fatal("attr error");}
 
 	SDL_Window* window = SDL_CreateWindow("3d", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	SDL_Renderer* rend = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -72,6 +77,13 @@ int main(int argc, char** argv) {
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearDepth(1.0);
+	glEnable(GL_DEPTH_TEST);
+	glShadeModel(GL_SMOOTH);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(45.0f, (float)width/(float)height, 0.1f, 400.0f);
+	glMatrixMode(GL_MODELVIEW);
 
 	float vertices[] = {
 		// FIRST TRIANGLE OF MODEL
