@@ -149,9 +149,9 @@ int main(int argc, char** argv) {
 
 		glUniform1i(glGetUniformLocation(shad.program, "Texture"), 0);
 		glm::mat4 matrix1 = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f/200));
-		glm::mat4 matrix2 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0));
-		glm::mat4 matrix3 = glm::rotate(glm::mat4(1.0f), glm::radians(40.0f), glm::vec3(0, 0, 1));
-		glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(matrix1*matrix2));
+		glm::mat4 matrix2 = glm::rotate(glm::mat4(1.0f), glm::radians((float)SDL_GetTicks()/100), glm::vec3(0, 1, 0));
+		glm::mat4 matrix3 = glm::rotate(glm::mat4(1.0f), glm::radians((float)SDL_GetTicks()/100), glm::vec3(0, 0, 1));
+		glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(matrix1*matrix2*matrix3));
 		// glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1)));
 
 		// glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
