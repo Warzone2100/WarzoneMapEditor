@@ -3,6 +3,7 @@
 #include <errno.h>
 #include "glad/glad.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 #include "mypng.h"
 #include "log.hpp"
@@ -53,6 +54,7 @@ int main(int argc, char** argv) {
 	}
 
 	SDL_Window* window = SDL_CreateWindow("3d", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+	SDL_Renderer* rend = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
 	if(!glcontext) {
 		log_fatal("gl context");
@@ -93,6 +95,22 @@ int main(int argc, char** argv) {
 	unsigned int texture;
 	glGenTextures(1, &texture);
 	glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
+
+	SDL_Texture* newTexture = NULL;
+	SDL_Surface* loadedSurf = IMG_Load("page-13-player-buildings.png");
+	if(loadedSurf==NULL) {
+		printf("[LoadTexture] Loading error: %s\n", IMG_GetError());
+	} else {
+		//SDL_SetColorKey(loadedSurf, SDL_TRUE, SDL_MapRGB(loadedSurf->format, 128, 112, 119));
+		newTexture = SDL_CreateTextureFromSurface(rend, loadedSurf);
+		if(newTexture == NULL) {
+			printf("[LoadTexture] Converting error: %s\n", IMG_GetError());
+		}
+		SDL_FreeSurface(loadedSurf);
+	}
+	float texw, texh;
+	SDL_GL_BindTexture(newTexture, &texw, &texh);
+	log_info("Tex size: %f %f", texw, texh);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m.texture.width, m.texture.height, 0, GL_RGB, GL_UNSIGNED_BYTE, m.texture.rgbpixels);
 	glGenerateMipmap(GL_TEXTURE_2D);
@@ -133,8 +151,9 @@ int main(int argc, char** argv) {
 		shad.use();
 
 		glUniform1i(glGetUniformLocation(shad.program, "Texture"), 0);
-		glm::mat4 matrix1 = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f/178));
+		glm::mat4 matrix1 = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f/200));
 		glm::mat4 matrix2 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0));
+		glm::mat4 matrix3 = glm::rotate(glm::mat4(1.0f), glm::radians(40.0f), glm::vec3(0, 0, 1));
 		glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(matrix1*matrix2));
 
 		// glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
