@@ -93,8 +93,8 @@ struct PIEobject ReadPIE(char* path) {
 			o.GLvertexes[pfillc+0] = o.points[o.polygons[i].porder[j]].x;
 			o.GLvertexes[pfillc+1] = o.points[o.polygons[i].porder[j]].y;
 			o.GLvertexes[pfillc+2] = o.points[o.polygons[i].porder[j]].z;
-			o.GLvertexes[pfillc+3] = o.polygons[i].texcoords[j*2+0]/o.texture.width;
-			o.GLvertexes[pfillc+4] = 1-(o.polygons[i].texcoords[j*2+1]/o.texture.height);
+			o.GLvertexes[pfillc+3] = (o.polygons[i].texcoords[j*2+0]/o.texture.width);
+			o.GLvertexes[pfillc+4] = (o.polygons[i].texcoords[j*2+1]/o.texture.height);
 			log_info("%f %f %f %f %f", o.GLvertexes[pfillc+0], o.GLvertexes[pfillc+1], o.GLvertexes[pfillc+2], o.GLvertexes[pfillc+3], o.GLvertexes[pfillc+4]);
 			pfillc+=5;
 		}
