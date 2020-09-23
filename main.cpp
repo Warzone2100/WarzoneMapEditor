@@ -101,7 +101,6 @@ int main(int argc, char** argv) {
 	if(loadedSurf==NULL) {
 		printf("[LoadTexture] Loading error: %s\n", IMG_GetError());
 	} else {
-		//SDL_SetColorKey(loadedSurf, SDL_TRUE, SDL_MapRGB(loadedSurf->format, 128, 112, 119));
 		newTexture = SDL_CreateTextureFromSurface(rend, loadedSurf);
 		if(newTexture == NULL) {
 			printf("[LoadTexture] Converting error: %s\n", IMG_GetError());
@@ -111,9 +110,7 @@ int main(int argc, char** argv) {
 	float texw, texh;
 	SDL_GL_BindTexture(newTexture, &texw, &texh);
 	log_info("Tex size: %f %f", texw, texh);
-	// glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m.texture.width, m.texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m.texture.rgbpixels);
-	// glGenerateMipmap(GL_TEXTURE_2D);
 
 	mshader shad("vertex.vs", "fragment.frag");
 
