@@ -6,6 +6,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
+#include "imgui_impl_opengl3.h"
+
 #include "log.hpp"
 #include "myshader.h"
 #include "pie.h"
@@ -54,6 +58,15 @@ int main(int argc, char** argv) {
 		log_info("Supporting 3.0");
 	}
 
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGui::StyleColorsDark();
+	ImGui_ImplSDL2_InitForOpenGL(window, glcontext);
+	const char* glsl_version = "#version 130";
+	ImGui_ImplOpenGL3_Init(glsl_version);
+
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClearDepth(1.0);
 	glShadeModel(GL_SMOOTH);
@@ -94,8 +107,10 @@ int main(int argc, char** argv) {
 	bool r=1;
 	glEnable(GL_DEPTH_TEST);
 	SDL_Event ev;
+	bool show_demo_window = true;
 	while(r==1) {
 		while(SDL_PollEvent(&ev)) {
+			ImGui_ImplSDL2_ProcessEvent(&ev);
 			switch(ev.type) {
 				case SDL_QUIT:
 				r = 0;
@@ -109,6 +124,10 @@ int main(int argc, char** argv) {
 		}
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplSDL2_NewFrame(window);
+		ImGui::NewFrame();
+		ImGui::ShowDemoWindow(&show_demo_window);
 
 		shad.use();
 
@@ -124,10 +143,16 @@ int main(int argc, char** argv) {
 		glDrawArrays(GL_TRIANGLES, 0, m.GLvertexesCount);
 
 		glFlush();
+		ImGui::Render();
+		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
 	}
 
 	FreePIE(&m);
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
 	SDL_GL_DeleteContext(glcontext);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
