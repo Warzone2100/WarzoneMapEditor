@@ -6,12 +6,10 @@ LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lGL -lGLU -lglfw -lpng -ldl -lGLEW -L.
 
 all: main
 
-main: main.o mypng.o log.o myshader.o glad.o pie.o
+main: main.o log.o myshader.o glad.o pie.o
 	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
 
-main.o: main.cpp mypng.o log.o
-	$(CC) $< -c -o $@ $(CFLAGS)
-mypng.o: mypng.c mypng.h log.o
+main.o: main.cpp log.o
 	$(CC) $< -c -o $@ $(CFLAGS)
 pie.o: pie.c pie.h log.o
 	$(CC) $< -c -o $@ $(CFLAGS)

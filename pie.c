@@ -1,9 +1,11 @@
 #include "pie.h"
-#include "mypng.h"
 #include "log.hpp"
 #include <stdlib.h>
+#include <string.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
-struct PIEobject ReadPIE(char* path) {
+struct PIEobject ReadPIE(char* path, SDL_Renderer* rend) {
 	FILE* f = fopen(path, "r");
 	struct PIEobject o;
 	o.valid = 0;
@@ -12,13 +14,14 @@ struct PIEobject ReadPIE(char* path) {
 		return o;
 	}
 
-	int ver, type, dummy, pointscount, ret;
+	int type, dummy, pointscount, ret;
 	char texturepagepath[512];
-	ret = fscanf(f, "PIE %d\nTYPE %d\nTEXTURE %d %s %d %d\nLEVELS %d\nLEVEL %d\nPOINTS %d\n", &ver, &type, &dummy, texturepagepath, &dummy, &dummy, &dummy, &dummy, &pointscount);
+	ret = fscanf(f, "PIE %d\nTYPE %d\nTEXTURE %d %s %d %d\nLEVELS %d\nLEVEL %d\nPOINTS %d\n", &o.ver, &type, &dummy, texturepagepath, &dummy, &dummy, &dummy, &dummy, &pointscount);
 	if(ret!=9) {
 		log_error("PIE scanf 1 %d", ret);
 		abort();
 	}
+	strncpy(o.texturepath, texturepagepath, 512);
 	o.points = (struct PIEpoint*)malloc(pointscount*sizeof(struct PIEpoint));
 	for(int i=0; i<pointscount; i++) {
 		ret = fscanf(f, "\t%f %f %f\n", &o.points[i].x, &o.points[i].y, &o.points[i].z);
@@ -55,10 +58,10 @@ struct PIEobject ReadPIE(char* path) {
 			log_error("Polygons bad");
 			abort();
 		}
-		log_info("Tex coords:");
+		//log_info("Tex coords:");
 		for(int j=0; j<o.polygons[i].pcount*2; j++) {
 			ret = fscanf(f, " %f", &o.polygons[i].texcoords[j]);
-			log_info("%f", o.polygons[i].texcoords[j]);
+			//log_info("%f", o.polygons[i].texcoords[j]);
 			if(ret!=1) {
 				log_error("PIE scanf 6 %d (%d) (%d)\n", ret, i, j);
 				abort();
@@ -66,43 +69,71 @@ struct PIEobject ReadPIE(char* path) {
 		}
 	}
 	fclose(f);
+	o.valid = 1;
+	return o;
+}
 
-	char fbufer[1024] = {0};
-	snprintf(fbufer, 1023, "./%s", texturepagepath);
-	log_info("Loading [%s] texpage...", texturepagepath);
-	o.texture = read_png_file(fbufer);
-	log_info("Loaded [%s] texpage.", texturepagepath);
-
+void PIEprepareGLarrays(PIEobject* o) {
 	size_t pfillc = 0;
 	size_t pfillmax = 0;
-	for(int i=0; i<o.polygonscount; i++) {
-		for(int j=0; j<o.polygons[i].pcount; j++) {
+	for(int i=0; i<o->polygonscount; i++) {
+		for(int j=0; j<o->polygons[i].pcount; j++) {
 			pfillmax += 3 + 2;
 			// 3 FOR VERTEX 2 FOR TEXTURE COORD
 		}
 	}
-	log_info("%d", pfillmax);
-	o.GLvertexes = (float*)malloc(pfillmax*sizeof(float));
-	o.GLvertexesCount = pfillmax;
-	for(int i=0; i<o.polygonscount; i++) {
-		if(o.polygons[i].pcount != 3) {
+	int w, h;
+	SDL_QueryTexture(o->texture, NULL, NULL, &w, &h);
+	o->GLvertexes = (float*)malloc(pfillmax*sizeof(float));
+	o->GLvertexesCount = pfillmax;
+	for(int i=0; i<o->polygonscount; i++) {
+		if(o->polygons[i].pcount != 3) {
 			log_fatal("Polygon converter error!");
 			abort();
 		}
-		for(int j=0; j<o.polygons[i].pcount; j++) {
-			o.GLvertexes[pfillc+0] = o.points[o.polygons[i].porder[j]].x;
-			o.GLvertexes[pfillc+1] = o.points[o.polygons[i].porder[j]].y;
-			o.GLvertexes[pfillc+2] = o.points[o.polygons[i].porder[j]].z;
-			o.GLvertexes[pfillc+3] = (o.polygons[i].texcoords[j*2+0]*4)/o.texture.width;
-			o.GLvertexes[pfillc+4] = (o.polygons[i].texcoords[j*2+1]*4)/o.texture.height;
-			log_info("%f %f %f %f %f", o.GLvertexes[pfillc+0], o.GLvertexes[pfillc+1], o.GLvertexes[pfillc+2], o.GLvertexes[pfillc+3], o.GLvertexes[pfillc+4]);
+		for(int j=0; j<o->polygons[i].pcount; j++) {
+			o->GLvertexes[pfillc+0] = o->points[o->polygons[i].porder[j]].x;
+			o->GLvertexes[pfillc+1] = o->points[o->polygons[i].porder[j]].y;
+			o->GLvertexes[pfillc+2] = o->points[o->polygons[i].porder[j]].z;
+			if(o->ver != 3) {
+				o->GLvertexes[pfillc+3] = (o->polygons[i].texcoords[j*2+0]*4)/w;
+				o->GLvertexes[pfillc+4] = (o->polygons[i].texcoords[j*2+1]*4)/h;
+			} else {
+				o->GLvertexes[pfillc+3] = (o->polygons[i].texcoords[j*2+0]*4)/w;
+				o->GLvertexes[pfillc+4] = (o->polygons[i].texcoords[j*2+1]*4)/h;
+			}
+			//log_info("%f %f %f %f %f", o->GLvertexes[pfillc+0], o->GLvertexes[pfillc+1], o->GLvertexes[pfillc+2], o->GLvertexes[pfillc+3], o->GLvertexes[pfillc+4]);
 			pfillc+=5;
 		}
 	}
 	log_info("%d", pfillc);
+}
 
-	o.valid = 1;
-	return o;
+bool PIEreadTexture(PIEobject* o, SDL_Renderer* rend) {
+	char fbufer[2048] = {0};
+	snprintf(fbufer, 2047, "./%s", o->texturepath);
+	log_info("Loading [%s] texpage...", o->texturepath);
+	SDL_Surface* loadedSurf = IMG_Load(fbufer);
+	if(loadedSurf==NULL) {
+		log_fatal("Texture Loading error: %s\n", IMG_GetError());
+		return false;
+	} else {
+		o->texture = SDL_CreateTextureFromSurface(rend, loadedSurf);
+		if(o->texture == NULL) {
+			log_fatal("Texture converting error: %s\n", IMG_GetError());
+			return false;
+		}
+		SDL_FreeSurface(loadedSurf);
+	}
+	SDL_QueryTexture(o->texture, NULL, NULL, &o->texturewidth, &o->textureheight);
+	log_info("Loaded [%s] texpage.", o->texturepath);
+	return true;
+}
+
+void PIEbindTexpage(PIEobject* o) {
+	float texw, texh;
+	SDL_GL_BindTexture(o->texture, &texw, &texh);
+	log_info("Texture binded: %f %f", texw, texh);
 }
 
 void FreePIE(struct PIEobject* o) {
