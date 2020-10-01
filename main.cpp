@@ -147,10 +147,10 @@ int main(int argc, char** argv) {
 		ImGui_ImplSDL2_NewFrame(window);
 		ImGui::NewFrame();
 
-		static float Scale = 1.0f;
-		static float RotX = 0.0f;
-		static float RotY = 115.052f;
-        static float RotZ = 350.722f;
+		static float Scale = 0.639f;
+		static float RotX = 330.309f;
+		static float RotY = 293.196f;
+        static float RotZ = 0.000f;
 		static float PosX = 66.804f;
 		static float PosY = -77.938f;
         static float PosZ = 0.0f;
