@@ -24,6 +24,7 @@ int width = 640;
 int height = 480;
 
 const char* demopieobjectpath = "./blbrbgen.pie";
+const char* demopieobjectpath2 = "./vtolfactory_module1.pie";
 
 int main(int argc, char** argv) {
 	time_t t;
@@ -88,10 +89,18 @@ int main(int argc, char** argv) {
 	PIEreadTexture(&m, rend);
 	PIEprepareGLarrays(&m);
 
+	PIEobject g = ReadPIE((char*)demopieobjectpath2, rend);
+	PIEreadTexture(&g, rend);
+	PIEprepareGLarrays(&g);
+
 	unsigned int texture;
 	glGenTextures(1, &texture);
 	glActiveTexture(GL_TEXTURE0);
 	PIEbindTexpage(&m);
+	unsigned int texture2;
+	glGenTextures(1, &texture2);
+	glActiveTexture(GL_TEXTURE1);
+	PIEbindTexpage(&g);
 
 	mshader shad("vertex.vs", "fragment.frag");
 	unsigned int VBO_vertices, VAO_vertices;
@@ -100,6 +109,18 @@ int main(int argc, char** argv) {
 	glBindVertexArray(VAO_vertices);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices);
 	glBufferData(GL_ARRAY_BUFFER, m.GLvertexesCount, m.GLvertexes, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(glGetAttribLocation(shad.program, "Coordinates"), 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "Coordinates"));
+	glVertexAttribPointer(glGetAttribLocation(shad.program, "TexCoordinates"), 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "TexCoordinates"));
+
+	unsigned int VBO_vertices2, VAO_vertices2;
+	glGenVertexArrays(1, &VAO_vertices2);
+	glGenBuffers(1, &VBO_vertices2);
+	glBindVertexArray(VAO_vertices2);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices2);
+	glBufferData(GL_ARRAY_BUFFER, g.GLvertexesCount, g.GLvertexes, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(glGetAttribLocation(shad.program, "Coordinates"), 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "Coordinates"));
@@ -175,7 +196,17 @@ int main(int argc, char** argv) {
 		} else {
 			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		}
+
+		glBindVertexArray(VAO_vertices);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices);
 		glDrawArrays(GL_TRIANGLES, 0, m.GLvertexesCount);
+		glFlush();
+
+
+		glUniform1i(glGetUniformLocation(shad.program, "Texture"), 1);
+		glBindVertexArray(VAO_vertices2);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices2);
+		glDrawArrays(GL_TRIANGLES, 0, g.GLvertexesCount);
 
 		glFlush();
 		ImGui::Render();
