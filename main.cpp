@@ -107,7 +107,6 @@ int main(int argc, char** argv) {
 	bool r=1;
 	glEnable(GL_DEPTH_TEST);
 	SDL_Event ev;
-	bool show_demo_window = true;
 	while(r==1) {
 		while(SDL_PollEvent(&ev)) {
 			ImGui_ImplSDL2_ProcessEvent(&ev);
@@ -127,19 +126,52 @@ int main(int argc, char** argv) {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplSDL2_NewFrame(window);
 		ImGui::NewFrame();
-		ImGui::ShowDemoWindow(&show_demo_window);
+
+		static float Scale = 1.0f;
+		static float RotX = 0.0f;
+		static float RotY = 0.0f;
+        static float RotZ = 0.0f;
+		static float PosX = 0.0f;
+		static float PosY = 0.0f;
+        static float PosZ = 0.0f;
+		static bool show_window = true;
+		static bool ShowTextures = true;
+
+		ImGui::SetNextWindowPos({0, 0}, 1);
+		ImGui::Begin("##bmain", &show_window,   ImGuiWindowFlags_NoMove |
+		 										ImGuiWindowFlags_NoResize |
+												ImGuiWindowFlags_NoTitleBar |
+												ImGuiWindowFlags_NoResize |
+												ImGuiWindowFlags_NoCollapse |
+												ImGuiWindowFlags_AlwaysAutoResize |
+												ImGuiWindowFlags_NoBackground);
+		ImGui::SliderFloat("Scale", &Scale, 0.0f, 4.0f);
+		ImGui::SliderFloat("RotX", &RotX, 0.0f, 360.0f);
+		ImGui::SliderFloat("RotY", &RotY, 0.0f, 360.0f);
+		ImGui::SliderFloat("RotZ", &RotZ, 0.0f, 360.0f);
+		ImGui::SliderFloat("PosX", &PosX, -360.0f, 360.0f);
+		ImGui::SliderFloat("PosY", &PosY, -360.0f, 360.0f);
+		ImGui::SliderFloat("PosZ", &PosZ, -360.0f, 360.0f);
+		ImGui::Checkbox("Textures", &ShowTextures);
+		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::End();
 
 		shad.use();
 
 		glUniform1i(glGetUniformLocation(shad.program, "Texture"), 0);
 
-		glm::mat4 matrix1 = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f/200));
-		glm::mat4 matrix2 = glm::rotate(glm::mat4(1.0f), glm::radians((float)SDL_GetTicks()/100), glm::vec3(0, 1, 0));
-		glm::mat4 matrix3 = glm::rotate(glm::mat4(1.0f), glm::radians((float)SDL_GetTicks()/100), glm::vec3(0, 0, 1));
-		glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(matrix1*matrix2*matrix3));
+		glm::mat4 matrixS = glm::scale(glm::mat4(1.0), glm::vec3(Scale/200));
+		glm::mat4 matrixRX = glm::rotate(glm::mat4(1.0f), glm::radians(RotX), glm::vec3(1, 0, 0));
+		glm::mat4 matrixRY = glm::rotate(glm::mat4(1.0f), glm::radians(RotY), glm::vec3(0, 1, 0));
+		glm::mat4 matrixRZ = glm::rotate(glm::mat4(1.0f), glm::radians(RotZ), glm::vec3(0, 0, 1));
+		glm::mat4 matrixM = glm::translate(glm::mat4(1.0f), glm::vec3(PosX,PosY,PosZ));
+		glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(matrixS*matrixRX*matrixRY*matrixRZ*matrixM));
 		// glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1)));
-
-		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		if(ShowTextures) {
+			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		} else {
+			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		}
 		glDrawArrays(GL_TRIANGLES, 0, m.GLvertexesCount);
 
 		glFlush();
