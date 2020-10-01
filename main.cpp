@@ -72,11 +72,6 @@ int main(int argc, char** argv) {
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClearDepth(1.0);
-	glShadeModel(GL_SMOOTH);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(45.0f, (float)width/(float)height, 0.1f, 400.0f);
-	glMatrixMode(GL_MODELVIEW);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
