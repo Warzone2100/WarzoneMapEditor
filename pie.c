@@ -83,7 +83,6 @@ void PIEprepareGLarrays(PIEobject* o) {
 	}
 	o->GLvertexes = (float*)malloc(pfillmax*sizeof(float));
 	o->GLvertexesCount = pfillmax*sizeof(float);
-	log_info("Converting %d = %d polygons, created %d floats", o->polygonscount, pfillmax/15, pfillmax);
 	size_t pfillc = 0;
 	for(int i=0; i<o->polygonscount; i++) {
 		if(o->polygons[i].pcount != 3) {
@@ -96,11 +95,9 @@ void PIEprepareGLarrays(PIEobject* o) {
 			o->GLvertexes[pfillc+2] = o->points[o->polygons[i].porder[j]].z;
 			o->GLvertexes[pfillc+3] = (o->polygons[i].texcoords[j*2+0]*4)/w;
 			o->GLvertexes[pfillc+4] = (o->polygons[i].texcoords[j*2+1]*4)/h;
-			log_info("%d %d %f %f %f %f %f", i, pfillc, o->GLvertexes[pfillc+0], o->GLvertexes[pfillc+1], o->GLvertexes[pfillc+2], o->GLvertexes[pfillc+3], o->GLvertexes[pfillc+4]);
 			pfillc+=5;
 		}
 	}
-	log_info("%d", pfillc);
 }
 
 bool PIEreadTexture(PIEobject* o, SDL_Renderer* rend) {

@@ -92,7 +92,6 @@ int main(int argc, char** argv) {
 	glGenTextures(1, &texture);
 	glActiveTexture(GL_TEXTURE0);
 	PIEbindTexpage(&m);
-	// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m.texturewidth, m.textureheight, 0, GL_RGBA, GL_UNSIGNED_BYTE, m.texture.rgbpixels);
 
 	mshader shad("vertex.vs", "fragment.frag");
 	unsigned int VBO_vertices, VAO_vertices;
@@ -106,9 +105,7 @@ int main(int argc, char** argv) {
 	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "Coordinates"));
 	glVertexAttribPointer(glGetAttribLocation(shad.program, "TexCoordinates"), 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "TexCoordinates"));
-	// for(int i = 0; i < m.GLvertexesCount/5; i+=5) {
-	// 	printf("%7d: %7f, %7f, %7f, %7f, %7f\n", i, m.GLvertexes[i + 0], m.GLvertexes[i + 1], m.GLvertexes[i + 2], m.GLvertexes[i + 3], m.GLvertexes[i + 4]);
-	// }
+
 	bool r=1;
 	glEnable(GL_DEPTH_TEST);
 	SDL_Event ev;
@@ -164,7 +161,6 @@ int main(int argc, char** argv) {
 		ImGui::SliderFloat("PosY", &PosY, -360.0f, 360.0f);
 		ImGui::SliderFloat("PosZ", &PosZ, -360.0f, 360.0f);
 		ImGui::Checkbox("Textures", &ShowTextures);
-		ImGui::Text("Vertexes: %d", m.GLvertexesCount);
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 
@@ -178,7 +174,6 @@ int main(int argc, char** argv) {
 		glm::mat4 matrixRZ = glm::rotate(glm::mat4(1.0f), glm::radians(RotZ), glm::vec3(0, 0, 1));
 		glm::mat4 matrixM = glm::translate(glm::mat4(1.0f), glm::vec3(PosX,PosY,PosZ));
 		glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(matrixS*matrixRX*matrixRY*matrixRZ*matrixM));
-		// glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1)));
 		if(ShowTextures) {
 			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		} else {
