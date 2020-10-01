@@ -18,6 +18,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <GLFW/glfw3.h>
 
+#define FPS 60
+
 int width = 640;
 int height = 480;
 
@@ -108,7 +110,13 @@ int main(int argc, char** argv) {
 	bool r=1;
 	glEnable(GL_DEPTH_TEST);
 	SDL_Event ev;
+	int numFrames = 0;
+	Uint32 frame_time_start = 0;
+	Uint32 startclock = 0;
+	Uint32 deltaclock = 0;
+	double fps = 0;
 	while(r==1) {
+		frame_time_start = SDL_GetTicks();
 		while(SDL_PollEvent(&ev)) {
 			ImGui_ImplSDL2_ProcessEvent(&ev);
 			switch(ev.type) {
@@ -180,6 +188,17 @@ int main(int argc, char** argv) {
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
+		if((Uint32)1000/FPS > SDL_GetTicks()-frame_time_start) {
+			SDL_Delay(1000/FPS-(SDL_GetTicks()-frame_time_start));
+		}
+		deltaclock = SDL_GetTicks() - startclock;
+		startclock = SDL_GetTicks();
+		if(numFrames == FPS) {
+			if ( deltaclock != 0 )
+				fps = 1000 / deltaclock;
+			numFrames=0;
+		}
+		numFrames++;
 	}
 
 	FreePIE(&m);
