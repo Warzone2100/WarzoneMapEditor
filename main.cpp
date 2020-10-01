@@ -41,6 +41,7 @@ int main(int argc, char** argv) {
 	if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3)) {log_fatal("attr error");}
 
 	SDL_Window* window = SDL_CreateWindow("3d", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+	SDL_SetWindowResizable(window, SDL_TRUE);
 	SDL_Renderer* rend = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
 	if(!glcontext) {
