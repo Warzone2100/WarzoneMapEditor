@@ -79,48 +79,39 @@ int main(int argc, char** argv) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	int objectsCount = 2;
+	PIEobject* objects = (PIEobject*)malloc(objectsCount*sizeof(PIEobject));
 
-	PIEobject m = ReadPIE((char*)demopieobjectpath, rend);
-	PIEreadTexture(&m, rend);
-	PIEprepareGLarrays(&m);
+	objects[0] = ReadPIE((char*)demopieobjectpath, rend);
+	objects[1] = ReadPIE((char*)demopieobjectpath2, rend);
+	for(int i=0; i<objectsCount; i++) {
+		PIEreadTexture(&objects[i], rend);
+		PIEprepareGLarrays(&objects[i]);
+	}
 
-	PIEobject g = ReadPIE((char*)demopieobjectpath2, rend);
-	PIEreadTexture(&g, rend);
-	PIEprepareGLarrays(&g);
-
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	glActiveTexture(GL_TEXTURE0);
-	PIEbindTexpage(&m);
-	unsigned int texture2;
-	glGenTextures(1, &texture2);
-	glActiveTexture(GL_TEXTURE1);
-	PIEbindTexpage(&g);
+	unsigned int* textures = (unsigned int*)malloc(objectsCount*sizeof(unsigned int));
+	glGenTextures(objectsCount, textures);
+	for(int i=0; i<objectsCount; i++) {
+		glActiveTexture(GL_TEXTURE0+i);
+		PIEbindTexpage(&objects[i]);
+	}
 
 	mshader shad("vertex.vs", "fragment.frag");
-	unsigned int VBO_vertices, VAO_vertices;
-	glGenVertexArrays(1, &VAO_vertices);
-	glGenBuffers(1, &VBO_vertices);
-	glBindVertexArray(VAO_vertices);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices);
-	glBufferData(GL_ARRAY_BUFFER, m.GLvertexesCount, m.GLvertexes, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(glGetAttribLocation(shad.program, "Coordinates"), 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "Coordinates"));
-	glVertexAttribPointer(glGetAttribLocation(shad.program, "TexCoordinates"), 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "TexCoordinates"));
 
-	unsigned int VBO_vertices2, VAO_vertices2;
-	glGenVertexArrays(1, &VAO_vertices2);
-	glGenBuffers(1, &VBO_vertices2);
-	glBindVertexArray(VAO_vertices2);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices2);
-	glBufferData(GL_ARRAY_BUFFER, g.GLvertexesCount, g.GLvertexes, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(glGetAttribLocation(shad.program, "Coordinates"), 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "Coordinates"));
-	glVertexAttribPointer(glGetAttribLocation(shad.program, "TexCoordinates"), 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "TexCoordinates"));
+	unsigned int* VBO_vertices = (unsigned int*)malloc(objectsCount*sizeof(unsigned int));
+	unsigned int* VAO_vertices = (unsigned int*)malloc(objectsCount*sizeof(unsigned int));
+	glGenVertexArrays(objectsCount, VAO_vertices);
+	glGenBuffers(objectsCount, VAO_vertices);
+	for(int i=0; i<objectsCount; i++) {
+		glBindVertexArray(VAO_vertices[i]);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices[i]);
+		glBufferData(GL_ARRAY_BUFFER, objects[i].GLvertexesCount, objects[i].GLvertexes, GL_STATIC_DRAW);
+		glVertexAttribPointer(glGetAttribLocation(shad.program, "Coordinates"), 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(glGetAttribLocation(shad.program, "Coordinates"));
+		glVertexAttribPointer(glGetAttribLocation(shad.program, "TexCoordinates"), 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(glGetAttribLocation(shad.program, "TexCoordinates"));
+	}
 
 	bool r=1;
 	glEnable(GL_DEPTH_TEST);
@@ -147,16 +138,9 @@ int main(int argc, char** argv) {
 		ImGui_ImplSDL2_NewFrame(window);
 		ImGui::NewFrame();
 
-		static float Scale = 0.639f;
-		static float RotX = 330.309f;
-		static float RotY = 293.196f;
-        static float RotZ = 0.000f;
-		static float PosX = 66.804f;
-		static float PosY = -77.938f;
-        static float PosZ = 0.0f;
 		static bool show_window = true;
 		static bool ShowTextures = true;
-
+		static int editobject = 0;
 		ImGui::SetNextWindowPos({0, 0}, 1);
 		ImGui::Begin("##bmain", &show_window,   ImGuiWindowFlags_NoMove |
 		 										ImGuiWindowFlags_NoResize |
@@ -165,45 +149,40 @@ int main(int argc, char** argv) {
 												ImGuiWindowFlags_NoCollapse |
 												ImGuiWindowFlags_AlwaysAutoResize |
 												ImGuiWindowFlags_NoBackground);
-		ImGui::SliderFloat("Scale", &Scale, 0.0f, 4.0f);
-		ImGui::SliderFloat("RotX", &RotX, 0.0f, 360.0f);
-		ImGui::SliderFloat("RotY", &RotY, 0.0f, 360.0f);
-		ImGui::SliderFloat("RotZ", &RotZ, 0.0f, 360.0f);
-		ImGui::SliderFloat("PosX", &PosX, -360.0f, 360.0f);
-		ImGui::SliderFloat("PosY", &PosY, -360.0f, 360.0f);
-		ImGui::SliderFloat("PosZ", &PosZ, -360.0f, 360.0f);
+		ImGui::SliderInt("Object", &editobject, 0, objectsCount-1);
+		ImGui::SliderFloat("Scale", &objects[editobject].GLscale, 0.0f, 4.0f);
+		ImGui::SliderFloat("RotX", &objects[editobject].GLrot[0], 0.0f, 360.0f);
+		ImGui::SliderFloat("RotY", &objects[editobject].GLrot[1], 0.0f, 360.0f);
+		ImGui::SliderFloat("RotZ", &objects[editobject].GLrot[2], 0.0f, 360.0f);
+		ImGui::SliderFloat("PosX", &objects[editobject].GLpos[0], -360.0f, 360.0f);
+		ImGui::SliderFloat("PosY", &objects[editobject].GLpos[1], -360.0f, 360.0f);
+		ImGui::SliderFloat("PosZ", &objects[editobject].GLpos[2], -360.0f, 360.0f);
 		ImGui::Checkbox("Textures", &ShowTextures);
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 
 		shad.use();
 
-		glUniform1i(glGetUniformLocation(shad.program, "Texture"), 0);
+		for(int i=0; i<objectsCount; i++) {
+			glUniform1i(glGetUniformLocation(shad.program, "Texture"), i);
+			glm::mat4 matrixS = glm::scale(glm::mat4(1.0), glm::vec3(objects[i].GLscale/200));
+			glm::mat4 matrixRX = glm::rotate(glm::mat4(1.0f), glm::radians(objects[i].GLrot[0]), glm::vec3(1, 0, 0));
+			glm::mat4 matrixRY = glm::rotate(glm::mat4(1.0f), glm::radians(objects[i].GLrot[1]), glm::vec3(0, 1, 0));
+			glm::mat4 matrixRZ = glm::rotate(glm::mat4(1.0f), glm::radians(objects[i].GLrot[2]), glm::vec3(0, 0, 1));
+			glm::mat4 matrixM = glm::translate(glm::mat4(1.0f), glm::vec3(objects[i].GLpos[0], objects[i].GLpos[1], objects[i].GLpos[2]));
+			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(matrixS*matrixRX*matrixRY*matrixRZ*matrixM));
+			if(ShowTextures) {
+				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+			} else {
+				glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+			}
+			glBindVertexArray(VAO_vertices[i]);
+			glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices[i]);
+			glDrawArrays(GL_TRIANGLES, 0, objects[i].GLvertexesCount);
+			glFlush();
 
-		glm::mat4 matrixS = glm::scale(glm::mat4(1.0), glm::vec3(Scale/200));
-		glm::mat4 matrixRX = glm::rotate(glm::mat4(1.0f), glm::radians(RotX), glm::vec3(1, 0, 0));
-		glm::mat4 matrixRY = glm::rotate(glm::mat4(1.0f), glm::radians(RotY), glm::vec3(0, 1, 0));
-		glm::mat4 matrixRZ = glm::rotate(glm::mat4(1.0f), glm::radians(RotZ), glm::vec3(0, 0, 1));
-		glm::mat4 matrixM = glm::translate(glm::mat4(1.0f), glm::vec3(PosX,PosY,PosZ));
-		glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(matrixS*matrixRX*matrixRY*matrixRZ*matrixM));
-		if(ShowTextures) {
-			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-		} else {
-			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		}
 
-		glBindVertexArray(VAO_vertices);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices);
-		glDrawArrays(GL_TRIANGLES, 0, m.GLvertexesCount);
-		glFlush();
-
-
-		glUniform1i(glGetUniformLocation(shad.program, "Texture"), 1);
-		glBindVertexArray(VAO_vertices2);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices2);
-		glDrawArrays(GL_TRIANGLES, 0, g.GLvertexesCount);
-
-		glFlush();
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -214,7 +193,6 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	FreePIE(&m);
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
