@@ -106,7 +106,9 @@ int main(int argc, char** argv) {
 	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "Coordinates"));
 	glVertexAttribPointer(glGetAttribLocation(shad.program, "TexCoordinates"), 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(glGetAttribLocation(shad.program, "TexCoordinates"));
-
+	// for(int i = 0; i < m.GLvertexesCount/5; i+=5) {
+	// 	printf("%7d: %7f, %7f, %7f, %7f, %7f\n", i, m.GLvertexes[i + 0], m.GLvertexes[i + 1], m.GLvertexes[i + 2], m.GLvertexes[i + 3], m.GLvertexes[i + 4]);
+	// }
 	bool r=1;
 	glEnable(GL_DEPTH_TEST);
 	SDL_Event ev;
@@ -138,10 +140,10 @@ int main(int argc, char** argv) {
 
 		static float Scale = 1.0f;
 		static float RotX = 0.0f;
-		static float RotY = 0.0f;
-        static float RotZ = 0.0f;
-		static float PosX = 0.0f;
-		static float PosY = 0.0f;
+		static float RotY = 115.052f;
+        static float RotZ = 350.722f;
+		static float PosX = 66.804f;
+		static float PosY = -77.938f;
         static float PosZ = 0.0f;
 		static bool show_window = true;
 		static bool ShowTextures = true;
@@ -162,6 +164,7 @@ int main(int argc, char** argv) {
 		ImGui::SliderFloat("PosY", &PosY, -360.0f, 360.0f);
 		ImGui::SliderFloat("PosZ", &PosZ, -360.0f, 360.0f);
 		ImGui::Checkbox("Textures", &ShowTextures);
+		ImGui::Text("Vertexes: %d", m.GLvertexesCount);
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 

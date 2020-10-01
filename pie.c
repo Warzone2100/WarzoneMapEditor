@@ -74,18 +74,17 @@ struct PIEobject ReadPIE(char* path, SDL_Renderer* rend) {
 }
 
 void PIEprepareGLarrays(PIEobject* o) {
-	size_t pfillc = 0;
-	size_t pfillmax = 0;
-	for(int i=0; i<o->polygonscount; i++) {
-		for(int j=0; j<o->polygons[i].pcount; j++) {
-			pfillmax += 3 + 2;
-			// 3 FOR VERTEX 2 FOR TEXTURE COORD
-		}
-	}
 	int w, h;
 	SDL_QueryTexture(o->texture, NULL, NULL, &w, &h);
+
+	size_t pfillmax = 0;
+	for(int i=0; i<o->polygonscount; i++) {
+		pfillmax += o->polygons[i].pcount * (3 + 2);
+	}
 	o->GLvertexes = (float*)malloc(pfillmax*sizeof(float));
-	o->GLvertexesCount = pfillmax;
+	o->GLvertexesCount = pfillmax*sizeof(float);
+	log_info("Converting %d = %d polygons, created %d floats", o->polygonscount, pfillmax/15, pfillmax);
+	size_t pfillc = 0;
 	for(int i=0; i<o->polygonscount; i++) {
 		if(o->polygons[i].pcount != 3) {
 			log_fatal("Polygon converter error!");
@@ -95,14 +94,9 @@ void PIEprepareGLarrays(PIEobject* o) {
 			o->GLvertexes[pfillc+0] = o->points[o->polygons[i].porder[j]].x;
 			o->GLvertexes[pfillc+1] = o->points[o->polygons[i].porder[j]].y;
 			o->GLvertexes[pfillc+2] = o->points[o->polygons[i].porder[j]].z;
-			if(o->ver != 3) {
-				o->GLvertexes[pfillc+3] = (o->polygons[i].texcoords[j*2+0]*4)/w;
-				o->GLvertexes[pfillc+4] = (o->polygons[i].texcoords[j*2+1]*4)/h;
-			} else {
-				o->GLvertexes[pfillc+3] = (o->polygons[i].texcoords[j*2+0]*4)/w;
-				o->GLvertexes[pfillc+4] = (o->polygons[i].texcoords[j*2+1]*4)/h;
-			}
-			//log_info("%f %f %f %f %f", o->GLvertexes[pfillc+0], o->GLvertexes[pfillc+1], o->GLvertexes[pfillc+2], o->GLvertexes[pfillc+3], o->GLvertexes[pfillc+4]);
+			o->GLvertexes[pfillc+3] = (o->polygons[i].texcoords[j*2+0]*4)/w;
+			o->GLvertexes[pfillc+4] = (o->polygons[i].texcoords[j*2+1]*4)/h;
+			log_info("%d %d %f %f %f %f %f", i, pfillc, o->GLvertexes[pfillc+0], o->GLvertexes[pfillc+1], o->GLvertexes[pfillc+2], o->GLvertexes[pfillc+3], o->GLvertexes[pfillc+4]);
 			pfillc+=5;
 		}
 	}
