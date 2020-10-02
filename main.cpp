@@ -141,6 +141,7 @@ int main(int argc, char** argv) {
 		static bool show_window = true;
 		static bool ShowTextures = true;
 		static int editobject = 0;
+		static float RCamX = 0.0f;
 		ImGui::SetNextWindowPos({0, 0}, 1);
 		ImGui::Begin("##bmain", &show_window,   ImGuiWindowFlags_NoMove |
 		 										ImGuiWindowFlags_NoResize |
@@ -157,12 +158,20 @@ int main(int argc, char** argv) {
 		ImGui::SliderFloat("PosX", &objects[editobject].GLpos[0], -360.0f, 360.0f);
 		ImGui::SliderFloat("PosY", &objects[editobject].GLpos[1], -360.0f, 360.0f);
 		ImGui::SliderFloat("PosZ", &objects[editobject].GLpos[2], -360.0f, 360.0f);
+		ImGui::SliderFloat("CamX", &RCamX, -360.0f, 360.0f);
+		ImGui::SliderFloat("CamZ", &RCamX, -360.0f, 360.0f);
 		ImGui::Checkbox("Textures", &ShowTextures);
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 
 		shad.use();
+		const float radius = 10.0f;
+		float camX = sin(glm::radians(RCamX)) * radius;
+		float camZ = cos(glm::radians(RCamX)) * radius;
+		glm::mat4 view;
+		view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
 
+		glUniformMatrix4fv(glGetUniformLocation(shad.program, "View"), 1, GL_FALSE, glm::value_ptr(view));
 		for(int i=0; i<objectsCount; i++) {
 			glUniform1i(glGetUniformLocation(shad.program, "Texture"), i);
 			glm::mat4 matrixS = glm::scale(glm::mat4(1.0), glm::vec3(objects[i].GLscale/200));
