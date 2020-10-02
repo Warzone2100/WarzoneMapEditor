@@ -147,6 +147,7 @@ int main(int argc, char** argv) {
 		static bool ShowTextures = true;
 		static int editobject = 0;
 		static float RCamX = 0.0f;
+		static bool FPSlimiter = true;
 		ImGui::SetNextWindowPos({0, 0}, 1);
 		ImGui::Begin("##bmain", &show_window,   ImGuiWindowFlags_NoMove |
 		 										ImGuiWindowFlags_NoResize |
@@ -166,6 +167,7 @@ int main(int argc, char** argv) {
 		ImGui::SliderFloat("CamX", &RCamX, -360.0f, 360.0f);
 		ImGui::SliderFloat("Fov", &fov, -360.0f, 360.0f);
 		ImGui::Checkbox("Textures", &ShowTextures);
+		ImGui::Checkbox("Fps limit", &FPSlimiter);
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 
@@ -214,7 +216,7 @@ int main(int argc, char** argv) {
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
 
-		if((Uint32)1000/FPS > SDL_GetTicks()-frame_time_start) {
+		if((Uint32)1000/FPS > SDL_GetTicks()-frame_time_start && FPSlimiter) {
 			SDL_Delay(1000/FPS-(SDL_GetTicks()-frame_time_start));
 		}
 	}
