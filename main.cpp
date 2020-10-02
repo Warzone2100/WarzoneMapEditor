@@ -117,6 +117,11 @@ int main(int argc, char** argv) {
 	glEnable(GL_DEPTH_TEST);
 	SDL_Event ev;
 	Uint32 frame_time_start = 0;
+	glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
+	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+	glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
+	float yaw = 0.0f, pitch = 0.0f, roll = 0.0f;
+	float fov = 45.0f;
 	while(r==1) {
 		frame_time_start = SDL_GetTicks();
 		while(SDL_PollEvent(&ev)) {
@@ -159,19 +164,31 @@ int main(int argc, char** argv) {
 		ImGui::SliderFloat("PosY", &objects[editobject].GLpos[1], -360.0f, 360.0f);
 		ImGui::SliderFloat("PosZ", &objects[editobject].GLpos[2], -360.0f, 360.0f);
 		ImGui::SliderFloat("CamX", &RCamX, -360.0f, 360.0f);
-		ImGui::SliderFloat("CamZ", &RCamX, -360.0f, 360.0f);
+		ImGui::SliderFloat("Fov", &fov, -360.0f, 360.0f);
 		ImGui::Checkbox("Textures", &ShowTextures);
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 
 		shad.use();
+
+
+		glm::vec3 direction;
+		direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+		direction.y = sin(glm::radians(pitch));
+		direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+		cameraFront = glm::normalize(direction);
+
 		const float radius = 10.0f;
 		float camX = sin(glm::radians(RCamX)) * radius;
 		float camZ = cos(glm::radians(RCamX)) * radius;
 		glm::mat4 view;
-		view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
-
+		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		// view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
 		glUniformMatrix4fv(glGetUniformLocation(shad.program, "View"), 1, GL_FALSE, glm::value_ptr(view));
+
+		glm::mat4 projection = glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
+		glUniformMatrix4fv(glGetUniformLocation(shad.program, "Projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
 		for(int i=0; i<objectsCount; i++) {
 			glUniform1i(glGetUniformLocation(shad.program, "Texture"), i);
 			glm::mat4 matrixS = glm::scale(glm::mat4(1.0), glm::vec3(objects[i].GLscale/200));
