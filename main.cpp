@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
 			glm::mat4 matrixRY = glm::rotate(glm::mat4(1.0f), glm::radians(objects[i].GLrot[1]), glm::vec3(0, 1, 0));
 			glm::mat4 matrixRZ = glm::rotate(glm::mat4(1.0f), glm::radians(objects[i].GLrot[2]), glm::vec3(0, 0, 1));
 			glm::mat4 matrixM = glm::translate(glm::mat4(1.0f), glm::vec3(objects[i].GLpos[0], objects[i].GLpos[1], objects[i].GLpos[2]));
-			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(matrixS*matrixRX*matrixRY*matrixRZ*matrixM));
+			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(matrixS*matrixM*matrixRX*matrixRY*matrixRZ));
 			if(ShowTextures) {
 				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 			} else {
