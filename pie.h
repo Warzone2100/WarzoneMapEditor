@@ -27,7 +27,7 @@ struct PIEobject {
 	int ver;
 	float GLpos[3] = {0.0f, 0.0f, 0.0f};
 	float GLrot[3] = {0.0f, 0.0f, 0.0f};
-	float GLscale = 0.0f;
+	float GLscale = 1.0f;
 };
 
 struct PIEobject ReadPIE(char* path, SDL_Renderer* rend);
