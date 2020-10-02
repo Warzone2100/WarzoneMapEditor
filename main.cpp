@@ -156,6 +156,33 @@ int main(int argc, char** argv) {
 												ImGuiWindowFlags_NoCollapse |
 												ImGuiWindowFlags_AlwaysAutoResize |
 												ImGuiWindowFlags_NoBackground);
+		if(ImGui::Button("Load object")) {
+			igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".pie", ".");
+		}
+		if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey")) {
+			if (igfd::ImGuiFileDialog::Instance()->IsOk == true) {
+				std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilePathName();
+				std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
+				PIEobject* nobjects = (PIEobject*)realloc(objects, (objectsCount+1)*sizeof(PIEobject));
+				if(nobjects == NULL) {
+					log_fatal("Memeory realloc failed!");
+				}
+				objects = nobjects;
+				objects[objectsCount] = ReadPIE((char*)filePath.c_str(), rend);
+				PIEreadTexture(&objects[i], rend);
+				PIEprepareGLarrays(&objects[i]);
+				unsigned int* ntextures = (unsigned int*)realloc((objectsCount+1)*sizeof(unsigned int));
+				if(ntextures == NULL) {
+					log_fatal("Memeory realloc failed!");
+				}
+				textures = ntextures;
+				glGenTextures(1, &textures[objectsCount]);
+				glActiveTexture(GL_TEXTURE0+objectsCount);
+				PIEbindTexpage(&objects[objectsCount]);
+				objectsCount++;
+			}
+			igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
+		}
 		ImGui::SliderInt("Object", &editobject, 0, objectsCount-1);
 		ImGui::SliderFloat("Scale", &objects[editobject].GLscale, 0.0f, 4.0f);
 		ImGui::SliderFloat("RotX", &objects[editobject].GLrot[0], 0.0f, 360.0f);

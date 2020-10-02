@@ -11,6 +11,6 @@ varying vec2 texCoordinates;
 
 void main()
 {
-    gl_Position =  Projection  * Coordinates * View * Transform;
+    gl_Position = View * Projection * Transform * Coordinates;
     texCoordinates = TexCoordinates;
 }
