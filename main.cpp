@@ -9,6 +9,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
+#include "imgui/ImGuiFileDialog.h"
 
 #include "log.hpp"
 #include "myshader.h"
@@ -168,10 +169,10 @@ int main(int argc, char** argv) {
 					log_fatal("Memeory realloc failed!");
 				}
 				objects = nobjects;
-				objects[objectsCount] = ReadPIE((char*)filePath.c_str(), rend);
-				PIEreadTexture(&objects[i], rend);
-				PIEprepareGLarrays(&objects[i]);
-				unsigned int* ntextures = (unsigned int*)realloc((objectsCount+1)*sizeof(unsigned int));
+				objects[objectsCount] = ReadPIE((char*)filePathName.c_str(), rend);
+				PIEreadTexture(&objects[objectsCount], rend);
+				PIEprepareGLarrays(&objects[objectsCount]);
+				unsigned int* ntextures = (unsigned int*)realloc(textures, (objectsCount+1)*sizeof(unsigned int));
 				if(ntextures == NULL) {
 					log_fatal("Memeory realloc failed!");
 				}
