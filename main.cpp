@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
 		glEnableVertexAttribArray(glGetAttribLocation(shad.program, "TextureCoordinates"));
 	}
 			
-	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float) width / (float)height, 0.1f, 100.0f);
+	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), (float) width / (float)height, 0.1f, 100.0f);
 
 	bool r=1;
 	glEnable(GL_DEPTH_TEST);
@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
 			}
 			glBindVertexArray(VAO_vertices[i]);
 			glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices[i]);
-			glDrawArrays(GL_TRIANGLES, 0, 3);
+			glDrawArrays(GL_TRIANGLES, 0, objects[i].pointscount);
 			glm::vec4 a = glm::vec4(objects[i].GLvertexes[0 * 5 + 0], objects[i].GLvertexes[0 * 5 + 1], objects[i].GLvertexes[0 * 5 + 2], 1);
 			glm::vec4 b = glm::vec4(objects[i].GLvertexes[1 * 5 + 0], objects[i].GLvertexes[1 * 5 + 1], objects[i].GLvertexes[1 * 5 + 2], 1);
 			glm::vec4 c = glm::vec4(objects[i].GLvertexes[2 * 5 + 0], objects[i].GLvertexes[2 * 5 + 1], objects[i].GLvertexes[2 * 5 + 2], 1);
@@ -217,7 +217,6 @@ int main(int argc, char** argv) {
 			printf("a: (%.1f, %.1f, %.1f)\n", a.x, a.y, a.z);
 			printf("b: (%.1f, %.1f, %.1f)\n", b.x, b.y, b.z);
 			printf("c: (%.1f, %.1f, %.1f)\n", c.x, c.y, c.z);
-
 
 			printf("----\n");
 
