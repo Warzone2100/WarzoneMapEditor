@@ -1,10 +1,10 @@
 #version 330 core
 
-varying vec2 texCoordinates;
+varying vec2 VaryingTextureCoordinates;
 
 uniform sampler2D Texture;
 
 void main()
 {
-	gl_FragColor = texture(Texture, texCoordinates);
+	gl_FragColor = texture(Texture, VaryingTextureCoordinates);
 }
