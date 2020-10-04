@@ -112,6 +112,8 @@ int main(int argc, char** argv) {
 		glVertexAttribPointer(glGetAttribLocation(shad.program, "TextureCoordinates"), 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 		glEnableVertexAttribArray(glGetAttribLocation(shad.program, "TextureCoordinates"));
 	}
+			
+	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float) width / (float)height, 0.1f, 100.0f);
 
 	bool r=1;
 	glEnable(GL_DEPTH_TEST);
@@ -188,9 +190,8 @@ int main(int argc, char** argv) {
 		for(int i=0; i<objectsCount; i++) {
 			glUniform1i(glGetUniformLocation(shad.program, "Texture"), i);
 			glm::mat4 matrixS = glm::scale(glm::mat4(1.0), glm::vec3(0.01f));
-			glm::mat4 matrixM = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,0));
-			auto view = matrixS*matrixM;
-			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(view));
+			auto mvp = Projection * matrixS;
+			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(mvp));
 			if(ShowTextures) {
 				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 			} else {
@@ -204,13 +205,13 @@ int main(int argc, char** argv) {
 			glm::vec4 c = glm::vec4(objects[i].GLvertexes[2 * 5 + 0], objects[i].GLvertexes[2 * 5 + 1], objects[i].GLvertexes[2 * 5 + 2], 1);
 
 			printf("---- BEFORE TRANSFORM ----\n");
-			printf("a: (%.1f, %.1f, %.1f)\n", a.x, a.y, a.z);
-			printf("b: (%.1f, %.1f, %.1f)\n", b.x, b.y, b.z);
-			printf("c: (%.1f, %.1f, %.1f)\n", c.x, c.y, c.z);
+			printf("a: (%.1f, %.1f, %.1f)\n", a.x / 100.f, a.y / 100.f, a.z / 100.f);
+			printf("b: (%.1f, %.1f, %.1f)\n", b.x / 100.f, b.y / 100.f, b.z / 100.f);
+			printf("c: (%.1f, %.1f, %.1f)\n", c.x / 100.f, c.y / 100.f, c.z / 100.f);
 
-			a = a * view;
-			b = b * view;
-			c = c * view;
+			a = a * mvp;
+			b = b * mvp;
+			c = c * mvp;
 
 			printf("---- AFTER TRANSFORM ----\n");
 			printf("a: (%.1f, %.1f, %.1f)\n", a.x, a.y, a.z);
