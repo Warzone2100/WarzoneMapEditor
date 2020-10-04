@@ -117,7 +117,6 @@ int main(int argc, char** argv) {
 	glEnable(GL_DEPTH_TEST);
 	SDL_Event ev;
 	Uint32 frame_time_start = 0;
-	float fov = 45.0f;
 	while(r==1) {
 		frame_time_start = SDL_GetTicks();
 		while(SDL_PollEvent(&ev)) {
@@ -142,7 +141,6 @@ int main(int argc, char** argv) {
 		static bool show_window = true;
 		static bool ShowTextures = true;
 		static int editobject = 0;
-		static float RCamX = 0.0f;
 		static bool FPSlimiter = true;
 		ImGui::SetNextWindowPos({0, 0}, 1);
 		ImGui::Begin("##bmain", &show_window,   ImGuiWindowFlags_NoMove |
@@ -180,12 +178,6 @@ int main(int argc, char** argv) {
 			igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
 		}
 		ImGui::SliderInt("Object", &editobject, 0, objectsCount-1);
-		ImGui::SliderFloat("Scale", &objects[editobject].GLscale, 0.0f, 4.0f);
-		ImGui::SliderFloat("PosX", &objects[editobject].GLpos[0], -360.0f, 360.0f);
-		ImGui::SliderFloat("PosY", &objects[editobject].GLpos[1], -360.0f, 360.0f);
-		ImGui::SliderFloat("PosZ", &objects[editobject].GLpos[2], -360.0f, 360.0f);
-		ImGui::SliderFloat("CamX", &RCamX, -360.0f, 360.0f);
-		ImGui::SliderFloat("Fov", &fov, -360.0f, 360.0f);
 		ImGui::Checkbox("Textures", &ShowTextures);
 		ImGui::Checkbox("Fps limit", &FPSlimiter);
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -195,9 +187,10 @@ int main(int argc, char** argv) {
 
 		for(int i=0; i<objectsCount; i++) {
 			glUniform1i(glGetUniformLocation(shad.program, "Texture"), i);
-			glm::mat4 matrixS = glm::scale(glm::mat4(1.0), glm::vec3(objects[i].GLscale/200));
-			glm::mat4 matrixM = glm::translate(glm::mat4(1.0f), glm::vec3(objects[i].GLpos[0], objects[i].GLpos[1], objects[i].GLpos[2]));
-			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(matrixS*matrixM));
+			glm::mat4 matrixS = glm::scale(glm::mat4(1.0), glm::vec3(0.01f));
+			glm::mat4 matrixM = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,0));
+			auto view = matrixS*matrixM;
+			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(view));
 			if(ShowTextures) {
 				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 			} else {
@@ -214,6 +207,17 @@ int main(int argc, char** argv) {
 			printf("a: (%.1f, %.1f, %.1f)\n", a.x, a.y, a.z);
 			printf("b: (%.1f, %.1f, %.1f)\n", b.x, b.y, b.z);
 			printf("c: (%.1f, %.1f, %.1f)\n", c.x, c.y, c.z);
+
+			a = a * view;
+			b = b * view;
+			c = c * view;
+
+			printf("---- AFTER TRANSFORM ----\n");
+			printf("a: (%.1f, %.1f, %.1f)\n", a.x, a.y, a.z);
+			printf("b: (%.1f, %.1f, %.1f)\n", b.x, b.y, b.z);
+			printf("c: (%.1f, %.1f, %.1f)\n", c.x, c.y, c.z);
+
+
 			printf("----\n");
 
 			glFlush();
