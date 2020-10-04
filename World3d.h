@@ -31,7 +31,7 @@ public:
 	glm::vec3 GLpos;
 	glm::vec3 GLrot;
 	float GLscale;
-	Texture* Texture;
+	Texture* UsingTexture;
 	bool Visible;
 	std::string TexturePath;
 	Object3d();

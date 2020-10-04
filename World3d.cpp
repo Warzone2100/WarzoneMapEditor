@@ -12,7 +12,7 @@ Object3d::Object3d() {
 	GLpos = {0.0f, 0.0f, 0.0f};
 	GLrot = {0.0f, 0.0f, 0.0f};
 	GLscale = 0.0f;
-	Texture = -1;
+	UsingTexture = nullptr;
 	Visible = false;
 }
 
@@ -110,6 +110,7 @@ Texture* World3d::GetTexture(std::string filepath) {
 			return &Textures[i];
 		}
 	}
+	return nullptr;
 }
 
 void World3d::AddTexture(std::string filepath) {
