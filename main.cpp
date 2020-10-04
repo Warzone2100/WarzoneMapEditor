@@ -80,11 +80,10 @@ int main(int argc, char** argv) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	int objectsCount = 2;
+	int objectsCount = 1;
 	PIEobject* objects = (PIEobject*)malloc(objectsCount*sizeof(PIEobject));
 
 	objects[0] = ReadPIE((char*)demopieobjectpath, rend);
-	objects[1] = ReadPIE((char*)demopieobjectpath2, rend);
 	for(int i=0; i<objectsCount; i++) {
 		PIEreadTexture(&objects[i], rend);
 		PIEprepareGLarrays(&objects[i]);
@@ -182,9 +181,6 @@ int main(int argc, char** argv) {
 		}
 		ImGui::SliderInt("Object", &editobject, 0, objectsCount-1);
 		ImGui::SliderFloat("Scale", &objects[editobject].GLscale, 0.0f, 4.0f);
-		ImGui::SliderFloat("RotX", &objects[editobject].GLrot[0], 0.0f, 360.0f);
-		ImGui::SliderFloat("RotY", &objects[editobject].GLrot[1], 0.0f, 360.0f);
-		ImGui::SliderFloat("RotZ", &objects[editobject].GLrot[2], 0.0f, 360.0f);
 		ImGui::SliderFloat("PosX", &objects[editobject].GLpos[0], -360.0f, 360.0f);
 		ImGui::SliderFloat("PosY", &objects[editobject].GLpos[1], -360.0f, 360.0f);
 		ImGui::SliderFloat("PosZ", &objects[editobject].GLpos[2], -360.0f, 360.0f);
@@ -200,11 +196,8 @@ int main(int argc, char** argv) {
 		for(int i=0; i<objectsCount; i++) {
 			glUniform1i(glGetUniformLocation(shad.program, "Texture"), i);
 			glm::mat4 matrixS = glm::scale(glm::mat4(1.0), glm::vec3(objects[i].GLscale/200));
-			glm::mat4 matrixRX = glm::rotate(glm::mat4(1.0f), glm::radians(objects[i].GLrot[0]), glm::vec3(1, 0, 0));
-			glm::mat4 matrixRY = glm::rotate(glm::mat4(1.0f), glm::radians(objects[i].GLrot[1]), glm::vec3(0, 1, 0));
-			glm::mat4 matrixRZ = glm::rotate(glm::mat4(1.0f), glm::radians(objects[i].GLrot[2]), glm::vec3(0, 0, 1));
 			glm::mat4 matrixM = glm::translate(glm::mat4(1.0f), glm::vec3(objects[i].GLpos[0], objects[i].GLpos[1], objects[i].GLpos[2]));
-			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(matrixS*matrixM*matrixRX*matrixRY*matrixRZ));
+			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(matrixS*matrixM));
 			if(ShowTextures) {
 				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 			} else {
@@ -212,7 +205,17 @@ int main(int argc, char** argv) {
 			}
 			glBindVertexArray(VAO_vertices[i]);
 			glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices[i]);
-			glDrawArrays(GL_TRIANGLES, 0, objects[i].GLvertexesCount);
+			glDrawArrays(GL_TRIANGLES, 0, 3);
+			glm::vec4 a = glm::vec4(objects[i].GLvertexes[0 * 5 + 0], objects[i].GLvertexes[0 * 5 + 1], objects[i].GLvertexes[0 * 5 + 2], 1);
+			glm::vec4 b = glm::vec4(objects[i].GLvertexes[1 * 5 + 0], objects[i].GLvertexes[1 * 5 + 1], objects[i].GLvertexes[1 * 5 + 2], 1);
+			glm::vec4 c = glm::vec4(objects[i].GLvertexes[2 * 5 + 0], objects[i].GLvertexes[2 * 5 + 1], objects[i].GLvertexes[2 * 5 + 2], 1);
+
+			printf("---- BEFORE TRANSFORM ----\n");
+			printf("a: (%.1f, %.1f, %.1f)\n", a.x, a.y, a.z);
+			printf("b: (%.1f, %.1f, %.1f)\n", b.x, b.y, b.z);
+			printf("c: (%.1f, %.1f, %.1f)\n", c.x, c.y, c.z);
+			printf("----\n");
+
 			glFlush();
 
 		}
