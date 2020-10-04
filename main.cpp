@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
 		glVertexAttribPointer(glGetAttribLocation(shad.program, "TextureCoordinates"), 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 		glEnableVertexAttribArray(glGetAttribLocation(shad.program, "TextureCoordinates"));
 	}
-			
+
 	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), (float) width / (float)height, 0.1f, 100.0f);
 
 	bool r=1;
@@ -157,6 +157,7 @@ int main(int argc, char** argv) {
 		}
 		if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey")) {
 			if (igfd::ImGuiFileDialog::Instance()->IsOk == true) {
+				unsigned long long load_start = SDL_GetTicks();
 				std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilePathName();
 				std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
 				PIEobject* nobjects = (PIEobject*)realloc(objects, (objectsCount+1)*sizeof(PIEobject));
@@ -176,6 +177,7 @@ int main(int argc, char** argv) {
 				glActiveTexture(GL_TEXTURE0+objectsCount);
 				PIEbindTexpage(&objects[objectsCount]);
 				objectsCount++;
+				log_info("Object loading complete at %ldms", SDL_GetTicks()-load_start);
 			}
 			igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
 		}
