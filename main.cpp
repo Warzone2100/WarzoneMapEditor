@@ -116,7 +116,6 @@ int main(int argc, char** argv) {
 	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), (float) width / (float)height, 0.1f, 100.0f);
 	glm::vec3 cameraPosition(0, 100, 300);
 	glm::vec3 cameraRotation(-45, 0, 0);
-
 	auto View =
 		glm::scale(glm::mat4(1.0), glm::vec3(0.01f)) *
 		glm::translate(glm::mat4(1), -cameraPosition) *
@@ -124,7 +123,6 @@ int main(int argc, char** argv) {
 		glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
 		glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.z), glm::vec3(0, 0, 1)) *
 		glm::mat4(1);
-	
 	auto viewProjection = Projection * View;
 
 	bool r=1;
@@ -138,6 +136,15 @@ int main(int argc, char** argv) {
 			switch(ev.type) {
 				case SDL_QUIT:
 				r = 0;
+				break;
+
+				case SDL_WINDOWEVENT:
+				if(ev.window.event == SDL_WINDOWEVENT_RESIZED || ev.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+					width = ev.window.data1;
+					height = ev.window.data2;
+					Projection = glm::perspective(glm::radians(70.0f), (float) width / (float)height, 0.1f, 100.0f);
+					viewProjection = Projection * View;
+				}
 				break;
 
 				case SDL_KEYDOWN:
@@ -201,19 +208,17 @@ int main(int argc, char** argv) {
 
 		shad.use();
 
+		glUniformMatrix4fv(glGetUniformLocation(shad.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
+
 		for(int i=0; i<objectsCount; i++) {
-
-			glm::vec3 modelPosition(100, 0, 0);
-			glm::vec3 modelRotation(0, 45, 0);
+			glm::vec3 pos = {objects[i].GLpos[0], objects[i].GLpos[1], objects[i].GLpos[2]};
 			auto Model =
-				glm::translate(glm::mat4(1), -modelPosition) *
-				glm::rotate(glm::mat4(1), glm::radians(-modelRotation.x), glm::vec3(1, 0, 0)) *
-				glm::rotate(glm::mat4(1), glm::radians(-modelRotation.y), glm::vec3(0, 1, 0)) *
-				glm::rotate(glm::mat4(1), glm::radians(-modelRotation.z), glm::vec3(0, 0, 1)) *
+				glm::translate(glm::mat4(1), -pos) *
+				glm::rotate(glm::mat4(1), glm::radians(-objects[i].GLrot[0]), glm::vec3(1, 0, 0)) *
+				glm::rotate(glm::mat4(1), glm::radians(-objects[i].GLrot[1]), glm::vec3(0, 1, 0)) *
+				glm::rotate(glm::mat4(1), glm::radians(-objects[i].GLrot[2]), glm::vec3(0, 0, 1)) *
 				glm::mat4(1);
-
 			glUniform1i(glGetUniformLocation(shad.program, "Texture"), i);
-			glUniformMatrix4fv(glGetUniformLocation(shad.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
 			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Model"), 1, GL_FALSE, glm::value_ptr(Model));
 			if(ShowTextures) {
 				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
