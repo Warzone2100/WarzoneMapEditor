@@ -114,6 +114,7 @@ int main(int argc, char** argv) {
 	}
 
 	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), (float) width / (float)height, 0.1f, 100.0f);
+	glm::vec3 cameraPosition(0, 50, 0);
 
 	bool r=1;
 	glEnable(GL_DEPTH_TEST);
@@ -191,10 +192,14 @@ int main(int argc, char** argv) {
 
 		for(int i=0; i<objectsCount; i++) {
 			glUniform1i(glGetUniformLocation(shad.program, "Texture"), i);
-			glm::mat4 matrixS = glm::scale(glm::mat4(1.0), glm::vec3(0.01f));
-			auto View = glm::translate(glm::mat4(1), glm::vec3(0.0001f,0.0001f,0.0001f));
-			auto mvp = Projection * View * matrixS;
-			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(mvp));
+
+			auto View =
+				glm::scale(glm::mat4(1.0), glm::vec3(0.01f)) *
+				glm::translate(glm::mat4(1), -cameraPosition) *
+				glm::mat4(1);
+			
+			auto viewProjection = Projection * View;
+			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(viewProjection));
 			if(ShowTextures) {
 				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 			} else {
