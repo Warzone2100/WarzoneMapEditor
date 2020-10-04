@@ -200,26 +200,6 @@ int main(int argc, char** argv) {
 			glBindVertexArray(VAO_vertices[i]);
 			glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices[i]);
 			glDrawArrays(GL_TRIANGLES, 0, objects[i].pointscount);
-			glm::vec4 a = glm::vec4(objects[i].GLvertexes[0 * 5 + 0], objects[i].GLvertexes[0 * 5 + 1], objects[i].GLvertexes[0 * 5 + 2], 1);
-			glm::vec4 b = glm::vec4(objects[i].GLvertexes[1 * 5 + 0], objects[i].GLvertexes[1 * 5 + 1], objects[i].GLvertexes[1 * 5 + 2], 1);
-			glm::vec4 c = glm::vec4(objects[i].GLvertexes[2 * 5 + 0], objects[i].GLvertexes[2 * 5 + 1], objects[i].GLvertexes[2 * 5 + 2], 1);
-
-			printf("---- BEFORE TRANSFORM ----\n");
-			printf("a: (%.1f, %.1f, %.1f)\n", a.x / 100.f, a.y / 100.f, a.z / 100.f);
-			printf("b: (%.1f, %.1f, %.1f)\n", b.x / 100.f, b.y / 100.f, b.z / 100.f);
-			printf("c: (%.1f, %.1f, %.1f)\n", c.x / 100.f, c.y / 100.f, c.z / 100.f);
-
-			a = a * mvp;
-			b = b * mvp;
-			c = c * mvp;
-
-			printf("---- AFTER TRANSFORM ----\n");
-			printf("a: (%.1f, %.1f, %.1f)\n", a.x, a.y, a.z);
-			printf("b: (%.1f, %.1f, %.1f)\n", b.x, b.y, b.z);
-			printf("c: (%.1f, %.1f, %.1f)\n", c.x, c.y, c.z);
-
-			printf("----\n");
-
 			glFlush();
 
 		}
