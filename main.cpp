@@ -190,7 +190,8 @@ int main(int argc, char** argv) {
 		for(int i=0; i<objectsCount; i++) {
 			glUniform1i(glGetUniformLocation(shad.program, "Texture"), i);
 			glm::mat4 matrixS = glm::scale(glm::mat4(1.0), glm::vec3(0.01f));
-			auto mvp = Projection * matrixS;
+			auto View = glm::translate(glm::mat4(1), glm::vec3(0.0001f,0.0001f,0.0001f));
+			auto mvp = Projection * View * matrixS;
 			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(mvp));
 			if(ShowTextures) {
 				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
