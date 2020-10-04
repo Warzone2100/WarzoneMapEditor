@@ -222,7 +222,7 @@ int main(int argc, char** argv) {
 			}
 			glBindVertexArray(VAO_vertices[i]);
 			glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices[i]);
-			glDrawArrays(GL_TRIANGLES, 0, objects[i].pointscount);
+			glDrawArrays(GL_TRIANGLES, 0, objects[i].GLvertexesCount);
 			glFlush();
 
 		}
