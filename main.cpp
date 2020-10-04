@@ -213,7 +213,7 @@ int main(int argc, char** argv) {
 				glm::mat4(1);
 
 			glUniform1i(glGetUniformLocation(shad.program, "Texture"), i);
-			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Transform"), 1, GL_FALSE, glm::value_ptr(viewProjection));
+			glUniformMatrix4fv(glGetUniformLocation(shad.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
 			glUniformMatrix4fv(glGetUniformLocation(shad.program, "Model"), 1, GL_FALSE, glm::value_ptr(Model));
 			if(ShowTextures) {
 				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
