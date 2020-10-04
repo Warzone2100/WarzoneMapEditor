@@ -1,6 +1,6 @@
 #version 330 core
 
-attribute vec4 Coordinates;
+attribute vec4 VertexCoordinates;
 attribute vec2 TexCoordinates;
 
 uniform mat4 View;
@@ -11,6 +11,6 @@ varying vec2 texCoordinates;
 
 void main()
 {
-    gl_Position = Transform * Coordinates;
+    gl_Position = Transform * VertexCoordinates;
     texCoordinates = TexCoordinates;
 }
