@@ -1,12 +1,12 @@
 .PHONY: all clean
 
 CC = g++
-CFLAGS = -Wall -g -Iglad/include/ -Iimgui/
+CFLAGS = -Wall -ggdb -Iglad/include/ -Iimgui/
 LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lGL -lGLU -lglfw -lpng -ldl -lGLEW -L.
 
 all: main
 
-main: main.o log.o myshader.o glad.o pie.o imgui.o imgui_draw.o imgui_widgets.o imgui_impl_opengl3.o imgui_impl_sdl.o imgui_demo.o wmt.o zip.o imgui_file_dialog.o
+main: main.o log.o myshader.o glad.o pie.o imgui.o imgui_draw.o imgui_widgets.o imgui_impl_opengl3.o imgui_impl_sdl.o imgui_demo.o wmt.o zip.o imgui_file_dialog.o World3d.o
 	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
 
 main.o: main.cpp log.o imgui.o
@@ -16,6 +16,8 @@ pie.o: pie.c pie.h log.o
 log.o: log.cpp log.hpp
 	$(CC) -DLOG_USE_COLOR $< -c -o $@ $(CFLAGS)
 myshader.o: myshader.c myshader.h
+	$(CC) $< -c -o $@ $(CFLAGS)
+World3d.o: World3d.cpp World3d.h
 	$(CC) $< -c -o $@ $(CFLAGS)
 
 glad.o: glad/src/glad.c
@@ -42,4 +44,4 @@ wmt.o: WMT/lib/wmt.cpp WMT/lib/wmt.hpp
 	$(CC) $< -o $@ -c -std=c++17 -D_NOLOGBUILD
 
 clean:
-	$(RM) main main.o log.o myshader.o glad.o pie.o imgui.o imgui_draw.o imgui_widgets.o imgui_impl_opengl3.o imgui_impl_sdl.o imgui_demo.o wmt.o zip.o imgui_file_dialog.o
+	$(RM) main main.o log.o myshader.o glad.o pie.o imgui.o imgui_draw.o imgui_widgets.o imgui_impl_opengl3.o imgui_impl_sdl.o imgui_demo.o wmt.o zip.o imgui_file_dialog.o World3d.o

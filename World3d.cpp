@@ -6,12 +6,14 @@
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
 #include <SDL2/SDL_image.h>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 Object3d::Object3d() {
 	GLvertexes.clear();
-	GLpos = {0.0f, 0.0f, 0.0f};
+	GLpos = {0.0f, -50.0f, 0.0f};
 	GLrot = {0.0f, 0.0f, 0.0f};
-	GLscale = 0.0f;
+	GLscale = 1.0f;
 	UsingTexture = nullptr;
 	Visible = false;
 }
@@ -92,12 +94,11 @@ bool Object3d::LoadFromPIE(std::string filepath) {
 			abort();
 		}
 		for(int j=0; j<polygons[i].pcount; j++) {
-			GLvertexes[pfillc+0] = points[polygons[i].porder[j]].x;
-			GLvertexes[pfillc+1] = points[polygons[i].porder[j]].y;
-			GLvertexes[pfillc+2] = points[polygons[i].porder[j]].z;
-			GLvertexes[pfillc+3] = polygons[i].texcoords[j*2+0]*TexCoordFix;
-			GLvertexes[pfillc+4] = polygons[i].texcoords[j*2+1]*TexCoordFix;
-			pfillc+=5;
+			GLvertexes.push_back(points[polygons[i].porder[j]].x);
+			GLvertexes.push_back(points[polygons[i].porder[j]].y);
+			GLvertexes.push_back(points[polygons[i].porder[j]].z);
+			GLvertexes.push_back(polygons[i].texcoords[j*2+0]*TexCoordFix);
+			GLvertexes.push_back(polygons[i].texcoords[j*2+1]*TexCoordFix);
 		}
 	}
 	fclose(f);
@@ -118,6 +119,9 @@ void Object3d::BufferData(unsigned int shader) {
 	glGenBuffers(1, &VBOv);
 	BindVAO();
 	BindVBO();
+	for(int i=0; i<GLvertexes.size(); i+=5) {
+		printf("%f %f %f %f %f\n", GLvertexes[i], GLvertexes[i+1], GLvertexes[i+2], GLvertexes[i+3], GLvertexes[i+4]);
+	}
 	glBufferData(GL_ARRAY_BUFFER, this->GLvertexes.size(), &this->GLvertexes, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(shader, "VertexCoordinates"), 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(glGetAttribLocation(shader, "VertexCoordinates"));
@@ -142,9 +146,11 @@ glm::mat4 Object3d::GetMatrix() {
 
 void Object3d::Render(unsigned int shader) {
 	glUniform1i(glGetUniformLocation(shader, "Texture"), UsingTexture->id);
+	printf("%s\n", glm::to_string(GetMatrix()).c_str());
 	glUniformMatrix4fv(glGetUniformLocation(shader, "Model"), 1, GL_FALSE, glm::value_ptr(GetMatrix()));
 	BindVAO();
 	BindVBO();
+	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	glDrawArrays(GL_TRIANGLES, 0, GLvertexes.size());
 	glFlush();
 }
