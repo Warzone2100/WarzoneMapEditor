@@ -83,9 +83,9 @@ int main(int argc, char** argv) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	WZmap *map;
-	WMT_ReadMap("./3c-DA-castle-b3wz", map);
-	Object3d terrain;
+	// WZmap map;
+	// WMT_ReadMap("./3c-DA-castle-b3wz", &map);
+	// Object3d terrain;
 
 
 
