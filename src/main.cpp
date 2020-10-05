@@ -9,7 +9,9 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
-#include "imgui/ImGuiFileDialog.h"
+#include "ImGuiFileDialog.h"
+
+#include "wmt.hpp"
 
 #include "log.hpp"
 #include "myshader.h"
@@ -80,6 +82,12 @@ int main(int argc, char** argv) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	WZmap *map;
+	WMT_ReadMap("./3c-DA-castle-b3wz", map);
+	Object3d terrain;
+
+
 
 	Object3d obj;
 	obj.LoadFromPIE(demopieobjectpath);

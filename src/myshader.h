@@ -7,8 +7,8 @@
 
 class mshader {
 	public:
-		GLuint program;
-		mshader(const GLchar* vp, const GLchar* fp);
+		unsigned int program;
+		mshader(const char* vp, const char* fp);
 		void use();
 };
 #endif

@@ -1,0 +1,3 @@
+[submodule "WMT"]
+	path = lib/WMT
+	url = git@github.com:maxsupermanhd/WMT.git

@@ -169,18 +169,7 @@ void Object3d::Render(unsigned int shader) {
 void Texture::Load(std::string path, SDL_Renderer *rend) {
 	this->path = path;
 	log_info("Loading [%s] texture...", this->path.c_str());
-	SDL_Surface* loadedSurf = IMG_Load(this->path.c_str());
-	if(loadedSurf==NULL) {
-		log_fatal("Texture Loading error: %s\n", IMG_GetError());
-		return;
-	} else {
-		this->tex = SDL_CreateTextureFromSurface(rend, loadedSurf);
-		if(this->tex == NULL) {
-			log_fatal("Texture converting error: %s\n", IMG_GetError());
-			return;
-		}
-		SDL_FreeSurface(loadedSurf);
-	}
+	this->tex = IMG_LoadTexture(rend, this->path.c_str());
 	SDL_QueryTexture(this->tex, NULL, NULL, &this->w, &this->h);
 	glGenTextures(1, &GLid);
 	log_info("Loaded [%s] texture.", this->path.c_str());
