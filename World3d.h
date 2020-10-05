@@ -22,7 +22,8 @@ public:
 
 class Object3d {
 public:
-	std::vector<float> GLvertexes;
+	float* GLvertexes;
+	size_t GLvertexesCount;
 	glm::vec3 GLpos;
 	glm::vec3 GLrot;
 	float GLscale;
@@ -31,6 +32,7 @@ public:
 	std::string TexturePath;
 	unsigned int VAOv, VBOv;
 	Object3d();
+	~Object3d();
 	bool LoadFromPIE(std::string filepath);
 	void PrepareTextureCoords();
 	void BufferData(unsigned int shader);

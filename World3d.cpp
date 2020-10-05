@@ -10,7 +10,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 Object3d::Object3d() {
-	GLvertexes.clear();
+	GLvertexes = NULL;
 	GLpos = {0.0f, 0.0f, 0.0f};
 	GLrot = {0.0f, 0.0f, 0.0f};
 	GLscale = 1.0f;
@@ -87,26 +87,38 @@ bool Object3d::LoadFromPIE(std::string filepath) {
 	if(ver != 3) {
 		TexCoordFix = 4.0f;
 	}
+	GLvertexesCount = 0;
+	for(int i=0; i<polygons.size(); i++) {
+		GLvertexesCount += polygons[i].pcount * (3 + 2);
+	}
+	GLvertexes = (float*)malloc(GLvertexesCount*sizeof(float));
+	size_t filled = 0;
 	for(unsigned int i=0; i<polygons.size(); i++) {
 		if(polygons[i].pcount != 3) {
 			log_fatal("Polygon converter error!");
 			abort();
 		}
 		for(int j=0; j<polygons[i].pcount; j++) {
-			GLvertexes.push_back(points[polygons[i].porder[j]].x);
-			GLvertexes.push_back(points[polygons[i].porder[j]].y);
-			GLvertexes.push_back(points[polygons[i].porder[j]].z);
-			GLvertexes.push_back(polygons[i].texcoords[j*2+0]*TexCoordFix);
-			GLvertexes.push_back(polygons[i].texcoords[j*2+1]*TexCoordFix);
+			GLvertexes[filled+0] = points[polygons[i].porder[j]].x;
+			GLvertexes[filled+1] = points[polygons[i].porder[j]].y;
+			GLvertexes[filled+2] = points[polygons[i].porder[j]].z;
+			GLvertexes[filled+3] = polygons[i].texcoords[j*2+0]*TexCoordFix;
+			GLvertexes[filled+4] = polygons[i].texcoords[j*2+1]*TexCoordFix;
+			filled += 5;
 		}
 	}
 	fclose(f);
 	return true;
 }
 
+Object3d::~Object3d() {
+	if(GLvertexes)
+		free(GLvertexes);
+}
+
 // Convert texture w/h coords into 0.0f .. 1.0f coords
 void Object3d::PrepareTextureCoords() {
-	for(unsigned int i=0; i<GLvertexes.size()/5; i++) {
+	for(unsigned int i=0; i<GLvertexesCount/5; i++) {
 		GLvertexes[i*5+3] /= this->UsingTexture->w;
 		GLvertexes[i*5+4] /= this->UsingTexture->h;
 	}
@@ -118,10 +130,10 @@ void Object3d::BufferData(unsigned int shader) {
 	glGenBuffers(1, &VBOv);
 	BindVAO();
 	BindVBO();
-	for(int i=0; i<GLvertexes.size(); i+=5) {
+	for(int i=0; i<GLvertexesCount; i+=5) {
 		printf("%f %f %f %f %f\n", GLvertexes[i], GLvertexes[i+1], GLvertexes[i+2], GLvertexes[i+3], GLvertexes[i+4]);
 	}
-	glBufferData(GL_ARRAY_BUFFER, GLvertexes.size(), &GLvertexes, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, GLvertexesCount*sizeof(float), GLvertexes, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(shader, "VertexCoordinates"), 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(glGetAttribLocation(shader, "VertexCoordinates"));
 	glVertexAttribPointer(glGetAttribLocation(shader, "TextureCoordinates"), 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
@@ -150,7 +162,7 @@ void Object3d::Render(unsigned int shader) {
 	BindVAO();
 	BindVBO();
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-	glDrawArrays(GL_TRIANGLES, 0, GLvertexes.size());
+	glDrawArrays(GL_TRIANGLES, 0, GLvertexesCount);
 	glFlush();
 }
 
