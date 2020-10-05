@@ -11,7 +11,7 @@
 
 Object3d::Object3d() {
 	GLvertexes.clear();
-	GLpos = {0.0f, -50.0f, 0.0f};
+	GLpos = {0.0f, 0.0f, 0.0f};
 	GLrot = {0.0f, 0.0f, 0.0f};
 	GLscale = 1.0f;
 	UsingTexture = nullptr;
@@ -83,12 +83,11 @@ bool Object3d::LoadFromPIE(std::string filepath) {
 		}
 		polygons.push_back(newpolygon);
 	}
-	size_t pfillc = 0;
 	float TexCoordFix = 1.0f;
 	if(ver != 3) {
 		TexCoordFix = 4.0f;
 	}
-	for(int i=0; i<polygons.size(); i++) {
+	for(unsigned int i=0; i<polygons.size(); i++) {
 		if(polygons[i].pcount != 3) {
 			log_fatal("Polygon converter error!");
 			abort();
@@ -107,7 +106,7 @@ bool Object3d::LoadFromPIE(std::string filepath) {
 
 // Convert texture w/h coords into 0.0f .. 1.0f coords
 void Object3d::PrepareTextureCoords() {
-	for(int i=0; i<GLvertexes.size()/5; i++) {
+	for(unsigned int i=0; i<GLvertexes.size()/5; i++) {
 		GLvertexes[i*5+3] /= this->UsingTexture->w;
 		GLvertexes[i*5+4] /= this->UsingTexture->h;
 	}
@@ -122,7 +121,7 @@ void Object3d::BufferData(unsigned int shader) {
 	for(int i=0; i<GLvertexes.size(); i+=5) {
 		printf("%f %f %f %f %f\n", GLvertexes[i], GLvertexes[i+1], GLvertexes[i+2], GLvertexes[i+3], GLvertexes[i+4]);
 	}
-	glBufferData(GL_ARRAY_BUFFER, this->GLvertexes.size(), &this->GLvertexes, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, GLvertexes.size(), &GLvertexes, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(shader, "VertexCoordinates"), 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(glGetAttribLocation(shader, "VertexCoordinates"));
 	glVertexAttribPointer(glGetAttribLocation(shader, "TextureCoordinates"), 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
@@ -146,7 +145,7 @@ glm::mat4 Object3d::GetMatrix() {
 
 void Object3d::Render(unsigned int shader) {
 	glUniform1i(glGetUniformLocation(shader, "Texture"), UsingTexture->id);
-	printf("%s\n", glm::to_string(GetMatrix()).c_str());
+	//printf("%s\n", glm::to_string(GetMatrix()).c_str());
 	glUniformMatrix4fv(glGetUniformLocation(shader, "Model"), 1, GL_FALSE, glm::value_ptr(GetMatrix()));
 	BindVAO();
 	BindVBO();

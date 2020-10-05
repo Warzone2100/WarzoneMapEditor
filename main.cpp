@@ -81,10 +81,15 @@ int main(int argc, char** argv) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	Object3d obj;
+	obj.LoadFromPIE(demopieobjectpath);
+	Texture tex;
+	tex.Load(obj.TexturePath, rend);
+	tex.Bind(0);
+	obj.UsingTexture = &tex;
+	obj.PrepareTextureCoords();
 	mshader shad("vertex.vs", "fragment.frag");
-	World3d W;
-	W.Renderer = rend;
-	W.AddObject(demopieobjectpath, shad.program);
+	obj.BufferData(shad.program);
 
 	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), (float) width / (float)height, 0.1f, 100.0f);
 	glm::vec3 cameraPosition(0, 100, 300);
@@ -144,40 +149,67 @@ int main(int argc, char** argv) {
 												ImGuiWindowFlags_NoCollapse |
 												ImGuiWindowFlags_AlwaysAutoResize |
 												ImGuiWindowFlags_NoBackground);
-		if(ImGui::Button("Load object")) {
-			igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".pie", ".");
-		}
-		if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey")) {
-			if (igfd::ImGuiFileDialog::Instance()->IsOk == true) {
-				unsigned long long load_start = SDL_GetTicks();
-				std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilePathName();
-				W.AddObject(filePathName, shad.program);
-				log_info("Object loading complete at %ldms", SDL_GetTicks()-load_start);
-			}
-			igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
-		}
-		W.Objects[0].GLscale += 0.1f;
+		// if(ImGui::Button("Load object")) {
+		// 	igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".pie", ".");
+		// }
+		// if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey")) {
+		// 	if (igfd::ImGuiFileDialog::Instance()->IsOk == true) {
+		// 		unsigned long long load_start = SDL_GetTicks();
+		// 		std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilePathName();
+		// 		std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
+		// 		PIEobject* nobjects = (PIEobject*)realloc(objects, (objectsCount+1)*sizeof(PIEobject));
+		// 		if(nobjects == NULL) {
+		// 			log_fatal("Memeory realloc failed!");
+		// 		}
+		// 		objects = nobjects;
+		// 		objects[objectsCount] = ReadPIE((char*)filePathName.c_str(), rend);
+		// 		PIEreadTexture(&objects[objectsCount], rend);
+		// 		PIEprepareGLarrays(&objects[objectsCount]);
+		// 		unsigned int* ntextures = (unsigned int*)realloc(textures, (objectsCount+1)*sizeof(unsigned int));
+		// 		if(ntextures == NULL) {
+		// 			log_fatal("Memeory realloc failed!");
+		// 		}
+		// 		textures = ntextures;
+		// 		glGenTextures(1, &textures[objectsCount]);
+		// 		glActiveTexture(GL_TEXTURE0+objectsCount);
+		// 		PIEbindTexpage(&objects[objectsCount]);
+		// 		objectsCount++;
+		// 		log_info("Object loading complete at %ldms", SDL_GetTicks()-load_start);
+		// 	}
+		// 	igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
+		// }
+		// ImGui::SliderInt("Object", &editobject, 0, objectsCount-1);
 		ImGui::Checkbox("Textures", &ShowTextures);
 		ImGui::Checkbox("Fps limit", &FPSlimiter);
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 
 		shad.use();
-		cameraRotation.y+=1.0f;
-		View =
-			glm::scale(glm::mat4(1.0), glm::vec3(0.01f)) *
-			glm::translate(glm::mat4(1), -cameraPosition) *
-			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
-			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
-			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.z), glm::vec3(0, 0, 1)) *
-			glm::mat4(1);
-		viewProjection = Projection * View;
 
 		glUniformMatrix4fv(glGetUniformLocation(shad.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
 
-		W.RenderAll(shad.program);
-
-
+		// for(int i=0; i<objectsCount; i++) {
+		// 	glm::vec3 pos = {objects[i].GLpos[0], objects[i].GLpos[1], objects[i].GLpos[2]};
+		// 	auto Model =
+		// 		glm::translate(glm::mat4(1), -pos) *
+		// 		glm::rotate(glm::mat4(1), glm::radians(-objects[i].GLrot[0]), glm::vec3(1, 0, 0)) *
+		// 		glm::rotate(glm::mat4(1), glm::radians(-objects[i].GLrot[1]), glm::vec3(0, 1, 0)) *
+		// 		glm::rotate(glm::mat4(1), glm::radians(-objects[i].GLrot[2]), glm::vec3(0, 0, 1)) *
+		// 		glm::mat4(1);
+		// 	glUniform1i(glGetUniformLocation(shad.program, "Texture"), i);
+		// 	glUniformMatrix4fv(glGetUniformLocation(shad.program, "Model"), 1, GL_FALSE, glm::value_ptr(Model));
+		// 	if(ShowTextures) {
+		// 		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		// 	} else {
+		// 		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		// 	}
+		// 	glBindVertexArray(VAO_vertices[i]);
+		// 	glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices[i]);
+		// 	glDrawArrays(GL_TRIANGLES, 0, objects[i].GLvertexesCount);
+		// 	glFlush();
+		//
+		// }
+		obj.Render(shad.program);
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
