@@ -115,11 +115,7 @@ void Object3d::PrepareTextureCoords() {
 // Makes up buffers and stores arrays
 void Object3d::BufferData(unsigned int shader) {
 	glGenVertexArrays(1, &VAOv);
-	if(VAOv == -1)
-		log_fatal("glGenVertexArrays returned -1");
 	glGenBuffers(1, &VBOv);
-	if(VBOv == -1)
-		log_fatal("glGenBuffers returned -1");
 	BindVAO();
 	BindVBO();
 	glBufferData(GL_ARRAY_BUFFER, this->GLvertexes.size(), &this->GLvertexes, GL_STATIC_DRAW);
