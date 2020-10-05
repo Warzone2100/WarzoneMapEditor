@@ -99,13 +99,15 @@ int main(int argc, char** argv) {
 	auto cameraUpdate = [&] () {
 		viewProjection = glm::perspective(glm::radians(70.0f), (float) width / (float)height, 0.1f, 100.0f) *
 			glm::scale(glm::mat4(1.0), glm::vec3(0.01f)) *
-			glm::translate(glm::mat4(1), -cameraPosition) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.z), glm::vec3(0, 0, 1)) *
+			glm::translate(glm::mat4(1), -cameraPosition) *
 			glm::mat4(1);
 	};
 	cameraUpdate();
+	int CursorTrapWasX, CursorTrapWasY;
+	bool cursorTrapped = false;
 
 	bool r=1;
 	glEnable(GL_DEPTH_TEST);
@@ -120,6 +122,13 @@ int main(int argc, char** argv) {
 				r = 0;
 				break;
 
+				case SDL_MOUSEMOTION:
+				if(cursorTrapped) {
+					cameraRotation.x -= ev.motion.yrel;
+					cameraRotation.y -= ev.motion.xrel;
+				}
+				break;
+
 				case SDL_WINDOWEVENT:
 				if(ev.window.event == SDL_WINDOWEVENT_RESIZED || ev.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
 					width = ev.window.data1;
@@ -130,7 +139,7 @@ int main(int argc, char** argv) {
 				case SDL_KEYDOWN:
 				switch(ev.key.keysym.sym) {
 					case SDLK_ESCAPE:
-					exit(1);
+					r = 0;
 					break;
 					case SDLK_w:
 					cameraVelocity.z = -1;
@@ -138,11 +147,24 @@ int main(int argc, char** argv) {
 					case SDLK_a:
 					cameraVelocity.x = -1;
 					break;
+					case SDLK_e:
+					cameraVelocity.y = 1;
+					break;
 					case SDLK_s:
 					cameraVelocity.z = 1;
 					break;
 					case SDLK_d:
 					cameraVelocity.x = 1;
+					break;
+					case SDLK_q:
+					cameraVelocity.y = -1;
+					break;
+					case SDLK_SPACE:
+					if(!cursorTrapped) {
+						SDL_SetRelativeMouseMode(SDL_TRUE);
+						SDL_GetMouseState(&CursorTrapWasX, &CursorTrapWasY);
+					}
+					cursorTrapped = true;
 					break;
 					default:
 					break;
@@ -156,11 +178,23 @@ int main(int argc, char** argv) {
 					case SDLK_a:
 					cameraVelocity.x = 0;
 					break;
+					case SDLK_e:
+					cameraVelocity.y = 0;
+					break;
 					case SDLK_s:
 					cameraVelocity.z = 0;
 					break;
 					case SDLK_d:
 					cameraVelocity.x = 0;
+					break;
+					case SDLK_q:
+					cameraVelocity.y = 0;
+					break;
+					case SDLK_SPACE:
+					cursorTrapped = false;
+					SDL_SetRelativeMouseMode(SDL_FALSE);
+					SDL_WarpMouseInWindow(window, CursorTrapWasX, CursorTrapWasY);
+					log_info("Cursor restored at %d:%d", CursorTrapWasX, CursorTrapWasY);
 					break;
 					default:
 					break;

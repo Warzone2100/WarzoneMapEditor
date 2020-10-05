@@ -130,9 +130,9 @@ void Object3d::BufferData(unsigned int shader) {
 	glGenBuffers(1, &VBOv);
 	BindVAO();
 	BindVBO();
-	for(int i=0; i<GLvertexesCount; i+=5) {
-		printf("%f %f %f %f %f\n", GLvertexes[i], GLvertexes[i+1], GLvertexes[i+2], GLvertexes[i+3], GLvertexes[i+4]);
-	}
+	// for(int i=0; i<GLvertexesCount; i+=5) {
+	// 	printf("%f %f %f %f %f\n", GLvertexes[i], GLvertexes[i+1], GLvertexes[i+2], GLvertexes[i+3], GLvertexes[i+4]);
+	// }
 	glBufferData(GL_ARRAY_BUFFER, GLvertexesCount*sizeof(float), GLvertexes, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(shader, "VertexCoordinates"), 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(glGetAttribLocation(shader, "VertexCoordinates"));
