@@ -91,20 +91,21 @@ int main(int argc, char** argv) {
 	mshader shad("vertex.vs", "fragment.frag");
 	obj.BufferData(shad.program);
 
-	glm::mat4 Projection = glm::perspective(glm::radians(70.0f), (float) width / (float)height, 0.1f, 100.0f);
 	glm::vec3 cameraPosition(0, 100, 300);
 	glm::vec3 cameraRotation(-45, 0, 0);
-	auto View =
-		glm::scale(glm::mat4(1.0), glm::vec3(0.01f)) *
-		glm::translate(glm::mat4(1), -cameraPosition) *
-		glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
-		glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
-		glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.z), glm::vec3(0, 0, 1)) *
-		glm::mat4(1);
-	auto viewProjection = Projection * View;
-
 	glm::vec3 cameraVelocity = {0, 0, 0};
 	float cameraSpeed = 2.0f;
+	glm::mat4 viewProjection;
+	auto cameraUpdate = [&] () {
+		viewProjection = glm::perspective(glm::radians(70.0f), (float) width / (float)height, 0.1f, 100.0f) *
+			glm::scale(glm::mat4(1.0), glm::vec3(0.01f)) *
+			glm::translate(glm::mat4(1), -cameraPosition) *
+			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
+			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
+			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.z), glm::vec3(0, 0, 1)) *
+			glm::mat4(1);
+	};
+	cameraUpdate();
 
 	bool r=1;
 	glEnable(GL_DEPTH_TEST);
@@ -123,8 +124,7 @@ int main(int argc, char** argv) {
 				if(ev.window.event == SDL_WINDOWEVENT_RESIZED || ev.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
 					width = ev.window.data1;
 					height = ev.window.data2;
-					Projection = glm::perspective(glm::radians(70.0f), (float) width / (float)height, 0.1f, 100.0f);
-					viewProjection = Projection * View;
+					cameraUpdate();
 				}
 				break;
 				case SDL_KEYDOWN:
@@ -171,13 +171,7 @@ int main(int argc, char** argv) {
 		}
 
 		cameraPosition += cameraVelocity*cameraSpeed;
-		View = glm::scale(glm::mat4(1.0), glm::vec3(0.01f)) *
-			glm::translate(glm::mat4(1), -cameraPosition) *
-			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
-			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
-			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.z), glm::vec3(0, 0, 1)) *
-			glm::mat4(1);
-		viewProjection = Projection * View;
+		cameraUpdate();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		ImGui_ImplOpenGL3_NewFrame();
