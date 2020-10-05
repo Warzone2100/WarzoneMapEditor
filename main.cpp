@@ -103,6 +103,9 @@ int main(int argc, char** argv) {
 		glm::mat4(1);
 	auto viewProjection = Projection * View;
 
+	glm::vec3 cameraVelocity = {0, 0, 0};
+	float cameraSpeed = 2.0f;
+
 	bool r=1;
 	glEnable(GL_DEPTH_TEST);
 	SDL_Event ev;
@@ -124,13 +127,57 @@ int main(int argc, char** argv) {
 					viewProjection = Projection * View;
 				}
 				break;
-
 				case SDL_KEYDOWN:
 				switch(ev.key.keysym.sym) {
+					case SDLK_ESCAPE:
+					exit(1);
+					break;
+					case SDLK_w:
+					cameraVelocity.z = -1;
+					break;
+					case SDLK_a:
+					cameraVelocity.x = -1;
+					break;
+					case SDLK_s:
+					cameraVelocity.z = 1;
+					break;
+					case SDLK_d:
+					cameraVelocity.x = 1;
+					break;
+					default:
+					break;
 				}
+				break;
+				case SDL_KEYUP:
+				switch(ev.key.keysym.sym) {
+					case SDLK_w:
+					cameraVelocity.z = 0;
+					break;
+					case SDLK_a:
+					cameraVelocity.x = 0;
+					break;
+					case SDLK_s:
+					cameraVelocity.z = 0;
+					break;
+					case SDLK_d:
+					cameraVelocity.x = 0;
+					break;
+					default:
+					break;
+				}
+				break;
 				break;
 			}
 		}
+
+		cameraPosition += cameraVelocity*cameraSpeed;
+		View = glm::scale(glm::mat4(1.0), glm::vec3(0.01f)) *
+			glm::translate(glm::mat4(1), -cameraPosition) *
+			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
+			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
+			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.z), glm::vec3(0, 0, 1)) *
+			glm::mat4(1);
+		viewProjection = Projection * View;
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		ImGui_ImplOpenGL3_NewFrame();
