@@ -10,7 +10,7 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Install dependencies
-      run: sudo apt-get install libsdl2-dev libopengl-dev libsdl2-image-dev
+      run: sudo apt-get install libsdl2-dev libsdl2-image-dev mesa-common-dev
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
     - name: Configure CMake
