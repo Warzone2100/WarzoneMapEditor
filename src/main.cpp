@@ -95,12 +95,14 @@ int main(int argc, char** argv) {
 	Object3d terrain;
 	{
 		WZmap map;
-		WMT_ReadMap((char*)"./3c-DA-castle-b3wz", &map);
+		// WMT_ReadMap((char*)"./6c-NTW_3v3Full.wz", &map);
+		WMT_ReadMap((char*)"./3c-DA-castle-b3.wz", &map);
+
 		if(!map.valid) {
 			log_error("WMT failed to read map!");
 		} else {
 			terrain.RenderingMode = GL_TRIANGLES;
-			terrain.GLvertexesCount = 64*5*map.maptotaly*map.maptotalx;
+			terrain.GLvertexesCount = (map.maptotaly-1)*(map.maptotalx-1)*2*5;
 			terrain.GLvertexes = (float*)malloc(terrain.GLvertexesCount*sizeof(float));
 			size_t filled = 0;
 			//bool visited[map.maptotaly*map.maptotalx] = {false};
@@ -125,25 +127,30 @@ int main(int argc, char** argv) {
 				filled+=5;
 			};
 			int scale = 32;
-			for(unsigned int y=0; y<map.maptotaly; y+=1) {
-				for(unsigned int x=0; x<map.maptotalx; x+=1) {
-					if(y>0 && x>0 && y<map.maptotaly-1 && x<map.maptotalx-1) {
-						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
-									x,   map.mapheight[(y-1)*map.maptotalx+x]/scale, y-1,
-									x-1, map.mapheight[y*map.maptotalx+(x-1)]/scale, y);
-						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
-									x,   map.mapheight[(y-1)*map.maptotalx+x]/scale, y-1,
-									x+1, map.mapheight[y*map.maptotalx+(x+1)]/scale, y);
-						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
-									x,   map.mapheight[(y+1)*map.maptotalx+x]/scale, y+1,
-									x-1, map.mapheight[y*map.maptotalx+(x-1)]/scale, y);
+			for(unsigned int y=0; y<map.maptotaly-1; y++) {
+				for(unsigned int x=0; x<map.maptotalx-1; x++) {
+					if(WMT_TileGetTriFlip(map.maptile[y*map.maptotalx+x])) {
+						printf("Y");
 						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
 									x,   map.mapheight[(y+1)*map.maptotalx+x]/scale, y+1,
 									x+1, map.mapheight[y*map.maptotalx+(x+1)]/scale, y);
+						addTriangle(x+1,   map.mapheight[y*map.maptotalx+(x+1)]/scale,     y,
+									x+1,   map.mapheight[(y+1)*map.maptotalx+(x+1)]/scale, y+1,
+									x, map.mapheight[(y+1)*map.maptotalx+x]/scale, y+1);
+					} else {
+						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
+									x,   map.mapheight[(y+1)*map.maptotalx+x]/scale, y+1,
+									x+1, map.mapheight[(y+1)*map.maptotalx+(x+1)]/scale, y+1);
+						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
+									x+1,   map.mapheight[y*map.maptotalx+(x+1)]/scale, y,
+									x+1, map.mapheight[(y+1)*map.maptotalx+(x+1)]/scale, y+1);
+						printf("N");
 					}
 				}
+				printf("\n");
 			}
 			terrain.BufferData(shad.program);
+			terrain.FillTextures = false;
 		}
 	}
 	obj.BufferData(shad.program);
