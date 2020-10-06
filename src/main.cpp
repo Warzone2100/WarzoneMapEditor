@@ -164,8 +164,10 @@ int main(int argc, char** argv) {
 	glm::ivec2 cameraMapPosition;
 
 	auto cameraUpdate = [&] () {
-		cameraMapPosition.x = cameraPosition.x < 0 ? 0 : cameraPosition.x / 128;
-		cameraMapPosition.y = cameraPosition.z < 0 ? 0 : cameraPosition.z / 128;
+		// TODO: replace / 128 with << 7 perhaps?
+		cameraMapPosition.x = cameraPosition.x < 0 ? 0 : cameraPosition.x / 128; // TODO: clamp inside mapWidth
+		cameraMapPosition.y = cameraPosition.z < 0 ? 0 : cameraPosition.z / 128; // TODO: clamp inside mapHeight
+
 		printf("Map position: (%i, %i)\n", cameraMapPosition.x, cameraMapPosition.y);
 		viewProjection = glm::perspective(glm::radians(65.0f), (float) width / (float)height, 300.0f, 100000.0f) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
