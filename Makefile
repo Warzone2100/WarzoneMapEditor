@@ -1,47 +1,45 @@
 .PHONY: all clean
 
 CC = g++
-CFLAGS = -Wall -ggdb -Iglad/include/ -Iimgui/
-LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lGL -lGLU -lglfw -lpng -ldl -lGLEW -L.
+CFLAGS = -Wall -ggdb -Ilib/WMT/lib/ -Ilib/glad/include/ -Ilib/imgui/ -Ilib/ -Isrc/
+LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lGL -lGLU -lglfw -lpng -ldl -lGLEW
 
 all: main
 
-main: main.o log.o myshader.o glad.o pie.o imgui.o imgui_draw.o imgui_widgets.o imgui_impl_opengl3.o imgui_impl_sdl.o imgui_demo.o wmt.o zip.o imgui_file_dialog.o World3d.o
+main: lib/WMT/lib/wmt.o lib/WMT/lib/zip.o lib/imgui/imgui_file_dialog.o lib/imgui/imgui_impl_sdl.o lib/imgui/imgui_impl_opengl3.o lib/imgui/imgui_widgets.o lib/imgui/imgui_draw.o lib/imgui/imgui.o lib/glad/src/glad.o src/World3d.o src/myshader.o lib/log.o src/pie.o src/main.o
 	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
 
-main.o: main.cpp log.o imgui.o
+src/main.o: src/main.cpp
 	$(CC) $< -c -o $@ $(CFLAGS)
-pie.o: pie.c pie.h log.o
+src/pie.o: src/pie.cpp src/pie.h
 	$(CC) $< -c -o $@ $(CFLAGS)
-log.o: log.cpp log.hpp
+lib/log.o: lib/log.cpp lib/log.hpp
 	$(CC) -DLOG_USE_COLOR $< -c -o $@ $(CFLAGS)
-myshader.o: myshader.c myshader.h
+src/myshader.o: src/myshader.cpp src/myshader.h
 	$(CC) $< -c -o $@ $(CFLAGS)
-World3d.o: World3d.cpp World3d.h
+src/World3d.o: src/World3d.cpp src/World3d.h
 	$(CC) $< -c -o $@ $(CFLAGS)
 
-glad.o: glad/src/glad.c
+lib/glad/src/glad.o: lib/glad/src/glad.c
 	$(CC) $< -c -o $@ $(CFLAGS)
-imgui.o: imgui/imgui.cpp
+lib/imgui/imgui.o: lib/imgui/imgui.cpp
 	$(CC) $< -c -o $@ $(CFLAGS)
-imgui_draw.o: imgui/imgui_draw.cpp
+lib/imgui/imgui_draw.o: lib/imgui/imgui_draw.cpp
 	$(CC) $< -c -o $@ $(CFLAGS)
-imgui_widgets.o: imgui/imgui_widgets.cpp
+lib/imgui/imgui_widgets.o: lib/imgui/imgui_widgets.cpp
 	$(CC) $< -c -o $@ $(CFLAGS)
-imgui_impl_opengl3.o: imgui/imgui_impl_opengl3.cpp
+lib/imgui/imgui_impl_opengl3.o: lib/imgui/imgui_impl_opengl3.cpp
 	$(CC) $< -DIMGUI_IMPL_OPENGL_LOADER_GLAD -c -o $@ $(CFLAGS)
-imgui_impl_sdl.o: imgui/imgui_impl_sdl.cpp
-	$(CC) $< -c -o $@ $(CFLAGS)
-imgui_demo.o: imgui/imgui_demo.cpp
+lib/imgui/imgui_impl_sdl.o: lib/imgui/imgui_impl_sdl.cpp
 	$(CC) $< -c -o $@ $(CFLAGS)
 
-imgui_file_dialog.o: imgui/ImGuiFileDialog.cpp
+lib/imgui/imgui_file_dialog.o: lib/imgui/ImGuiFileDialog.cpp
 	$(CC) $< -c -o $@ $(CFLAGS)
 
-zip.o: WMT/lib/zip.cpp WMT/lib/zip.hpp
+lib/WMT/lib/zip.o: lib/WMT/lib/zip.cpp lib/WMT/lib/zip.hpp
 	$(CC) $< -o $@ -c
-wmt.o: WMT/lib/wmt.cpp WMT/lib/wmt.hpp
+lib/WMT/lib/wmt.o: lib/WMT/lib/wmt.cpp lib/WMT/lib/wmt.hpp
 	$(CC) $< -o $@ -c -std=c++17 -D_NOLOGBUILD
 
 clean:
-	$(RM) main main.o log.o myshader.o glad.o pie.o imgui.o imgui_draw.o imgui_widgets.o imgui_impl_opengl3.o imgui_impl_sdl.o imgui_demo.o wmt.o zip.o imgui_file_dialog.o World3d.o
+	$(RM) main lib/WMT/lib/wmt.o lib/WMT/lib/zip.o lib/imgui/imgui_file_dialog.o lib/imgui/imgui_impl_sdl.o lib/imgui/imgui_impl_opengl3.o lib/imgui/imgui_widgets.o lib/imgui/imgui_draw.o lib/imgui/imgui.o lib/glad/src/glad.o src/World3d.o src/myshader.o lib/log.o src/pie.o src/main.o
