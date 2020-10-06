@@ -83,12 +83,31 @@ int main(int argc, char** argv) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	WZmap map;
-	WMT_ReadMap("./3c-DA-castle-b3wz", &map);
-	Object3d terrain;
 
-
-
+	// Object3d terrain;
+	// {
+	// 	WZmap map;
+	// 	WMT_ReadMap((char*)"./3c-DA-castle-b3wz", &map);
+	// 	if(!map.valid) {
+	// 		log_error("WMT failed to read map!");
+	// 	} else {
+	// 		terrain.RenderingMode = GL_POINTS;
+	// 		terrain.GLvertexesCount = 5*map.maptotaly*map.maptotalx;
+	// 		terrain.GLvertexes = (float*)malloc(terrain.GLvertexesCount*sizeof(float));
+	// 		size_t filled = 0;
+	// 		for(unsigned int y=0; y<map.maptotaly; y++) {
+	// 			for(unsigned int x=0; x<map.maptotalx; x++) {
+	// 				terrain.GLvertexes[filled+0] = y*128;
+	// 				terrain.GLvertexes[filled+1] = map.mapheight[y*map.maptotaly+x]*128;
+	// 				terrain.GLvertexes[filled+2] = x;
+	// 				terrain.GLvertexes[filled+3] = 0.0f;
+	// 				terrain.GLvertexes[filled+4] = 0.0f;
+	// 				filled+=5;
+	// 			}
+	// 		}
+	// 		terrain.BufferData(shad.program);
+	// 	}
+	// }
 	Object3d obj;
 	obj.LoadFromPIE(demopieobjectpath);
 	Texture tex;
@@ -222,7 +241,6 @@ int main(int argc, char** argv) {
 
 		static bool show_window = true;
 		static bool ShowTextures = true;
-		static int editobject = 0;
 		static bool FPSlimiter = true;
 		ImGui::SetNextWindowPos({0, 0}, 1);
 		ImGui::Begin("##bmain", &show_window,   ImGuiWindowFlags_NoMove |
@@ -293,6 +311,7 @@ int main(int argc, char** argv) {
 		//
 		// }
 		obj.Render(shad.program);
+		//terrain.Render(shad.program);
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

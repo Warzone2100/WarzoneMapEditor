@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include <SDL2/SDL.h>
+#include "glad/glad.h"
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -31,6 +33,7 @@ public:
 	bool Visible;
 	std::string TexturePath;
 	unsigned int VAOv, VBOv;
+	int RenderingMode = GL_TRIANGLES;
 	Object3d();
 	~Object3d();
 	bool LoadFromPIE(std::string filepath);

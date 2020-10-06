@@ -88,7 +88,7 @@ bool Object3d::LoadFromPIE(std::string filepath) {
 		TexCoordFix = 4.0f;
 	}
 	GLvertexesCount = 0;
-	for(int i=0; i<polygons.size(); i++) {
+	for(long unsigned int i=0; i<polygons.size(); i++) {
 		GLvertexesCount += polygons[i].pcount * (3 + 2);
 	}
 	GLvertexes = (float*)malloc(GLvertexesCount*sizeof(float));
@@ -164,7 +164,7 @@ void Object3d::Render(unsigned int shader) {
 	BindVAO();
 	BindVBO();
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-	glDrawArrays(GL_TRIANGLES, 0, GLvertexesCount);
+	glDrawArrays(RenderingMode, 0, GLvertexesCount);
 	glFlush();
 }
 
@@ -191,7 +191,7 @@ void Texture::Bind(int texid) {
 
 // Search in textures, maybe we already loaded it...
 Texture* World3d::GetTexture(std::string filepath) {
-	for(int i=0; i<Textures.size(); i++) {
+	for(long unsigned int i=0; i<Textures.size(); i++) {
 		if(Textures[i].valid && Textures[i].path == filepath) {
 			return &Textures[i];
 		}
