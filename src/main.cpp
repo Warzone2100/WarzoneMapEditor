@@ -107,21 +107,22 @@ int main(int argc, char** argv) {
 			size_t filled = 0;
 			//bool visited[map.maptotaly*map.maptotalx] = {false};
 			auto addTriangle = [&] (int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
-				terrain.GLvertexes[filled+0] = x1;
-				terrain.GLvertexes[filled+1] = y1;
-				terrain.GLvertexes[filled+2] = z1;
+				const float scale = 128.0f; // bake value into array
+				terrain.GLvertexes[filled+0] = x1 * scale;
+				terrain.GLvertexes[filled+1] = y1 * scale;
+				terrain.GLvertexes[filled+2] = z1 * scale;
 				terrain.GLvertexes[filled+3] = 0;
 				terrain.GLvertexes[filled+4] = 0;
 				filled+=5;
-				terrain.GLvertexes[filled+0] = x2;
-				terrain.GLvertexes[filled+1] = y2;
-				terrain.GLvertexes[filled+2] = z2;
+				terrain.GLvertexes[filled+0] = x2 * scale;
+				terrain.GLvertexes[filled+1] = y2 * scale;
+				terrain.GLvertexes[filled+2] = z2 * scale;
 				terrain.GLvertexes[filled+3] = 0;
 				terrain.GLvertexes[filled+4] = 0;
 				filled+=5;
-				terrain.GLvertexes[filled+0] = x3;
-				terrain.GLvertexes[filled+1] = y3;
-				terrain.GLvertexes[filled+2] = z3;
+				terrain.GLvertexes[filled+0] = x3 * scale;
+				terrain.GLvertexes[filled+1] = y3 * scale;
+				terrain.GLvertexes[filled+2] = z3 * scale;
 				terrain.GLvertexes[filled+3] = 0;
 				terrain.GLvertexes[filled+4] = 0;
 				filled+=5;
@@ -155,7 +156,7 @@ int main(int argc, char** argv) {
 	}
 	obj.BufferData(shad.program);
 
-	glm::vec3 cameraPosition(0, 100, 300);
+	glm::vec3 cameraPosition(0, 2000, 1000);
 	glm::vec3 cameraRotation(-45, 0, 0);
 	glm::vec3 cameraVelocity = {0, 0, 0};
 	float cameraSpeed = 2.0f;
