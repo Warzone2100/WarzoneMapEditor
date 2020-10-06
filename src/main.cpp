@@ -161,7 +161,12 @@ int main(int argc, char** argv) {
 	glm::vec3 cameraVelocity = {0, 0, 0};
 	float cameraSpeed = 2.0f;
 	glm::mat4 viewProjection;
+	glm::ivec2 cameraMapPosition;
+
 	auto cameraUpdate = [&] () {
+		cameraMapPosition.x = cameraPosition.x < 0 ? 0 : cameraPosition.x / 128;
+		cameraMapPosition.y = cameraPosition.z < 0 ? 0 : cameraPosition.z / 128;
+		printf("Map position: (%i, %i)\n", cameraMapPosition.x, cameraMapPosition.y);
 		viewProjection = glm::perspective(glm::radians(65.0f), (float) width / (float)height, 300.0f, 100000.0f) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
@@ -190,6 +195,7 @@ int main(int argc, char** argv) {
 				if(cursorTrapped) {
 					cameraRotation.x -= ev.motion.yrel/2;
 					cameraRotation.y -= ev.motion.xrel/2;
+					cameraUpdate();
 				}
 				break;
 
@@ -268,8 +274,10 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		cameraPosition += cameraVelocity*cameraSpeed;
-		cameraUpdate();
+		if(cameraVelocity.x != 0 || cameraVelocity.y != 0 || cameraVelocity.z != 0){
+			cameraPosition += cameraVelocity*cameraSpeed;
+			cameraUpdate();
+		}
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		ImGui_ImplOpenGL3_NewFrame();
