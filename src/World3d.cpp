@@ -112,8 +112,10 @@ bool Object3d::LoadFromPIE(std::string filepath) {
 }
 
 Object3d::~Object3d() {
-	if(GLvertexes)
+	if(GLvertexes) {
 		free(GLvertexes);
+		GLvertexesCount = 0;
+	}
 }
 
 // Convert texture w/h coords into 0.0f .. 1.0f coords
