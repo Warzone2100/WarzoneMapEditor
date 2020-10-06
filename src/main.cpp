@@ -84,30 +84,6 @@ int main(int argc, char** argv) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
-	// Object3d terrain;
-	// {
-	// 	WZmap map;
-	// 	WMT_ReadMap((char*)"./3c-DA-castle-b3wz", &map);
-	// 	if(!map.valid) {
-	// 		log_error("WMT failed to read map!");
-	// 	} else {
-	// 		terrain.RenderingMode = GL_POINTS;
-	// 		terrain.GLvertexesCount = 5*map.maptotaly*map.maptotalx;
-	// 		terrain.GLvertexes = (float*)malloc(terrain.GLvertexesCount*sizeof(float));
-	// 		size_t filled = 0;
-	// 		for(unsigned int y=0; y<map.maptotaly; y++) {
-	// 			for(unsigned int x=0; x<map.maptotalx; x++) {
-	// 				terrain.GLvertexes[filled+0] = y*128;
-	// 				terrain.GLvertexes[filled+1] = map.mapheight[y*map.maptotaly+x]*128;
-	// 				terrain.GLvertexes[filled+2] = x;
-	// 				terrain.GLvertexes[filled+3] = 0.0f;
-	// 				terrain.GLvertexes[filled+4] = 0.0f;
-	// 				filled+=5;
-	// 			}
-	// 		}
-	// 		terrain.BufferData(shad.program);
-	// 	}
-	// }
 	Object3d obj;
 	obj.LoadFromPIE(demopieobjectpath);
 	Texture tex;
@@ -116,6 +92,60 @@ int main(int argc, char** argv) {
 	obj.UsingTexture = &tex;
 	obj.PrepareTextureCoords();
 	mshader shad("vertex.vs", "fragment.frag");
+	Object3d terrain;
+	{
+		WZmap map;
+		WMT_ReadMap((char*)"./3c-DA-castle-b3wz", &map);
+		if(!map.valid) {
+			log_error("WMT failed to read map!");
+		} else {
+			terrain.RenderingMode = GL_TRIANGLES;
+			terrain.GLvertexesCount = 64*5*map.maptotaly*map.maptotalx;
+			terrain.GLvertexes = (float*)malloc(terrain.GLvertexesCount*sizeof(float));
+			size_t filled = 0;
+			bool visited[map.maptotaly*map.maptotalx] = {false};
+			auto addTriangle = [&] (int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
+				terrain.GLvertexes[filled+0] = x1;
+				terrain.GLvertexes[filled+1] = y1;
+				terrain.GLvertexes[filled+2] = z1;
+				terrain.GLvertexes[filled+3] = 0.0f;
+				terrain.GLvertexes[filled+4] = 0.0f;
+				filled+=5;
+				terrain.GLvertexes[filled+0] = x2;
+				terrain.GLvertexes[filled+1] = y2;
+				terrain.GLvertexes[filled+2] = z2;
+				terrain.GLvertexes[filled+3] = 0.0f;
+				terrain.GLvertexes[filled+4] = 0.0f;
+				filled+=5;
+				terrain.GLvertexes[filled+0] = x3;
+				terrain.GLvertexes[filled+1] = y3;
+				terrain.GLvertexes[filled+2] = z3;
+				terrain.GLvertexes[filled+3] = 0.0f;
+				terrain.GLvertexes[filled+4] = 0.0f;
+				filled+=5;
+			};
+			int scale = 32;
+			for(unsigned int y=0; y<map.maptotaly; y+=1) {
+				for(unsigned int x=0; x<map.maptotalx; x+=1) {
+					if(y>0 && x>0 && y<map.maptotaly-1 && x<map.maptotalx-1) {
+						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
+									x,   map.mapheight[(y-1)*map.maptotalx+x]/scale, y-1,
+									x-1, map.mapheight[y*map.maptotalx+(x-1)]/scale, y);
+						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
+									x,   map.mapheight[(y-1)*map.maptotalx+x]/scale, y-1,
+									x+1, map.mapheight[y*map.maptotalx+(x+1)]/scale, y);
+						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
+									x,   map.mapheight[(y+1)*map.maptotalx+x]/scale, y+1,
+									x-1, map.mapheight[y*map.maptotalx+(x-1)]/scale, y);
+						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
+									x,   map.mapheight[(y+1)*map.maptotalx+x]/scale, y+1,
+									x+1, map.mapheight[y*map.maptotalx+(x+1)]/scale, y);
+					}
+				}
+			}
+			terrain.BufferData(shad.program);
+		}
+	}
 	obj.BufferData(shad.program);
 
 	glm::vec3 cameraPosition(0, 100, 300);
@@ -311,7 +341,7 @@ int main(int argc, char** argv) {
 		//
 		// }
 		obj.Render(shad.program);
-		//terrain.Render(shad.program);
+		terrain.Render(shad.program);
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
