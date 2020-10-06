@@ -162,8 +162,7 @@ int main(int argc, char** argv) {
 	float cameraSpeed = 2.0f;
 	glm::mat4 viewProjection;
 	auto cameraUpdate = [&] () {
-		viewProjection = glm::perspective(glm::radians(65.0f), (float) width / (float)height, 0.1f, 100.0f) *
-			glm::scale(glm::mat4(1.0), glm::vec3(0.01f)) *
+		viewProjection = glm::perspective(glm::radians(65.0f), (float) width / (float)height, 300.0f, 100000.0f) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.z), glm::vec3(0, 0, 1)) *
