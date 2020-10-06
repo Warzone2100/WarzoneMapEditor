@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
 			log_error("WMT failed to read map!");
 		} else {
 			terrain.RenderingMode = GL_TRIANGLES;
-			terrain.GLvertexesCount = (map.maptotaly-1)*(map.maptotalx-1)*2*5;
+			terrain.GLvertexesCount = (map.maptotaly-1)*(map.maptotalx-1)*2*3*5;
 			terrain.GLvertexes = (float*)malloc(terrain.GLvertexesCount*sizeof(float));
 			size_t filled = 0;
 			//bool visited[map.maptotaly*map.maptotalx] = {false};
