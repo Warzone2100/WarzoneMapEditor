@@ -156,7 +156,9 @@ glm::mat4 Object3d::GetMatrix() {
 }
 
 void Object3d::Render(unsigned int shader) {
-	glUniform1i(glGetUniformLocation(shader, "Texture"), UsingTexture->id);
+	if(UsingTexture != nullptr) {
+		glUniform1i(glGetUniformLocation(shader, "Texture"), UsingTexture->id);
+	}
 	//printf("%s\n", glm::to_string(GetMatrix()).c_str());
 	glUniformMatrix4fv(glGetUniformLocation(shader, "Model"), 1, GL_FALSE, glm::value_ptr(GetMatrix()));
 	BindVAO();
