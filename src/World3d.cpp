@@ -165,7 +165,11 @@ void Object3d::Render(unsigned int shader) {
 	glUniformMatrix4fv(glGetUniformLocation(shader, "Model"), 1, GL_FALSE, glm::value_ptr(GetMatrix()));
 	BindVAO();
 	BindVBO();
-	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+	if(FillTextures) {
+		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+	} else {
+		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+	}
 	glDrawArrays(RenderingMode, 0, GLvertexesCount);
 	glFlush();
 }

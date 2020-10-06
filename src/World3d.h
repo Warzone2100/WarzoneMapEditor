@@ -34,6 +34,7 @@ public:
 	std::string TexturePath;
 	unsigned int VAOv, VBOv;
 	int RenderingMode = GL_TRIANGLES;
+	bool FillTextures = true;
 	Object3d();
 	~Object3d();
 	bool LoadFromPIE(std::string filepath);

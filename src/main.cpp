@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
 			terrain.GLvertexesCount = 64*5*map.maptotaly*map.maptotalx;
 			terrain.GLvertexes = (float*)malloc(terrain.GLvertexesCount*sizeof(float));
 			size_t filled = 0;
-			bool visited[map.maptotaly*map.maptotalx] = {false};
+			//bool visited[map.maptotaly*map.maptotalx] = {false};
 			auto addTriangle = [&] (int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
 				terrain.GLvertexes[filled+0] = x1;
 				terrain.GLvertexes[filled+1] = y1;
