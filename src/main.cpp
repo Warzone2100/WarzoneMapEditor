@@ -30,6 +30,12 @@ int height = 480;
 const char* demopieobjectpath = "./blbrbgen.pie";
 const char* demopieobjectpath2 = "./vtolfactory_module1.pie";
 
+
+/* The shift on a world coordinate to get the tile coordinate */
+#define TILE_SHIFT 7
+static inline int32_t world_coord(int32_t mapCoord) { return (uint32_t)mapCoord << TILE_SHIFT; }
+static inline int32_t map_coord(int32_t worldCoord) { return worldCoord >> TILE_SHIFT; }
+
 int main(int argc, char** argv) {
 	time_t t;
 	srand((unsigned) time(&t));
@@ -107,22 +113,21 @@ int main(int argc, char** argv) {
 			size_t filled = 0;
 			//bool visited[map.maptotaly*map.maptotalx] = {false};
 			auto addTriangle = [&] (int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
-				const float scale = 128.0f; // bake value into array
-				terrain.GLvertexes[filled+0] = x1 * scale;
-				terrain.GLvertexes[filled+1] = y1 * scale;
-				terrain.GLvertexes[filled+2] = z1 * scale;
+				terrain.GLvertexes[filled+0] = world_coord(x1);
+				terrain.GLvertexes[filled+1] = world_coord(y1);
+				terrain.GLvertexes[filled+2] = world_coord(z1);
 				terrain.GLvertexes[filled+3] = 0;
 				terrain.GLvertexes[filled+4] = 0;
 				filled+=5;
-				terrain.GLvertexes[filled+0] = x2 * scale;
-				terrain.GLvertexes[filled+1] = y2 * scale;
-				terrain.GLvertexes[filled+2] = z2 * scale;
+				terrain.GLvertexes[filled+0] = world_coord(x2);
+				terrain.GLvertexes[filled+1] = world_coord(y2);
+				terrain.GLvertexes[filled+2] = world_coord(z2);
 				terrain.GLvertexes[filled+3] = 0;
 				terrain.GLvertexes[filled+4] = 0;
 				filled+=5;
-				terrain.GLvertexes[filled+0] = x3 * scale;
-				terrain.GLvertexes[filled+1] = y3 * scale;
-				terrain.GLvertexes[filled+2] = z3 * scale;
+				terrain.GLvertexes[filled+0] = world_coord(x3);
+				terrain.GLvertexes[filled+1] = world_coord(y3);
+				terrain.GLvertexes[filled+2] = world_coord(z3);
 				terrain.GLvertexes[filled+3] = 0;
 				terrain.GLvertexes[filled+4] = 0;
 				filled+=5;
@@ -156,6 +161,9 @@ int main(int argc, char** argv) {
 	}
 	obj.BufferData(shad.program);
 
+	const int VISIBLE_TILES = 4;
+	glm::ivec3 screenCoordinatesOfVisibleTiles[VISIBLE_TILES][VISIBLE_TILES];
+
 	glm::vec3 cameraPosition(0, 2000, 1000);
 	glm::vec3 cameraRotation(-45, 0, 0);
 	glm::vec3 cameraVelocity = {0, 0, 0};
@@ -164,9 +172,36 @@ int main(int argc, char** argv) {
 	glm::ivec2 cameraMapPosition;
 
 	auto cameraUpdate = [&] () {
-		// TODO: replace / 128 with << 7 perhaps?
-		cameraMapPosition.x = cameraPosition.x < 0 ? 0 : cameraPosition.x / 128; // TODO: clamp inside mapWidth
-		cameraMapPosition.y = cameraPosition.z < 0 ? 0 : cameraPosition.z / 128; // TODO: clamp inside mapHeight
+		cameraMapPosition.x = glm::clamp((int)(map_coord(cameraPosition.x)), 0, 10000); // TODO: clamp inside mapWidth
+		cameraMapPosition.y = glm::clamp((int)(map_coord(cameraPosition.z)), 0, 10000); // TODO: clamp inside mapHeight
+
+		for(int y = 0; y < VISIBLE_TILES; y++){
+			for(int x = 0; x < VISIBLE_TILES; x++){
+				int mapX = cameraMapPosition.x - VISIBLE_TILES / 2 + x;
+				int mapY = cameraMapPosition.y - VISIBLE_TILES / 2 + y;
+				int realX = world_coord(mapX);
+				int realY = world_coord(mapY);
+
+				int height = 1;
+				
+				auto projectedPosition = glm::vec4(viewProjection * glm::vec4(realX, height, realY, 1.f));
+
+				const float xx = projectedPosition.x / projectedPosition.w;
+				const float yy = projectedPosition.y / projectedPosition.w;
+
+				int screenX = (.5 + .5 * xx) * width;
+				int screenY = (.5 - .5 * yy) * height;
+				int screenZ = projectedPosition.w;
+
+				if(x >= 0 && y >= 0){
+					printf("[%i, %i] map (%i, %i) world (%i, %i, %i) projected (%i, %i) screen coord: (%i, %i)\n", x, y, mapX, mapY, realX, realY, height, (int)projectedPosition.x, (int)projectedPosition.y, screenX, screenY);
+				}
+
+				screenCoordinatesOfVisibleTiles[y][x].x = screenX;
+				screenCoordinatesOfVisibleTiles[y][x].y = screenY;
+				screenCoordinatesOfVisibleTiles[y][x].z = screenZ;
+			}
+		}
 
 		printf("Map position: (%i, %i)\n", cameraMapPosition.x, cameraMapPosition.y);
 		viewProjection = glm::perspective(glm::radians(65.0f), (float) width / (float)height, 300.0f, 100000.0f) *
