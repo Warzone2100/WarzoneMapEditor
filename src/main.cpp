@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
 				int screenZ = projectedPosition.w;
 
 				if(x >= 0 && y >= 0){
-					printf("[%i, %i] map (%i, %i) world (%i, %i, %i) projected (%i, %i) screen coord: (%i, %i)\n", x, y, mapX, mapY, realX, realY, height, (int)projectedPosition.x, (int)projectedPosition.y, screenX, screenY);
+					printf("[%i, %i] map (%i, %i) world (%i, %i, %i) projected (%i, %i) screen coord: (%i, %i, %i)\n", x, y, mapX, mapY, realX, realY, height, (int)projectedPosition.x, (int)projectedPosition.y, screenX, screenY, screenZ);
 				}
 
 				screenCoordinatesOfVisibleTiles[y][x].x = screenX;
