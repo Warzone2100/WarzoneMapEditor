@@ -93,13 +93,14 @@ int main(int argc, char** argv) {
 	obj.UsingTexture = &tex;
 	obj.PrepareTextureCoords();
 	mshader shad("vertex.vs", "fragment.frag");
+	mshader shad2("vertex.vs", "fragment.frag");
 	Terrain ter;
 	WZmap map;
 	// WMT_ReadMap((char*)"./6c-NTW_3v3Full.wz", &map);
 	WMT_ReadMap((char*)"./3c-DA-castle-b3.wz", &map);
 	ter.GetHeightmapFromMWT(&map);
 	ter.BufferData(shad.program);
-	obj.BufferData(shad.program);
+	obj.BufferData(shad2.program);
 
 	glm::vec3 cameraPosition(0, 2000, 1000);
 	glm::vec3 cameraRotation(-45, 0, 0);
@@ -126,7 +127,6 @@ int main(int argc, char** argv) {
 		// 	}
 		// }
 		// printf("position of %i, %i, %i : %i, %i (%i)\n", 0, 0, ter.tileHeight[0][0], tileScreenCoords[0][0].x, tileScreenCoords[0][0].y, tileScreenCoords[0][0].z);
-
 
 		viewProjection = glm::perspective(glm::radians(65.0f), (float) width / (float)height, 300.0f, 100000.0f) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
@@ -317,7 +317,9 @@ int main(int argc, char** argv) {
 		//
 		// }
 		obj.Render(shad.program);
-		ter.Render(shad.program);
+		shad2.use();
+		glUniformMatrix4fv(glGetUniformLocation(shad2.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
+		ter.Render(shad2.program);
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
