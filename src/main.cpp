@@ -98,6 +98,9 @@ int main(int argc, char** argv) {
 	obj.UsingTexture = &tex;
 	obj.PrepareTextureCoords();
 	mshader shad("vertex.vs", "fragment.frag");
+	int mapWidth;
+	int mapHeight;
+	int tileHeight[256][256];
 	Object3d terrain;
 	{
 		WZmap map;
@@ -107,6 +110,8 @@ int main(int argc, char** argv) {
 		if(!map.valid) {
 			log_error("WMT failed to read map!");
 		} else {
+			mapWidth = map.maptotalx;
+			mapHeight = map.maptotaly;
 			terrain.RenderingMode = GL_TRIANGLES;
 			terrain.GLvertexesCount = (map.maptotaly-1)*(map.maptotalx-1)*2*3*5;
 			terrain.GLvertexes = (float*)malloc(terrain.GLvertexesCount*sizeof(float));
@@ -135,6 +140,7 @@ int main(int argc, char** argv) {
 			int scale = 32;
 			for(unsigned int y=0; y<map.maptotaly-1; y++) {
 				for(unsigned int x=0; x<map.maptotalx-1; x++) {
+					tileHeight[x][y] = map.mapheight[y*map.maptotalx+x]/scale;
 					if(WMT_TileGetTriFlip(map.maptile[y*map.maptotalx+x])) {
 						printf("Y");
 						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
@@ -161,9 +167,6 @@ int main(int argc, char** argv) {
 	}
 	obj.BufferData(shad.program);
 
-	const int VISIBLE_TILES = 4;
-	glm::ivec3 screenCoordinatesOfVisibleTiles[VISIBLE_TILES][VISIBLE_TILES];
-
 	glm::vec3 cameraPosition(0, 2000, 1000);
 	glm::vec3 cameraRotation(-45, 0, 0);
 	glm::vec3 cameraVelocity = {0, 0, 0};
@@ -171,24 +174,26 @@ int main(int argc, char** argv) {
 	glm::mat4 viewProjection;
 	glm::ivec2 cameraMapPosition;
 
+	glm::ivec3 tileScreenCoords[256][256];
+
 	auto cameraUpdate = [&] () {
-		cameraMapPosition.x = glm::clamp((int)(map_coord(cameraPosition.x)), 0, 10000); // TODO: clamp inside mapWidth
-		cameraMapPosition.y = glm::clamp((int)(map_coord(cameraPosition.z)), 0, 10000); // TODO: clamp inside mapHeight
+		cameraMapPosition.x = glm::clamp((int)(map_coord(cameraPosition.x)), 0, mapWidth);
+		cameraMapPosition.y = glm::clamp((int)(map_coord(cameraPosition.z)), 0, mapHeight);
 
-		auto projectedPosition = glm::vec4(viewProjection * glm::vec4(0, 0, 0, 1.f));
-		const float xx = projectedPosition.x / projectedPosition.w;
-		const float yy = projectedPosition.y / projectedPosition.w;
-		int screenX = (.5 + .5 * xx) * width;
-		int screenY = (.5 - .5 * yy) * height;
-		int screenZ = projectedPosition.w;
+		for(int y = 0; y < mapHeight; y++) {
+			for(int x = 0; x < mapWidth; x++) {
+				auto projectedPosition = glm::vec4(viewProjection * glm::vec4(world_coord(x), world_coord(tileHeight[y][x]), world_coord(y), 1.f));
+				const float xx = projectedPosition.x / projectedPosition.w;
+				const float yy = projectedPosition.y / projectedPosition.w;
+				int screenX = (.5 + .5 * xx) * width;
+				int screenY = (.5 - .5 * yy) * height;
+				int screenZ = projectedPosition.w;
 
-		printf("position of 0,0,0 : %i, %i (%i)\n",  screenX, screenY, screenZ);
+				tileScreenCoords[x][y] = glm::ivec3(screenX, screenY, screenZ);
+			}
+		}
+		printf("position of %i, %i, %i : %i, %i (%i)\n", 0, 0, tileHeight[0][0], tileScreenCoords[0][0].x, tileScreenCoords[0][0].y, tileScreenCoords[0][0].z);
 
-		// screenCoordinatesOfVisibleTiles[y][x].x = screenX;
-		// screenCoordinatesOfVisibleTiles[y][x].y = screenY;
-		// screenCoordinatesOfVisibleTiles[y][x].z = screenZ;
-
-		printf("Map position: (%i, %i)\n", cameraMapPosition.x, cameraMapPosition.y);
 		viewProjection = glm::perspective(glm::radians(65.0f), (float) width / (float)height, 300.0f, 100000.0f) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
