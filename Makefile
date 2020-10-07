@@ -6,7 +6,7 @@ LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lGL -lGLU -lglfw -lpng -ldl -lGLEW
 
 all: main
 
-main: lib/WMT/lib/wmt.o lib/WMT/lib/zip.o lib/imgui/imgui_file_dialog.o lib/imgui/imgui_impl_sdl.o lib/imgui/imgui_impl_opengl3.o lib/imgui/imgui_widgets.o lib/imgui/imgui_draw.o lib/imgui/imgui.o lib/glad/src/glad.o src/World3d.o src/myshader.o lib/log.o src/pie.o src/main.o
+main: src/terrain.o lib/WMT/lib/wmt.o lib/WMT/lib/zip.o lib/imgui/imgui_file_dialog.o lib/imgui/imgui_impl_sdl.o lib/imgui/imgui_impl_opengl3.o lib/imgui/imgui_widgets.o lib/imgui/imgui_draw.o lib/imgui/imgui.o lib/glad/src/glad.o src/World3d.o src/myshader.o lib/log.o src/pie.o src/main.o
 	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
 
 src/main.o: src/main.cpp
@@ -18,6 +18,8 @@ lib/log.o: lib/log.cpp lib/log.hpp
 src/myshader.o: src/myshader.cpp src/myshader.h
 	$(CC) $< -c -o $@ $(CFLAGS)
 src/World3d.o: src/World3d.cpp src/World3d.h
+	$(CC) $< -c -o $@ $(CFLAGS)
+src/terrain.o: src/terrain.cpp src/terrain.h
 	$(CC) $< -c -o $@ $(CFLAGS)
 
 lib/glad/src/glad.o: lib/glad/src/glad.c

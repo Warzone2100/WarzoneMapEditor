@@ -17,6 +17,7 @@
 #include "myshader.h"
 #include "pie.h"
 #include "World3d.h"
+#include "terrain.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -29,12 +30,6 @@ int height = 480;
 
 const char* demopieobjectpath = "./blbrbgen.pie";
 const char* demopieobjectpath2 = "./vtolfactory_module1.pie";
-
-
-/* The shift on a world coordinate to get the tile coordinate */
-#define TILE_SHIFT 7
-static inline int32_t world_coord(int32_t mapCoord) { return (uint32_t)mapCoord << TILE_SHIFT; }
-static inline int32_t map_coord(int32_t worldCoord) { return worldCoord >> TILE_SHIFT; }
 
 int main(int argc, char** argv) {
 	time_t t;
@@ -98,73 +93,12 @@ int main(int argc, char** argv) {
 	obj.UsingTexture = &tex;
 	obj.PrepareTextureCoords();
 	mshader shad("vertex.vs", "fragment.frag");
-	int mapWidth;
-	int mapHeight;
-	int tileHeight[256][256];
-	Object3d terrain;
-	{
-		WZmap map;
-		// WMT_ReadMap((char*)"./6c-NTW_3v3Full.wz", &map);
-		WMT_ReadMap((char*)"./3c-DA-castle-b3.wz", &map);
-
-		if(!map.valid) {
-			log_error("WMT failed to read map!");
-		} else {
-			mapWidth = map.maptotalx;
-			mapHeight = map.maptotaly;
-			terrain.RenderingMode = GL_TRIANGLES;
-			terrain.GLvertexesCount = (map.maptotaly-1)*(map.maptotalx-1)*2*3*5;
-			terrain.GLvertexes = (float*)malloc(terrain.GLvertexesCount*sizeof(float));
-			size_t filled = 0;
-			//bool visited[map.maptotaly*map.maptotalx] = {false};
-			auto addTriangle = [&] (int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
-				terrain.GLvertexes[filled+0] = world_coord(x1);
-				terrain.GLvertexes[filled+1] = world_coord(y1);
-				terrain.GLvertexes[filled+2] = world_coord(z1);
-				terrain.GLvertexes[filled+3] = 0;
-				terrain.GLvertexes[filled+4] = 0;
-				filled+=5;
-				terrain.GLvertexes[filled+0] = world_coord(x2);
-				terrain.GLvertexes[filled+1] = world_coord(y2);
-				terrain.GLvertexes[filled+2] = world_coord(z2);
-				terrain.GLvertexes[filled+3] = 0;
-				terrain.GLvertexes[filled+4] = 0;
-				filled+=5;
-				terrain.GLvertexes[filled+0] = world_coord(x3);
-				terrain.GLvertexes[filled+1] = world_coord(y3);
-				terrain.GLvertexes[filled+2] = world_coord(z3);
-				terrain.GLvertexes[filled+3] = 0;
-				terrain.GLvertexes[filled+4] = 0;
-				filled+=5;
-			};
-			int scale = 32;
-			for(unsigned int y=0; y<map.maptotaly-1; y++) {
-				for(unsigned int x=0; x<map.maptotalx-1; x++) {
-					tileHeight[x][y] = map.mapheight[y*map.maptotalx+x]/scale;
-					if(WMT_TileGetTriFlip(map.maptile[y*map.maptotalx+x])) {
-						printf("Y");
-						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
-									x,   map.mapheight[(y+1)*map.maptotalx+x]/scale, y+1,
-									x+1, map.mapheight[y*map.maptotalx+(x+1)]/scale, y);
-						addTriangle(x+1,   map.mapheight[y*map.maptotalx+(x+1)]/scale,     y,
-									x+1,   map.mapheight[(y+1)*map.maptotalx+(x+1)]/scale, y+1,
-									x, map.mapheight[(y+1)*map.maptotalx+x]/scale, y+1);
-					} else {
-						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
-									x,   map.mapheight[(y+1)*map.maptotalx+x]/scale, y+1,
-									x+1, map.mapheight[(y+1)*map.maptotalx+(x+1)]/scale, y+1);
-						addTriangle(x,   map.mapheight[y*map.maptotalx+x]/scale,     y,
-									x+1,   map.mapheight[y*map.maptotalx+(x+1)]/scale, y,
-									x+1, map.mapheight[(y+1)*map.maptotalx+(x+1)]/scale, y+1);
-						printf("N");
-					}
-				}
-				printf("\n");
-			}
-			terrain.BufferData(shad.program);
-			terrain.FillTextures = false;
-		}
-	}
+	Terrain ter;
+	WZmap map;
+	// WMT_ReadMap((char*)"./6c-NTW_3v3Full.wz", &map);
+	WMT_ReadMap((char*)"./3c-DA-castle-b3.wz", &map);
+	ter.GetHeightmapFromMWT(&map);
+	ter.BufferData(shad.program);
 	obj.BufferData(shad.program);
 
 	glm::vec3 cameraPosition(0, 2000, 1000);
@@ -177,12 +111,12 @@ int main(int argc, char** argv) {
 	glm::ivec3 tileScreenCoords[256][256];
 
 	auto cameraUpdate = [&] () {
-		cameraMapPosition.x = glm::clamp((int)(map_coord(cameraPosition.x)), 0, mapWidth);
-		cameraMapPosition.y = glm::clamp((int)(map_coord(cameraPosition.z)), 0, mapHeight);
+		cameraMapPosition.x = glm::clamp((int)(map_coord(cameraPosition.x)), 0, ter.w);
+		cameraMapPosition.y = glm::clamp((int)(map_coord(cameraPosition.z)), 0, ter.h);
 
-		for(int y = 0; y < mapHeight; y++) {
-			for(int x = 0; x < mapWidth; x++) {
-				auto projectedPosition = glm::vec4(viewProjection * glm::vec4(world_coord(x), world_coord(tileHeight[y][x]), world_coord(y), 1.f));
+		for(int y = 0; y < ter.h; y++) {
+			for(int x = 0; x < ter.w; x++) {
+				auto projectedPosition = glm::vec4(viewProjection * glm::vec4(world_coord(x), world_coord(ter.tileHeight[y][x]), world_coord(y), 1.f));
 				const float xx = projectedPosition.x / projectedPosition.w;
 				const float yy = projectedPosition.y / projectedPosition.w;
 				int screenX = (.5 + .5 * xx) * width;
@@ -192,7 +126,7 @@ int main(int argc, char** argv) {
 				tileScreenCoords[x][y] = glm::ivec3(screenX, screenY, screenZ);
 			}
 		}
-		printf("position of %i, %i, %i : %i, %i (%i)\n", 0, 0, tileHeight[0][0], tileScreenCoords[0][0].x, tileScreenCoords[0][0].y, tileScreenCoords[0][0].z);
+		printf("position of %i, %i, %i : %i, %i (%i)\n", 0, 0, ter.tileHeight[0][0], tileScreenCoords[0][0].x, tileScreenCoords[0][0].y, tileScreenCoords[0][0].z);
 
 		viewProjection = glm::perspective(glm::radians(65.0f), (float) width / (float)height, 300.0f, 100000.0f) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
@@ -383,7 +317,7 @@ int main(int argc, char** argv) {
 		//
 		// }
 		obj.Render(shad.program);
-		terrain.Render(shad.program);
+		ter.Render(shad.program);
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
