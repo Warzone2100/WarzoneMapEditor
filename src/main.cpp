@@ -173,22 +173,22 @@ int main(int argc, char** argv) {
 					r = 0;
 					break;
 					case SDLK_w:
-					cameraVelocity.z = -1;
+					cameraVelocity.z = -8;
 					break;
 					case SDLK_a:
-					cameraVelocity.x = -1;
+					cameraVelocity.x = -8;
 					break;
 					case SDLK_e:
-					cameraVelocity.y = 1;
+					cameraVelocity.y = 8;
 					break;
 					case SDLK_s:
-					cameraVelocity.z = 1;
+					cameraVelocity.z = 8;
 					break;
 					case SDLK_d:
-					cameraVelocity.x = 1;
+					cameraVelocity.x = 8;
 					break;
 					case SDLK_q:
-					cameraVelocity.y = -1;
+					cameraVelocity.y = -8;
 					break;
 					case SDLK_SPACE:
 					if(!cursorTrapped) {
