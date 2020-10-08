@@ -239,7 +239,12 @@ int main(int argc, char** argv) {
 		}
 
 		if(cameraVelocity.x != 0 || cameraVelocity.y != 0 || cameraVelocity.z != 0){
-			cameraPosition += cameraVelocity*cameraSpeed;
+			cameraPosition.x += glm::sin(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.z;
+			// cameraPosition.y -= glm::sin(glm::radians(cameraRotation.x))*cameraSpeed*cameraVelocity.z;
+			cameraPosition.z += glm::cos(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.z;
+			cameraPosition.y += cameraSpeed*cameraVelocity.y;
+			cameraPosition.x += glm::cos(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.x;
+			cameraPosition.z -= glm::sin(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.x;
 			cameraUpdate();
 		}
 
@@ -292,6 +297,7 @@ int main(int argc, char** argv) {
 		ImGui::Checkbox("Textures", &ShowTextures);
 		ImGui::Checkbox("Fps limit", &FPSlimiter);
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::Text("Cam rot: %3f %3f", cameraRotation.x, cameraRotation.y);
 		ImGui::End();
 
 		shad.use();
