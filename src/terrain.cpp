@@ -1,10 +1,15 @@
 #include "terrain.h"
 
+#include <dirent.h>
+
+#include "other.h"
+
 void Terrain::GetHeightmapFromMWT(WZmap* map) {
 	if(!map->valid) {
 		log_error("WMT failed to read map!");
 		return;
 	}
+	tileset = map->tileset;
 	w = map->maptotalx;
 	h = map->maptotaly;
 	RenderingMode = GL_TRIANGLES;
@@ -57,4 +62,25 @@ void Terrain::GetHeightmapFromMWT(WZmap* map) {
 		}
 	}
 	FillTextures = false;
+	return;
+}
+
+// Accepts path to directory with textures and qual as quality of tiles
+// qual can be 16, 32, 64 or 128
+void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
+	char* folderpath = sprcatr(NULL, "%s/tertilesc%dhw-%d/", tileset, qual);
+	DIR *d;
+	struct dirent *dir;
+	d = opendir(folderpath);
+	if(d) {
+		while ((dir = readdir(d)) != NULL) {
+			printf("%s\n", dir->d_name);
+			if(equalstr(dir->d_name, ".") || equalstr(dir->d_name, "..")) {
+				continue;
+			}
+			SDL_Texture* t = IMG_LoadTexture(rend, dir->d_name);
+		}
+		closedir(d);
+	}
+	free(folderpath);
 }

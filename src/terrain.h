@@ -4,6 +4,8 @@
 #include "World3d.h"
 #include "wmt.hpp"
 
+extern char* texpagesPath;
+
 /* The shift on a world coordinate to get the tile coordinate */
 #define TILE_SHIFT 7
 static inline int32_t world_coord(int32_t mapCoord) { return (uint32_t)mapCoord << TILE_SHIFT; }
@@ -13,7 +15,10 @@ class Terrain : public Object3d {
 public:
 	int w, h;
 	int tileHeight[256][256] = {0};
+	int tileTextureId[256][256] = {0};
+	WZtileset tileset;
 	void GetHeightmapFromMWT(WZmap* m);
+	void CreateTexturePage(char* basepath, int qual);
 };
 
 #endif /* end of include guard: TERRAIN_H_INCLUDED */
