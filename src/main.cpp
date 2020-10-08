@@ -55,6 +55,7 @@ int main(int argc, char** argv) {
 	SDL_Window* window = SDL_CreateWindow("3d", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	SDL_SetWindowResizable(window, SDL_TRUE);
 	SDL_Renderer* rend = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	log_info("%s", SDL_GetError());
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
 	if(!glcontext) {
 		log_fatal("gl context");
@@ -94,17 +95,15 @@ int main(int argc, char** argv) {
 	obj.LoadFromPIE(demopieobjectpath);
 	Texture tex;
 	tex.Load(obj.TexturePath, rend);
-	tex.Bind(0);
+	mshader shad2("vertex.vs", "fragment.frag");
+	mshader shad("vertex.vs", "fragment.frag");
 	obj.UsingTexture = &tex;
 	obj.PrepareTextureCoords();
 	Terrain ter;
 	WZmap map;
-	// WMT_ReadMap((char*)"./6c-NTW_3v3Full.wz", &map);
 	WMT_ReadMap((char*)"./3c-DA-castle-b3.wz", &map);
 	ter.GetHeightmapFromMWT(&map);
-	mshader shad2("vertex.vs", "fragment.frag");
-	// ter.CreateTexturePage("/home/max/warzone2100/data/base/texpages/", 128, rend);
-	mshader shad("vertex.vs", "fragment.frag");
+	ter.CreateTexturePage("/home/max/warzone2100/data/base/texpages/", 128, rend);
 	ter.BufferData(shad.program);
 	obj.BufferData(shad2.program);
 

@@ -159,7 +159,8 @@ glm::mat4 Object3d::GetMatrix() {
 
 void Object3d::Render(unsigned int shader) {
 	if(UsingTexture != nullptr) {
-		glUniform1i(glGetUniformLocation(shader, "Texture"), UsingTexture->id);
+		UsingTexture->Bind(UsingTexture->id);
+		// glUniform1i(glGetUniformLocation(shader, "Texture"), UsingTexture->id);
 	}
 	//printf("%s\n", glm::to_string(GetMatrix()).c_str());
 	glUniformMatrix4fv(glGetUniformLocation(shader, "Model"), 1, GL_FALSE, glm::value_ptr(GetMatrix()));
@@ -172,6 +173,9 @@ void Object3d::Render(unsigned int shader) {
 	}
 	glDrawArrays(RenderingMode, 0, GLvertexesCount);
 	glFlush();
+	if(UsingTexture != nullptr) {
+		UsingTexture->Unbind();
+	}
 }
 
 void Texture::Load(std::string path, SDL_Renderer *rend) {
@@ -195,9 +199,18 @@ void Texture::Bind(int texid) {
 	this->id = texid;
 	glActiveTexture(GL_TEXTURE0+texid);
 	float texw, texh;
-	SDL_GL_BindTexture(this->tex, &texw, &texh);
+	if(SDL_GL_BindTexture(this->tex, &texw, &texh)) {
+		log_error("Failed to bind SDL_Texture: %s", SDL_GetError());
+	}
 	if(texw != 1.0f || texh != 1.0f) {
 		log_warn("Texture sizes seems to be wrong: %f %f", texw, texh);
+	}
+	return;
+}
+
+void Texture::Unbind() {
+	if(SDL_GL_UnbindTexture(this->tex)) {
+		log_error("Failed to unbind SDL_Texture: %s", SDL_GetError());
 	}
 	return;
 }
@@ -221,7 +234,7 @@ void World3d::AddObject(std::string filename, unsigned int Shader) {
 	} else {
 		Texture newtex;
 		newtex.Load(creating.TexturePath, Renderer);
-		newtex.Bind(GetNextTextureId());
+		// newtex.Bind(GetNextTextureId());
 		Textures.push_back(newtex);
 		creating.UsingTexture = &Textures[Textures.size()-1];
 	}

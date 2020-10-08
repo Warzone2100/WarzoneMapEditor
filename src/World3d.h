@@ -21,6 +21,7 @@ public:
 	void Load(std::string path, SDL_Renderer *rend);
 	void Load(SDL_Texture* texture);
 	void Bind(int texid);
+	void Unbind();
 };
 
 class Object3d {
