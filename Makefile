@@ -6,7 +6,7 @@ LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lGL -lGLU -lglfw -lpng -ldl -lGLEW
 
 all: main
 
-main: src/terrain.o lib/WMT/lib/wmt.o lib/WMT/lib/zip.o lib/imgui/imgui_file_dialog.o lib/imgui/imgui_impl_sdl.o lib/imgui/imgui_impl_opengl3.o lib/imgui/imgui_widgets.o lib/imgui/imgui_draw.o lib/imgui/imgui.o lib/glad/src/glad.o src/World3d.o src/myshader.o lib/log.o src/pie.o src/main.o
+main: src/other.o src/terrain.o lib/WMT/lib/wmt.o lib/WMT/lib/zip.o lib/imgui/imgui_file_dialog.o lib/imgui/imgui_impl_sdl.o lib/imgui/imgui_impl_opengl3.o lib/imgui/imgui_widgets.o lib/imgui/imgui_draw.o lib/imgui/imgui.o lib/glad/src/glad.o src/World3d.o src/myshader.o lib/log.o src/pie.o src/main.o
 	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
 
 src/main.o: src/main.cpp
