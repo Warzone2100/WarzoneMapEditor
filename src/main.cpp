@@ -19,6 +19,7 @@
 #include "World3d.h"
 #include "terrain.h"
 #include "args.h"
+#include "other.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -69,7 +70,8 @@ int main(int argc, char** argv) {
 	if(GLAD_GL_VERSION_3_0) {
 		log_info("Supporting 3.0");
 	}
-
+	glEnable              ( GL_DEBUG_OUTPUT );
+	glDebugMessageCallback( MessageCallback, 0 );
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -79,8 +81,8 @@ int main(int argc, char** argv) {
 	const char* glsl_version = "#version 130";
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClearDepth(1.0);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClearDepth(0.0);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -95,14 +97,14 @@ int main(int argc, char** argv) {
 	tex.Bind(0);
 	obj.UsingTexture = &tex;
 	obj.PrepareTextureCoords();
-	mshader shad("vertex.vs", "fragment.frag");
-	mshader shad2("vertex.vs", "fragment.frag");
 	Terrain ter;
 	WZmap map;
 	// WMT_ReadMap((char*)"./6c-NTW_3v3Full.wz", &map);
 	WMT_ReadMap((char*)"./3c-DA-castle-b3.wz", &map);
 	ter.GetHeightmapFromMWT(&map);
+	mshader shad2("vertex.vs", "fragment.frag");
 	// ter.CreateTexturePage("/home/max/warzone2100/data/base/texpages/", 128, rend);
+	mshader shad("vertex.vs", "fragment.frag");
 	ter.BufferData(shad.program);
 	obj.BufferData(shad2.program);
 
@@ -113,8 +115,7 @@ int main(int argc, char** argv) {
 	glm::mat4 viewProjection;
 	glm::ivec2 cameraMapPosition;
 
-	glm::ivec3 tileScreenCoords[256][256];
-
+	// glm::ivec3 tileScreenCoords[256][256];
 	auto cameraUpdate = [&] () {
 		cameraMapPosition.x = glm::clamp((int)(map_coord(cameraPosition.x)), 0, ter.w);
 		cameraMapPosition.y = glm::clamp((int)(map_coord(cameraPosition.z)), 0, ter.h);
@@ -147,6 +148,7 @@ int main(int argc, char** argv) {
 	glEnable(GL_DEPTH_TEST);
 	SDL_Event ev;
 	Uint32 frame_time_start = 0;
+	log_info("Entering render loop...");
 	while(r==1) {
 		frame_time_start = SDL_GetTicks();
 		while(SDL_PollEvent(&ev)) {
@@ -302,34 +304,13 @@ int main(int argc, char** argv) {
 		ImGui::End();
 
 		shad.use();
-
 		glUniformMatrix4fv(glGetUniformLocation(shad.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
+		ter.Render(shad.program);
 
-		// for(int i=0; i<objectsCount; i++) {
-		// 	glm::vec3 pos = {objects[i].GLpos[0], objects[i].GLpos[1], objects[i].GLpos[2]};
-		// 	auto Model =
-		// 		glm::translate(glm::mat4(1), -pos) *
-		// 		glm::rotate(glm::mat4(1), glm::radians(-objects[i].GLrot[0]), glm::vec3(1, 0, 0)) *
-		// 		glm::rotate(glm::mat4(1), glm::radians(-objects[i].GLrot[1]), glm::vec3(0, 1, 0)) *
-		// 		glm::rotate(glm::mat4(1), glm::radians(-objects[i].GLrot[2]), glm::vec3(0, 0, 1)) *
-		// 		glm::mat4(1);
-		// 	glUniform1i(glGetUniformLocation(shad.program, "Texture"), i);
-		// 	glUniformMatrix4fv(glGetUniformLocation(shad.program, "Model"), 1, GL_FALSE, glm::value_ptr(Model));
-		// 	if(ShowTextures) {
-		// 		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-		// 	} else {
-		// 		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-		// 	}
-		// 	glBindVertexArray(VAO_vertices[i]);
-		// 	glBindBuffer(GL_ARRAY_BUFFER, VBO_vertices[i]);
-		// 	glDrawArrays(GL_TRIANGLES, 0, objects[i].GLvertexesCount);
-		// 	glFlush();
-		//
-		// }
-		obj.Render(shad.program);
 		shad2.use();
 		glUniformMatrix4fv(glGetUniformLocation(shad2.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
-		ter.Render(shad2.program);
+		obj.Render(shad2.program);
+
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
