@@ -18,6 +18,7 @@
 #include "pie.h"
 #include "World3d.h"
 #include "terrain.h"
+#include "args.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -32,6 +33,8 @@ const char* demopieobjectpath = "./blbrbgen.pie";
 const char* demopieobjectpath2 = "./vtolfactory_module1.pie";
 
 int main(int argc, char** argv) {
+	log_set_level(2);
+	ProcessArgs(argc, argv);
 	time_t t;
 	srand((unsigned) time(&t));
 	log_info("Hello world!");
