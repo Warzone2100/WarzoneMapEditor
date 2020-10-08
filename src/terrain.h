@@ -18,7 +18,7 @@ public:
 	int tileTextureId[256][256] = {0};
 	WZtileset tileset;
 	void GetHeightmapFromMWT(WZmap* m);
-	void CreateTexturePage(char* basepath, int qual);
+	void CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend);
 };
 
 #endif /* end of include guard: TERRAIN_H_INCLUDED */

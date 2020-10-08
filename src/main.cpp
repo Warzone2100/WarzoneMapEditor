@@ -102,6 +102,7 @@ int main(int argc, char** argv) {
 	// WMT_ReadMap((char*)"./6c-NTW_3v3Full.wz", &map);
 	WMT_ReadMap((char*)"./3c-DA-castle-b3.wz", &map);
 	ter.GetHeightmapFromMWT(&map);
+	// ter.CreateTexturePage("/home/max/warzone2100/data/base/texpages/", 128, rend);
 	ter.BufferData(shad.program);
 	obj.BufferData(shad2.program);
 
