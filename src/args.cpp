@@ -1,21 +1,23 @@
 #include "args.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "log.hpp"
+#include "other.h"
 
 char* ArgTexpagesPath = NULL;
 
 void ProcessArgs(int argc, char** argv) {
 	for(int i=1; i<argc; i++) {
 		if(equalstr(argv[i], "--version")) {
-			printf("Warzone 2100 Map Editor development version. No semver yet.\n")
+			printf("Warzone 2100 Map Editor development version. No semver yet.\n");
 			exit(0);
 		} else if(equalstr(argv[i], "--quiet") || equalstr(argv[i], "-q")) {
 			log_set_quiet(1);
 		} else if(equalstr(argv[i], "--loglevel") || equalstr(argv[i], "-log")) {
 			if(i+1 < argc) {
-				log_set_level(atoi(argv[i]));
+				log_set_level(atoi(argv[i+1]));
 				i++;
 			} else {
 				log_fatal("Log level expects argument.");
