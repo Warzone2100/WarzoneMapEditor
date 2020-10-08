@@ -11,8 +11,10 @@ DEPS     = $(patsubst %.cpp,%.d,$(patsubst %.c,%.d,$(SOURCES)))
 
 all: main
 
-depend: $(SOURCES)
-	$(CC) -MM $(CFLAGS) $(SOURCES) > depend
+%.d : %.c
+	$(CC) -MM $(CFLAGS) $< >$@
+%.d : %.cpp
+	$(CC) -MM $(CFLAGS) $< >$@
 
 main: $(OBJECTS)
 	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
@@ -23,6 +25,6 @@ main: $(OBJECTS)
 	$(CC) $< -c -o $@ $(CFLAGS)
 
 clean:
-	$(RM) main depend $(OBJECTS)
+	$(RM) main $(OBJECTS) $(DEPS)
 
-include depend
+include $(DEPS)
