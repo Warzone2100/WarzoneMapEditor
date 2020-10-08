@@ -162,7 +162,6 @@ void Object3d::Render(unsigned int shader) {
 		UsingTexture->Bind(UsingTexture->id);
 		// glUniform1i(glGetUniformLocation(shader, "Texture"), UsingTexture->id);
 	}
-	//printf("%s\n", glm::to_string(GetMatrix()).c_str());
 	glUniformMatrix4fv(glGetUniformLocation(shader, "Model"), 1, GL_FALSE, glm::value_ptr(GetMatrix()));
 	BindVAO();
 	BindVBO();
@@ -195,9 +194,8 @@ void Texture::Load(SDL_Texture* texture) {
 	glGenTextures(1, &GLid);
 }
 
-void Texture::Bind(int texid) {
-	this->id = texid;
-	glActiveTexture(GL_TEXTURE0+texid);
+void Texture::Bind() {
+	glActiveTexture(GL_TEXTURE0+this->id);
 	float texw, texh;
 	if(SDL_GL_BindTexture(this->tex, &texw, &texh)) {
 		log_error("Failed to bind SDL_Texture: %s", SDL_GetError());
@@ -205,6 +203,12 @@ void Texture::Bind(int texid) {
 	if(texw != 1.0f || texh != 1.0f) {
 		log_warn("Texture sizes seems to be wrong: %f %f", texw, texh);
 	}
+	return;
+}
+
+void Texture::Bind(int texid) {
+	this->id = texid;
+	Bind();
 	return;
 }
 
