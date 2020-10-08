@@ -13,6 +13,7 @@ size_t snprcat(char* str, size_t stroffs, size_t strmax, const char* format, ...
 		printf("Format turncation warning!\n");
 	}
 	return newoffs;
+}
 
 char* sprcatr(char* str, const char* format, ...) {
 	const size_t chunksize = 4096*2;

@@ -2,6 +2,7 @@
 #define OTHER_H_DEFINED
 
 #include <stdarg.h>
+#include <stddef.h>
 
 size_t snprcat(char* str, size_t stroffs, size_t strmax, const char* format, ...);
 char* sprcatr(char* str, const char* format, ...);
