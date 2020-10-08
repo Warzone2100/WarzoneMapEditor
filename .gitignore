@@ -3,3 +3,4 @@ main
 imgui.ini
 build/
 depend
+*.d
