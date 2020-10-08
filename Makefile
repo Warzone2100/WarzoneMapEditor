@@ -21,6 +21,8 @@ src/World3d.o: src/World3d.cpp src/World3d.h
 	$(CC) $< -c -o $@ $(CFLAGS)
 src/terrain.o: src/terrain.cpp src/terrain.h
 	$(CC) $< -c -o $@ $(CFLAGS)
+src/other.o: src/other.cpp src/other.h
+	$(CC) $< -c -o $@ $(CFLAGS)
 
 lib/glad/src/glad.o: lib/glad/src/glad.c
 	$(CC) $< -c -o $@ $(CFLAGS)
