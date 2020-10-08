@@ -19,6 +19,7 @@ public:
 	int w, h;
 	bool valid;
 	void Load(std::string path, SDL_Renderer *rend);
+	void Load(SDL_Texture* texture);
 	void Bind(int texid);
 };
 

@@ -184,6 +184,13 @@ void Texture::Load(std::string path, SDL_Renderer *rend) {
 	return;
 }
 
+void Texture::Load(SDL_Texture* texture) {
+	this->path = "";
+	this->tex = texture;
+	SDL_QueryTexture(this->tex, NULL, NULL, &this->w, &this->h);
+	glGenTextures(1, &GLid);
+}
+
 void Texture::Bind(int texid) {
 	this->id = texid;
 	glActiveTexture(GL_TEXTURE0+texid);
