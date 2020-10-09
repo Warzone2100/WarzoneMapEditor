@@ -13,10 +13,18 @@ static inline int32_t map_coord(int32_t worldCoord) { return worldCoord >> TILE_
 
 class Terrain : public Object3d {
 public:
+	struct tileinfo {
+		bool triflip;
+		int height;
+		int texture;
+		int rot;
+		bool fx, fy;
+		WMT_TerrainTypes tt;
+	} tiles[256][256];
 	int w, h;
-	int tileHeight[256][256] = {0};
-	int tileTextureId[256][256] = {0};
 	WZtileset tileset;
+	int DatasetLoaded;
+	void UpdateTexpageCoords();
 	void GetHeightmapFromMWT(WZmap* m);
 	void CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend);
 };

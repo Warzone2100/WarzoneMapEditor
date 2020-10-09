@@ -101,9 +101,10 @@ int main(int argc, char** argv) {
 	obj.PrepareTextureCoords();
 	Terrain ter;
 	WZmap map;
-	WMT_ReadMap((char*)"./3c-DA-castle-b3.wz", &map);
+	WMT_ReadMap((char*)"./8c-Stone-Jungle-E.wz", &map);
 	ter.GetHeightmapFromMWT(&map);
 	ter.CreateTexturePage("/home/max/warzone2100/data/base/texpages/", 128, rend);
+	ter.UpdateTexpageCoords();
 	ter.BufferData(shad.program);
 	obj.BufferData(shad2.program);
 
@@ -256,7 +257,6 @@ int main(int argc, char** argv) {
 		ImGui::NewFrame();
 
 		static bool show_window = true;
-		static bool ShowTextures = true;
 		static bool FPSlimiter = true;
 		ImGui::SetNextWindowPos({0, 0}, 1);
 		ImGui::Begin("##bmain", &show_window,   ImGuiWindowFlags_NoMove |
@@ -296,10 +296,9 @@ int main(int argc, char** argv) {
 		// 	igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
 		// }
 		// ImGui::SliderInt("Object", &editobject, 0, objectsCount-1);
-		ImGui::Checkbox("Textures", &ShowTextures);
 		ImGui::Checkbox("Fps limit", &FPSlimiter);
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::Text("Cam rot: %3f %3f", cameraRotation.x, cameraRotation.y);
+		ImGui::Text("Cam map pos: %3d %3d", cameraMapPosition.x, cameraMapPosition.y);
 		ImGui::End();
 
 		shad.use();

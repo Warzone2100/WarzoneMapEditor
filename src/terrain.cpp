@@ -41,29 +41,35 @@ void Terrain::GetHeightmapFromMWT(WZmap* map) {
 	int scale = 32;
 	for(int y=0; y<h; y++) {
 		for(int x=0; x<w; x++) {
-			tileHeight[x][y] = map->mapheight[y*w+x]/scale;
+			tiles[x][y].height = map->mapheight[y*w+x]/scale;
+			tiles[x][y].triflip = WMT_TileGetTriFlip(map->maptile[y*w+x]);
+			tiles[x][y].texture = WMT_TileGetTexture(map->maptile[y*w+x]);
+			tiles[x][y].rot = WMT_TileGetRotation(map->maptile[y*w+x]);
+			tiles[x][y].fx = WMT_TileGetXFlip(map->maptile[y*w+x]);
+			tiles[x][y].fy = WMT_TileGetYFlip(map->maptile[y*w+x]);
+			tiles[x][y].tt = WMT_TileGetTerrainType(map->maptile[y*w+x], map->ttyptt);
 		}
 	}
 	for(int y=0; y<h-1; y++) {
 		for(int x=0; x<w-1; x++) {
 			if(WMT_TileGetTriFlip(map->maptile[y*w+x])) {
-				addTriangle(x,   tileHeight[x  ][y  ], y,
-							x,   tileHeight[x  ][y+1], y+1,
-							x+1, tileHeight[x+1][y  ], y);
-				addTriangle(x+1, tileHeight[x+1][y  ], y,
-							x+1, tileHeight[x+1][y+1], y+1,
-							x,   tileHeight[x  ][y+1], y+1);
+				addTriangle(x,   tiles[x  ][y  ].height, y,
+							x,   tiles[x  ][y+1].height, y+1,
+							x+1, tiles[x+1][y  ].height, y);
+				addTriangle(x+1, tiles[x+1][y  ].height, y,
+							x+1, tiles[x+1][y+1].height, y+1,
+							x,   tiles[x  ][y+1].height, y+1);
 			} else {
-				addTriangle(x,   tileHeight[x  ][y  ], y,
-							x,   tileHeight[x  ][y+1], y+1,
-							x+1, tileHeight[x+1][y+1], y+1);
-				addTriangle(x,   tileHeight[x  ][y  ], y,
-							x+1, tileHeight[x+1][y  ], y,
-							x+1, tileHeight[x+1][y+1], y+1);
+				addTriangle(x,   tiles[x  ][y  ].height, y,
+							x,   tiles[x  ][y+1].height, y+1,
+							x+1, tiles[x+1][y+1].height, y+1);
+				addTriangle(x,   tiles[x  ][y  ].height, y,
+							x+1, tiles[x+1][y  ].height, y,
+							x+1, tiles[x+1][y+1].height, y+1);
 			}
 		}
 	}
-	FillTextures = false;
+	// FillTextures = false;
 	return;
 }
 
@@ -89,6 +95,7 @@ void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 	struct TempTextures {
 		int n;
 		SDL_Texture* t;
+		int w, h;
 	} textsa[512];
 	DIR *d;
 	struct dirent *dir;
@@ -128,18 +135,57 @@ void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 	log_info("Loaded %d tiles.", TotalTextures);
 	int mw = 0, mh = 0;
 	for(int i=0; i<TotalTextures; i++) {
-		int nw, nh;
-		SDL_QueryTexture(textsa[i].t, NULL, NULL, &nw, &nh);
-		if(nw > mw) {
-			mw = nw;
+		SDL_QueryTexture(textsa[i].t, NULL, NULL, &textsa[i].w, &textsa[i].h);
+		if(textsa[i].w > mw) {
+			mw = textsa[i].w;
 		}
-		if(nh > mh) {
-			mh = nh;
-		}
-		if(textsa[i].t != NULL) {
-			SDL_DestroyTexture(textsa[i].t);
+		if(textsa[i].h > mh) {
+			mh = textsa[i].h;
 		}
 	}
+	UsingTexture = new Texture;
+	UsingTexture->tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, TotalTextures*mw, mh);
+	UsingTexture->w = TotalTextures*mw;
+	UsingTexture->h = mh;
+	DatasetLoaded = TotalTextures;
+	SDL_Texture* savedt = SDL_GetRenderTarget(rend);
+	SDL_SetRenderTarget(rend, UsingTexture->tex);
+	for(int i=0; i<TotalTextures; i++) {
+		int pn = -1;
+		for(int j=0; j<TotalTextures; j++) {
+			if(textsa[j].n == i) {
+				pn = j;
+				break;
+			}
+		}
+		SDL_Rect from = {.x=0, .y=0, .w=textsa[pn].w, .h=textsa[pn].h};
+		SDL_Rect to = {.x=i*mw, .y=0, .w=textsa[pn].w, .h=textsa[pn].h};
+		SDL_RenderCopy(rend, textsa[pn].t, &from, &to);
+		SDL_DestroyTexture(textsa[pn].t);
+	}
+	SDL_SetRenderTarget(rend, savedt);
 	log_info("Tiles max resolution %dx%d", mw, mh);
 	free(folderpath);
+}
+
+void Terrain::UpdateTexpageCoords() {
+	int filled = 0;
+	int tw = UsingTexture->w/DatasetLoaded;
+	// // int th = UsingTexture->h;
+	// for(int y=0; y<h-1; y++) {
+	// 	for(int x=0; x<w-1; x++) {
+	// 		if(tiles[x][y].triflip) {
+				GLvertexes[filled+4] = (tiles[0][0].texture/DatasetLoaded);
+				GLvertexes[filled+3] = 0;
+				filled+=5;
+				GLvertexes[filled+4] = ((tiles[0][0].texture+1)/DatasetLoaded);
+				GLvertexes[filled+3] = 0;
+				filled+=5;
+				GLvertexes[filled+4] = (tiles[0][0].texture/DatasetLoaded);
+				GLvertexes[filled+3] = 1;
+				filled+=5;
+				// filled+=15;
+	// 		}
+	// 	}
+	// }
 }
