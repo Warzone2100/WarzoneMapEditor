@@ -175,46 +175,43 @@ void Terrain::UpdateTexpageCoords() {
 	int tw = UsingTexture->w/DatasetLoaded;
 	log_info("%d %d %d", tw, UsingTexture->w, DatasetLoaded);
 	// // int th = UsingTexture->h;
+	auto SetNextTriangle = [&] (float c[2]) {
+		GLvertexes[filled+3] = c[0];
+		GLvertexes[filled+4] = c[1];
+		filled+=5;
+	};
 	for(int y=0; y<h-1; y++) {
 		for(int x=0; x<w-1; x++) {
+			// 0 1
+			// 3 2
+			float tex0[2] = {(tiles[x][y].texture+0)/(float)DatasetLoaded, 0.0f};
+			float tex1[2] = {(tiles[x][y].texture+1)/(float)DatasetLoaded, 0.0f};
+			float tex2[2] = {(tiles[x][y].texture+1)/(float)DatasetLoaded, 1.0f};
+			float tex3[2] = {(tiles[x][y].texture+0)/(float)DatasetLoaded, 1.0f};
 			if(tiles[x][y].triflip) {
-				GLvertexes[filled+3] = ((tiles[x][y].texture+0)/(float)DatasetLoaded);
-				GLvertexes[filled+4] = 0.0f;
-				filled+=5;
-				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
-				GLvertexes[filled+4] = 0.0f;
-				filled+=5;
-				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
-				GLvertexes[filled+4] = 1.0f;
-				filled+=5;
-				GLvertexes[filled+3] = ((tiles[x][y].texture+0)/(float)DatasetLoaded);
-				GLvertexes[filled+4] = 0.0f;
-				filled+=5;
-				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
-				GLvertexes[filled+4] = 1.0f;
-				filled+=5;
-				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
-				GLvertexes[filled+4] = 0.0f;
-				filled+=5;
+				// 0 1
+				//   2
+				//
+				// 3
+				// 4 5
+				SetNextTriangle(tex0);
+				SetNextTriangle(tex1);
+				SetNextTriangle(tex2);
+				SetNextTriangle(tex0);
+				SetNextTriangle(tex3);
+				SetNextTriangle(tex2);
 			} else {
-				GLvertexes[filled+3] = ((tiles[x][y].texture+0)/(float)DatasetLoaded);
-				GLvertexes[filled+4] = 0.0f;
-				filled+=5;
-				GLvertexes[filled+3] = ((tiles[x][y].texture+0)/(float)DatasetLoaded);
-				GLvertexes[filled+4] = 1.0f;
-				filled+=5;
-				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
-				GLvertexes[filled+4] = 1.0f;
-				filled+=5;
-				GLvertexes[filled+3] = ((tiles[x][y].texture+0)/(float)DatasetLoaded);
-				GLvertexes[filled+4] = 0.0f;
-				filled+=5;
-				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
-				GLvertexes[filled+4] = 0.0f;
-				filled+=5;
-				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
-				GLvertexes[filled+4] = 1.0f;
-				filled+=5;
+				// 1 2
+				// 0
+				//
+				//   5
+				// 3 4
+				SetNextTriangle(tex3);
+				SetNextTriangle(tex0);
+				SetNextTriangle(tex1);
+				SetNextTriangle(tex3);
+				SetNextTriangle(tex2);
+				SetNextTriangle(tex1);
 			}
 		}
 	}
