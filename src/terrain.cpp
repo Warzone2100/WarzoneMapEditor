@@ -149,7 +149,9 @@ void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 	UsingTexture->h = mh;
 	DatasetLoaded = TotalTextures;
 	SDL_Texture* savedt = SDL_GetRenderTarget(rend);
+	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderTarget(rend, UsingTexture->tex);
+	SDL_RenderClear(rend);
 	for(int i=0; i<TotalTextures; i++) {
 		int pn = -1;
 		for(int j=0; j<TotalTextures; j++) {
