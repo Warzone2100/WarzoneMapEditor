@@ -198,8 +198,8 @@ void Terrain::UpdateTexpageCoords() {
 				GLvertexes[filled+3] = ((tiles[x][y].texture+0)/(float)DatasetLoaded);
 				GLvertexes[filled+4] = 0.0f;
 				filled+=5;
-				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
-				GLvertexes[filled+4] = 0.0f;
+				GLvertexes[filled+3] = ((tiles[x][y].texture+0)/(float)DatasetLoaded);
+				GLvertexes[filled+4] = 1.0f;
 				filled+=5;
 				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
 				GLvertexes[filled+4] = 1.0f;

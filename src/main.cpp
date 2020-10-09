@@ -152,6 +152,8 @@ int main(int argc, char** argv) {
 	SDL_Event ev;
 	Uint32 frame_time_start = 0;
 	log_info("Entering render loop...");
+	bool ShowTextureDebugger = true;
+	int TextureDebuggerTriangle = 0;
 	while(r==1) {
 		frame_time_start = SDL_GetTicks();
 		while(SDL_PollEvent(&ev)) {
@@ -308,10 +310,25 @@ int main(int argc, char** argv) {
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Text("Cam map pos: %3d %3d", cameraMapPosition.x, cameraMapPosition.y);
 		ImGui::Text("Cam fov: %f", cameraFOV);
-		ImGui::InputInt("Texture", &showtexture, 1, 1);
-		ImGui::Image((void*)(intptr_t)showtexture, ImVec2(128,128));
+		ImGui::InputFloat("##1", &ter.GLvertexes[3], 1, 1);
+		ImGui::InputFloat("##2", &ter.GLvertexes[4], 1, 1);
+		ImGui::InputFloat("##3", &ter.GLvertexes[8], 1, 1);
+		ImGui::InputFloat("##4", &ter.GLvertexes[9], 1, 1);
+		ImGui::InputFloat("##5", &ter.GLvertexes[13], 1, 1);
+		ImGui::InputFloat("##6", &ter.GLvertexes[14], 1, 1);
+		if(ImGui::Button("Texture assigner")) {
+			ShowTextureDebugger = true;
+		}
 		ImGui::End();
-
+		ImGui::Begin("Texture Viewer", &ShowTextureDebugger, 0);
+		ImGui::InputInt("Triangle", &TextureDebuggerTriangle, 1, 1);
+		ImGui::InputFloat2("1", &ter.GLvertexes[TextureDebuggerTriangle*15+3], "%f");
+		ImGui::InputFloat2("3", &ter.GLvertexes[TextureDebuggerTriangle*15+8], "%f");
+		ImGui::InputFloat2("5", &ter.GLvertexes[TextureDebuggerTriangle*15+13], "%f");
+		if(ImGui::Button("Buffer")) {
+			ter.BufferData(shad.program);
+		}
+		ImGui::End();
 		shad.use();
 		glUniformMatrix4fv(glGetUniformLocation(shad.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
 		ter.Render(shad.program);
