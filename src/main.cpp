@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
 		// }
 		// printf("position of %i, %i, %i : %i, %i (%i)\n", 0, 0, ter.tileHeight[0][0], tileScreenCoords[0][0].x, tileScreenCoords[0][0].y, tileScreenCoords[0][0].z);
 
-		viewProjection = glm::perspective(glm::radians(65.0f), (float) width / (float)height, 300.0f, 100000.0f) *
+		viewProjection = glm::perspective(glm::radians(65.0f), (float) width / (float)height, 30.0f, 100000.0f) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.z), glm::vec3(0, 0, 1)) *
