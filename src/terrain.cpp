@@ -171,21 +171,49 @@ void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 void Terrain::UpdateTexpageCoords() {
 	int filled = 0;
 	int tw = UsingTexture->w/DatasetLoaded;
+	log_info("%d %d %d", tw, UsingTexture->w, DatasetLoaded);
 	// // int th = UsingTexture->h;
-	// for(int y=0; y<h-1; y++) {
-	// 	for(int x=0; x<w-1; x++) {
-	// 		if(tiles[x][y].triflip) {
-				GLvertexes[filled+3] = (tiles[0][0].texture/DatasetLoaded);
-				GLvertexes[filled+4] = 0;
+	for(int y=0; y<h-1; y++) {
+		for(int x=0; x<w-1; x++) {
+			if(tiles[x][y].triflip) {
+				GLvertexes[filled+3] = ((tiles[x][y].texture+0)/(float)DatasetLoaded);
+				GLvertexes[filled+4] = 0.0f;
 				filled+=5;
-				GLvertexes[filled+3] = ((tiles[0][0].texture+1)/DatasetLoaded);
-				GLvertexes[filled+4] = 0;
+				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
+				GLvertexes[filled+4] = 0.0f;
 				filled+=5;
-				GLvertexes[filled+3] = (tiles[0][0].texture/DatasetLoaded);
-				GLvertexes[filled+4] = 1;
+				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
+				GLvertexes[filled+4] = 1.0f;
 				filled+=5;
-				// filled+=15;
-	// 		}
-	// 	}
-	// }
+				GLvertexes[filled+3] = ((tiles[x][y].texture+0)/(float)DatasetLoaded);
+				GLvertexes[filled+4] = 1.0f;
+				filled+=5;
+				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
+				GLvertexes[filled+4] = 1.0f;
+				filled+=5;
+				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
+				GLvertexes[filled+4] = 0.0f;
+				filled+=5;
+			} else {
+				GLvertexes[filled+3] = ((tiles[x][y].texture+0)/(float)DatasetLoaded);
+				GLvertexes[filled+4] = 0.0f;
+				filled+=5;
+				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
+				GLvertexes[filled+4] = 0.0f;
+				filled+=5;
+				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
+				GLvertexes[filled+4] = 1.0f;
+				filled+=5;
+				GLvertexes[filled+3] = ((tiles[x][y].texture+0)/(float)DatasetLoaded);
+				GLvertexes[filled+4] = 0.0f;
+				filled+=5;
+				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
+				GLvertexes[filled+4] = 0.0f;
+				filled+=5;
+				GLvertexes[filled+3] = ((tiles[x][y].texture+1)/(float)DatasetLoaded);
+				GLvertexes[filled+4] = 1.0f;
+				filled+=5;
+			}
+		}
+	}
 }

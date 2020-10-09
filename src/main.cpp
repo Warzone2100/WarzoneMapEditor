@@ -147,6 +147,7 @@ int main(int argc, char** argv) {
 	bool cursorTrapped = false;
 
 	bool r=1;
+	int showtexture = 0;
 	glEnable(GL_DEPTH_TEST);
 	SDL_Event ev;
 	Uint32 frame_time_start = 0;
@@ -303,9 +304,12 @@ int main(int argc, char** argv) {
 		// }
 		// ImGui::SliderInt("Object", &editobject, 0, objectsCount-1);
 		ImGui::Checkbox("Fps limit", &FPSlimiter);
+		ImGui::Checkbox("Wireframe", &ter.FillTextures);
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Text("Cam map pos: %3d %3d", cameraMapPosition.x, cameraMapPosition.y);
 		ImGui::Text("Cam fov: %f", cameraFOV);
+		ImGui::InputInt("Texture", &showtexture, 1, 1);
+		ImGui::Image((void*)(intptr_t)showtexture, ImVec2(128,128));
 		ImGui::End();
 
 		shad.use();
