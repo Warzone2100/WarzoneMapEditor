@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
 	WZmap map;
 	WMT_ReadMap((char*)"./8c-Stone-Jungle-E.wz", &map);
 	ter.GetHeightmapFromMWT(&map);
-	ter.CreateTexturePage("/home/max/warzone2100/data/base/texpages/", 128, rend);
+	ter.CreateTexturePage("/home/max/warzone2100/data/base/texpages/", 16, rend);
 	ter.UpdateTexpageCoords();
 	ter.BufferData(shad.program);
 	obj.BufferData(shad2.program);
@@ -325,6 +325,7 @@ int main(int argc, char** argv) {
 		ImGui::InputFloat2("1", &ter.GLvertexes[TextureDebuggerTriangle*15+3], "%f");
 		ImGui::InputFloat2("3", &ter.GLvertexes[TextureDebuggerTriangle*15+8], "%f");
 		ImGui::InputFloat2("5", &ter.GLvertexes[TextureDebuggerTriangle*15+13], "%f");
+		ImGui::Value("Flip", ter.tiles[TextureDebuggerTriangle][TextureDebuggerTriangle/ter.w].triflip);
 		if(ImGui::Button("Buffer")) {
 			ter.BufferData(shad.program);
 		}
