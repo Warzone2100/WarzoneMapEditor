@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
 	WZmap map;
 	WMT_ReadMap((char*)"./8c-Stone-Jungle-E.wz", &map);
 	ter.GetHeightmapFromMWT(&map);
-	ter.CreateTexturePage("/home/max/warzone2100/data/base/texpages/", 16, rend);
+	ter.CreateTexturePage("./data-texpages/", 16, rend);
 	ter.UpdateTexpageCoords();
 	ter.BufferData(shad.program);
 	obj.BufferData(shad2.program);
