@@ -175,14 +175,14 @@ void Terrain::UpdateTexpageCoords() {
 	// for(int y=0; y<h-1; y++) {
 	// 	for(int x=0; x<w-1; x++) {
 	// 		if(tiles[x][y].triflip) {
-				GLvertexes[filled+4] = (tiles[0][0].texture/DatasetLoaded);
-				GLvertexes[filled+3] = 0;
+				GLvertexes[filled+3] = (tiles[0][0].texture/DatasetLoaded);
+				GLvertexes[filled+4] = 0;
 				filled+=5;
-				GLvertexes[filled+4] = ((tiles[0][0].texture+1)/DatasetLoaded);
-				GLvertexes[filled+3] = 0;
+				GLvertexes[filled+3] = ((tiles[0][0].texture+1)/DatasetLoaded);
+				GLvertexes[filled+4] = 0;
 				filled+=5;
-				GLvertexes[filled+4] = (tiles[0][0].texture/DatasetLoaded);
-				GLvertexes[filled+3] = 1;
+				GLvertexes[filled+3] = (tiles[0][0].texture/DatasetLoaded);
+				GLvertexes[filled+4] = 1;
 				filled+=5;
 				// filled+=15;
 	// 		}

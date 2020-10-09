@@ -114,6 +114,7 @@ int main(int argc, char** argv) {
 	float cameraSpeed = 2.0f;
 	glm::mat4 viewProjection;
 	glm::ivec2 cameraMapPosition;
+	float cameraFOV = 75.0f;
 
 	// glm::ivec3 tileScreenCoords[256][256];
 	auto cameraUpdate = [&] () {
@@ -133,7 +134,7 @@ int main(int argc, char** argv) {
 		// }
 		// printf("position of %i, %i, %i : %i, %i (%i)\n", 0, 0, ter.tileHeight[0][0], tileScreenCoords[0][0].x, tileScreenCoords[0][0].y, tileScreenCoords[0][0].z);
 
-		viewProjection = glm::perspective(glm::radians(65.0f), (float) width / (float)height, 30.0f, 100000.0f) *
+		viewProjection = glm::perspective(glm::radians(cameraFOV), (float) width / (float)height, 30.0f, 100000.0f) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.z), glm::vec3(0, 0, 1)) *
@@ -164,6 +165,10 @@ int main(int argc, char** argv) {
 					cameraRotation.y -= ev.motion.xrel/2;
 					cameraUpdate();
 				}
+				break;
+
+				case SDL_MOUSEWHEEL:
+				cameraFOV += ev.wheel.y*4;
 				break;
 
 				case SDL_WINDOWEVENT:
@@ -248,8 +253,8 @@ int main(int argc, char** argv) {
 			cameraPosition.y += cameraSpeed*cameraVelocity.y;
 			cameraPosition.x += glm::cos(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.x;
 			cameraPosition.z -= glm::sin(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.x;
-			cameraUpdate();
 		}
+		cameraUpdate();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		ImGui_ImplOpenGL3_NewFrame();
@@ -299,6 +304,7 @@ int main(int argc, char** argv) {
 		ImGui::Checkbox("Fps limit", &FPSlimiter);
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Text("Cam map pos: %3d %3d", cameraMapPosition.x, cameraMapPosition.y);
+		ImGui::Text("Cam fov: %f", cameraFOV);
 		ImGui::End();
 
 		shad.use();
