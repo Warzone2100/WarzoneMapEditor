@@ -192,39 +192,68 @@ void Terrain::UpdateTexpageCoords() {
 		GLvertexes[filled+4] = c[1];
 		filled+=5;
 	};
+	auto SetNextTile = [&] (int j[6], float t[4][2]) {
+		for(int i=0; i<6; i++) {
+			SetNextTriangle(t[j[i]]);
+		}
+	};
 	for(int y=0; y<h-1; y++) {
 		for(int x=0; x<w-1; x++) {
 			// 0 1
 			// 3 2
-			float tex0[2] = {(tiles[x][y].texture+0)/(float)DatasetLoaded, 0.0f};
-			float tex1[2] = {(tiles[x][y].texture+1)/(float)DatasetLoaded, 0.0f};
-			float tex2[2] = {(tiles[x][y].texture+1)/(float)DatasetLoaded, 1.0f};
-			float tex3[2] = {(tiles[x][y].texture+0)/(float)DatasetLoaded, 1.0f};
+			float tex0[4][2] = {{(tiles[x][y].texture+0)/(float)DatasetLoaded, 0.0f},
+								{(tiles[x][y].texture+1)/(float)DatasetLoaded, 0.0f},
+								{(tiles[x][y].texture+1)/(float)DatasetLoaded, 1.0f},
+								{(tiles[x][y].texture+0)/(float)DatasetLoaded, 1.0f}};
+			int tord[6];
 			if(tiles[x][y].triflip) {
 				// 1 2
 				// 0
 				//
 				//   5
 				// 3 4
-				SetNextTriangle(tex3);
-				SetNextTriangle(tex0);
-				SetNextTriangle(tex1);
-				SetNextTriangle(tex3);
-				SetNextTriangle(tex2);
-				SetNextTriangle(tex1);
+				tord[0] = 3;
+				tord[1] = 0;
+				tord[2] = 1;
+				tord[3] = 3;
+				tord[4] = 2;
+				tord[5] = 1;
 			} else {
 				// 0 1
 				//   2
 				//
 				// 3
 				// 4 5
-				SetNextTriangle(tex0);
-				SetNextTriangle(tex1);
-				SetNextTriangle(tex2);
-				SetNextTriangle(tex0);
-				SetNextTriangle(tex3);
-				SetNextTriangle(tex2);
+				tord[0] = 0;
+				tord[1] = 1;
+				tord[2] = 2;
+				tord[3] = 0;
+				tord[4] = 3;
+				tord[5] = 2;
 			}
+			if(tiles[x][y].fy) {
+				std::swap(tord[0], tord[5]);
+				std::swap(tord[1], tord[4]);
+				std::swap(tord[2], tord[3]);
+			}
+			if(tiles[x][y].fx) {
+				std::swap(tord[2], tord[5]);
+				std::swap(tord[1], tord[4]);
+				std::swap(tord[0], tord[3]);
+			}
+			// auto dorot = [&] () {
+			// 	int m = tord[5];
+			// 	tord[5] = tord[4];
+			// 	tord[4] = tord[3];
+			// 	tord[3] = tord[2];
+			// 	tord[2] = tord[1];
+			// 	tord[1] = tord[0];
+			// 	tord[0] = m;
+			// };
+			// for(int numrot = 0; numrot<tiles[x][y].rot; numrot++) {
+			// 	dorot();
+			// }
+			SetNextTile(tord, tex0);
 		}
 	}
 }
