@@ -153,7 +153,8 @@ int main(int argc, char** argv) {
 	Uint32 frame_time_start = 0;
 	log_info("Entering render loop...");
 	bool ShowTextureDebugger = true;
-	int TextureDebuggerTriangle = 0;
+	int TextureDebuggerTriangleX = 0;
+	int TextureDebuggerTriangleY = 0;
 	while(r==1) {
 		frame_time_start = SDL_GetTicks();
 		while(SDL_PollEvent(&ev)) {
@@ -315,11 +316,16 @@ int main(int argc, char** argv) {
 		}
 		ImGui::End();
 		ImGui::Begin("Texture Viewer", &ShowTextureDebugger, 0);
-		ImGui::InputInt("Triangle", &TextureDebuggerTriangle, 1, 1);
-		ImGui::InputFloat2("1", &ter.GLvertexes[TextureDebuggerTriangle*15+3], "%f");
-		ImGui::InputFloat2("3", &ter.GLvertexes[TextureDebuggerTriangle*15+8], "%f");
-		ImGui::InputFloat2("5", &ter.GLvertexes[TextureDebuggerTriangle*15+13], "%f");
-		ImGui::Value("Flip", ter.tiles[TextureDebuggerTriangle/2][TextureDebuggerTriangle/2/ter.w].triflip);
+		ImGui::InputInt("TileX", &TextureDebuggerTriangleX, 1, 1);
+		ImGui::InputInt("TileY", &TextureDebuggerTriangleY, 1, 1);
+		int GLVpos = (TextureDebuggerTriangleY*ter.w + TextureDebuggerTriangleX)*30;
+		ImGui::InputFloat2("V0", &ter.GLvertexes[GLVpos+0 +3], "%f");
+		ImGui::InputFloat2("V1", &ter.GLvertexes[GLVpos+5 +3], "%f");
+		ImGui::InputFloat2("V2", &ter.GLvertexes[GLVpos+10+3], "%f");
+		ImGui::InputFloat2("V3", &ter.GLvertexes[GLVpos+15+3], "%f");
+		ImGui::InputFloat2("V4", &ter.GLvertexes[GLVpos+20+3], "%f");
+		ImGui::InputFloat2("V5", &ter.GLvertexes[GLVpos+25+3], "%f");
+		ImGui::Value("Flip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].triflip);
 		if(ImGui::Button("Buffer")) {
 			ter.BufferData(shad.program);
 		}

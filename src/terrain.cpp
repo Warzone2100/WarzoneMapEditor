@@ -18,30 +18,30 @@ void Terrain::GetHeightmapFromMWT(WZmap* map) {
 	GLvertexesCount = (h-1)*(w-1)*2*3*5;
 	GLvertexes = (float*)malloc(GLvertexesCount*sizeof(float));
 	size_t filled = 0;
-	auto addTriangle = [&] (int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3) {
-		GLvertexes[filled+0] = world_coord(x1);
-		GLvertexes[filled+1] = world_coord(y1);
-		GLvertexes[filled+2] = world_coord(z1);
+	auto addTriangle = [&] (float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3) {
+		GLvertexes[filled+0] = x1*256;
+		GLvertexes[filled+1] = y1*256;
+		GLvertexes[filled+2] = z1*256;
 		GLvertexes[filled+3] = 0;
 		GLvertexes[filled+4] = 0;
 		filled+=5;
-		GLvertexes[filled+0] = world_coord(x2);
-		GLvertexes[filled+1] = world_coord(y2);
-		GLvertexes[filled+2] = world_coord(z2);
+		GLvertexes[filled+0] = x2*256;
+		GLvertexes[filled+1] = y2*256;
+		GLvertexes[filled+2] = z2*256;
 		GLvertexes[filled+3] = 0;
 		GLvertexes[filled+4] = 0;
 		filled+=5;
-		GLvertexes[filled+0] = world_coord(x3);
-		GLvertexes[filled+1] = world_coord(y3);
-		GLvertexes[filled+2] = world_coord(z3);
+		GLvertexes[filled+0] = x3*256;
+		GLvertexes[filled+1] = y3*256;
+		GLvertexes[filled+2] = z3*256;
 		GLvertexes[filled+3] = 0;
 		GLvertexes[filled+4] = 0;
 		filled+=5;
 	};
-	int scale = 32;
+	float scale = 32.0f;
 	for(int y=0; y<h; y++) {
 		for(int x=0; x<w; x++) {
-			tiles[x][y].height = map->mapheight[y*w+x]/scale;
+			tiles[x][y].height = (float)map->mapheight[y*w+x]/scale;
 			tiles[x][y].triflip = WMT_TileGetTriFlip(map->maptile[y*w+x]);
 			tiles[x][y].texture = WMT_TileGetTexture(map->maptile[y*w+x]);
 			tiles[x][y].rot = WMT_TileGetRotation(map->maptile[y*w+x]);
@@ -52,19 +52,31 @@ void Terrain::GetHeightmapFromMWT(WZmap* map) {
 	}
 	for(int y=0; y<h-1; y++) {
 		for(int x=0; x<w-1; x++) {
+			// 0 1
+			// 3 2
 			if(WMT_TileGetTriFlip(map->maptile[y*w+x])) {
-				addTriangle(x,   tiles[x  ][y  ].height, y,
-							x,   tiles[x  ][y+1].height, y+1,
+				// 1 2
+				// 0
+				//
+				//   5
+				// 3 4
+				addTriangle(x,   tiles[x  ][y+1].height, y+1,
+							x,   tiles[x  ][y  ].height, y,
 							x+1, tiles[x+1][y  ].height, y);
-				addTriangle(x+1, tiles[x+1][y  ].height, y,
+				addTriangle(x,   tiles[x  ][y+1].height, y+1,
 							x+1, tiles[x+1][y+1].height, y+1,
-							x,   tiles[x  ][y+1].height, y+1);
+							x+1, tiles[x+1][y  ].height, y);
 			} else {
-				addTriangle(x,   tiles[x  ][y  ].height, y,
-							x,   tiles[x  ][y+1].height, y+1,
-							x+1, tiles[x+1][y+1].height, y+1);
+				// 0 1
+				//   2
+				//
+				// 3
+				// 4 5
 				addTriangle(x,   tiles[x  ][y  ].height, y,
 							x+1, tiles[x+1][y  ].height, y,
+							x+1, tiles[x+1][y+1].height, y+1);
+				addTriangle(x,   tiles[x  ][y  ].height, y,
+							x,   tiles[x  ][y+1].height, y+1,
 							x+1, tiles[x+1][y+1].height, y+1);
 			}
 		}
@@ -189,18 +201,6 @@ void Terrain::UpdateTexpageCoords() {
 			float tex2[2] = {(tiles[x][y].texture+1)/(float)DatasetLoaded, 1.0f};
 			float tex3[2] = {(tiles[x][y].texture+0)/(float)DatasetLoaded, 1.0f};
 			if(tiles[x][y].triflip) {
-				// 0 1
-				//   2
-				//
-				// 3
-				// 4 5
-				SetNextTriangle(tex0);
-				SetNextTriangle(tex1);
-				SetNextTriangle(tex2);
-				SetNextTriangle(tex0);
-				SetNextTriangle(tex3);
-				SetNextTriangle(tex2);
-			} else {
 				// 1 2
 				// 0
 				//
@@ -212,6 +212,18 @@ void Terrain::UpdateTexpageCoords() {
 				SetNextTriangle(tex3);
 				SetNextTriangle(tex2);
 				SetNextTriangle(tex1);
+			} else {
+				// 0 1
+				//   2
+				//
+				// 3
+				// 4 5
+				SetNextTriangle(tex0);
+				SetNextTriangle(tex1);
+				SetNextTriangle(tex2);
+				SetNextTriangle(tex0);
+				SetNextTriangle(tex3);
+				SetNextTriangle(tex2);
 			}
 		}
 	}

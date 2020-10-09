@@ -15,7 +15,7 @@ class Terrain : public Object3d {
 public:
 	struct tileinfo {
 		bool triflip;
-		int height;
+		float height;
 		int texture;
 		int rot;
 		bool fx, fy;
