@@ -115,6 +115,7 @@ int main(int argc, char** argv) {
 	glm::mat4 viewProjection;
 	glm::ivec2 cameraMapPosition;
 	float cameraFOV = 75.0f;
+	glEnablei(GL_BLEND, 0);
 
 	// glm::ivec3 tileScreenCoords[256][256];
 	auto cameraUpdate = [&] () {
