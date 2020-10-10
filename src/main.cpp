@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
 	WZmap map;
 	WMT_ReadMap((char*)"./8c-Stone-Jungle-E.wz", &map);
 	ter.GetHeightmapFromMWT(&map);
-	ter.CreateTexturePage(secure_getenv("TEXPAGES_PATH")?:(char*)"./data-texpages/", 16, rend);
+	ter.CreateTexturePage(secure_getenv("TEXPAGES_PATH")?:(char*)"./data-texpages/", 128, rend);
 	ter.UpdateTexpageCoords();
 	ter.BufferData(shad.program);
 	obj.BufferData(shad2.program);
@@ -155,6 +155,12 @@ int main(int argc, char** argv) {
 	bool ShowTextureDebugger = true;
 	int TextureDebuggerTriangleX = 0;
 	int TextureDebuggerTriangleY = 0;
+	char* mask = NULL;
+	for(int y=0; y<15; y++) {
+		for(int x=0; x<15; x++) {
+			mask = sprcatr(mask, "%c", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].rot+'0');
+		}
+	}
 	while(r==1) {
 		frame_time_start = SDL_GetTicks();
 		while(SDL_PollEvent(&ev)) {
@@ -326,6 +332,9 @@ int main(int argc, char** argv) {
 		ImGui::InputFloat2("V4", &ter.GLvertexes[GLVpos+20+3], "%f");
 		ImGui::InputFloat2("V5", &ter.GLvertexes[GLVpos+25+3], "%f");
 		ImGui::Value("Flip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].triflip);
+		ImGui::Value("Rot", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].rot);
+		ImGui::Value("xflip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].fx);
+		ImGui::Value("yflip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].fy);
 		if(ImGui::Button("Buffer")) {
 			ter.BufferData(shad.program);
 		}

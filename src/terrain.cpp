@@ -231,28 +231,24 @@ void Terrain::UpdateTexpageCoords() {
 				tord[4] = 3;
 				tord[5] = 2;
 			}
-			if(tiles[x][y].fy) {
+			if(tiles[x][y].fx) {
 				std::swap(tord[0], tord[5]);
 				std::swap(tord[1], tord[4]);
 				std::swap(tord[2], tord[3]);
 			}
-			if(tiles[x][y].fx) {
+			if(tiles[x][y].fy) {
 				std::swap(tord[2], tord[5]);
 				std::swap(tord[1], tord[4]);
 				std::swap(tord[0], tord[3]);
 			}
-			// auto dorot = [&] () {
-			// 	int m = tord[5];
-			// 	tord[5] = tord[4];
-			// 	tord[4] = tord[3];
-			// 	tord[3] = tord[2];
-			// 	tord[2] = tord[1];
-			// 	tord[1] = tord[0];
-			// 	tord[0] = m;
-			// };
-			// for(int numrot = 0; numrot<tiles[x][y].rot; numrot++) {
-			// 	dorot();
-			// }
+			for(int numrot = 0; numrot<tiles[x][y].rot; numrot++) {
+					for(int i=0; i<6; i++) {
+						tord[i]--;
+						if(tord[i] == -1) {
+							tord[i] = 3;
+						}
+					}
+			}
 			SetNextTile(tord, tex0);
 		}
 	}
