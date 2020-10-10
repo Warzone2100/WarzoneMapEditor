@@ -232,22 +232,38 @@ void Terrain::UpdateTexpageCoords() {
 				tord[5] = 2;
 			}
 			if(tiles[x][y].fx) {
-				std::swap(tord[0], tord[5]);
-				std::swap(tord[1], tord[4]);
-				std::swap(tord[2], tord[3]);
+				for(int i=0; i<6; i++) {
+					if(tord[i] == 0) {
+						tord[i] = 1;
+					} else if(tord[i] == 1) {
+						tord[i] = 0;
+					} else if(tord[i] == 2) {
+						tord[i] = 3;
+					} else if(tord[i] == 3) {
+						tord[i] = 2;
+					}
+				}
 			}
 			if(tiles[x][y].fy) {
-				std::swap(tord[2], tord[5]);
-				std::swap(tord[1], tord[4]);
-				std::swap(tord[0], tord[3]);
+				for(int i=0; i<6; i++) {
+					if(tord[i] == 0) {
+						tord[i] = 3;
+					} else if(tord[i] == 3) {
+						tord[i] = 0;
+					} else if(tord[i] == 2) {
+						tord[i] = 1;
+					} else if(tord[i] == 1) {
+						tord[i] = 2;
+					}
+				}
 			}
 			for(int numrot = 0; numrot<tiles[x][y].rot; numrot++) {
-					for(int i=0; i<6; i++) {
-						tord[i]++;
-						if(tord[i] == 4) {
-							tord[i] = 0;
-						}
+				for(int i=0; i<6; i++) {
+					tord[i]--;
+					if(tord[i] == -1) {
+						tord[i] = 3;
 					}
+				}
 			}
 			SetNextTile(tord, tex0);
 		}
