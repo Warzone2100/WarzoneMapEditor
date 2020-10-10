@@ -243,9 +243,9 @@ void Terrain::UpdateTexpageCoords() {
 			}
 			for(int numrot = 0; numrot<tiles[x][y].rot; numrot++) {
 					for(int i=0; i<6; i++) {
-						tord[i]--;
-						if(tord[i] == -1) {
-							tord[i] = 3;
+						tord[i]++;
+						if(tord[i] == 4) {
+							tord[i] = 0;
 						}
 					}
 			}
