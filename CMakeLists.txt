@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.9)
 project(warzone_map_editor)
 
 set(CMAKE_COLOR_MAKEFILE   ON)
-set(CMAKE_VERBOSE_MAKEFILE ON)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 set(WMT_BUILD_EXECUTABLE OFF CACHE BOOL "Build WMT executable" FORCE)
