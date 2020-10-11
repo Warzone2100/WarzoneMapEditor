@@ -30,3 +30,7 @@ add_library("glad" "${GLAD_DIR}/src/glad")
 target_include_directories("glad" PRIVATE "${GLAD_DIR}/include")
 target_include_directories(main PRIVATE "${GLAD_DIR}/include")
 target_link_libraries(main "glad" "${CMAKE_DL_LIBS}")
+
+add_custom_command( TARGET main PRE_BUILD
+						COMMAND ${CMAKE_COMMAND} -E copy_directory
+					${CMAKE_SOURCE_DIR}/data/ $<TARGET_FILE_DIR:main>/data/)

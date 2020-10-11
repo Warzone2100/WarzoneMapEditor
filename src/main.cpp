@@ -101,9 +101,9 @@ int main(int argc, char** argv) {
 	obj.PrepareTextureCoords();
 	Terrain ter;
 	WZmap map;
-	WMT_ReadMap((char*)"./8c-Stone-Jungle-E.wz", &map);
+	WMT_ReadMap(secure_getenv("OPENMAP")?:(char*)"./data/8c-Stone-Jungle-E.wz", &map);
 	ter.GetHeightmapFromMWT(&map);
-	ter.CreateTexturePage(secure_getenv("TEXPAGES_PATH")?:(char*)"./data-texpages/", 128, rend);
+	ter.CreateTexturePage(secure_getenv("TEXPAGES_PATH")?:(char*)"./data/texpages/", 128, rend);
 	ter.UpdateTexpageCoords();
 	ter.BufferData(shad.program);
 	obj.BufferData(shad2.program);
