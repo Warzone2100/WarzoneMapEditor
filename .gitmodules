@@ -1,6 +1,6 @@
 [submodule "WMT"]
 	path = lib/WMT
 	url = git@github.com:maxsupermanhd/WMT.git
-[submodule "data-texpages"]
+[submodule "data/texpages"]
 	path = data/texpages
 	url = git@github.com:Warzone2100/data-texpages.git
