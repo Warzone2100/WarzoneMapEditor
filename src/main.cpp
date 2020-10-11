@@ -30,8 +30,8 @@
 int width = 640;
 int height = 480;
 
-const char* demopieobjectpath = "./blbrbgen.pie";
-const char* demopieobjectpath2 = "./vtolfactory_module1.pie";
+const char* demopieobjectpath = "./data/blbrbgen.pie";
+const char* demopieobjectpath2 = "./data/vtolfactory_module1.pie";
 
 int main(int argc, char** argv) {
 	log_set_level(2);
@@ -94,9 +94,9 @@ int main(int argc, char** argv) {
 	Object3d obj;
 	obj.LoadFromPIE(demopieobjectpath);
 	Texture tex;
-	tex.Load(obj.TexturePath, rend);
-	mshader shad2("vertex.vs", "fragment.frag");
-	mshader shad("vertex.vs", "fragment.frag");
+	tex.Load("./data/"+obj.TexturePath, rend);
+	mshader shad2("./data/vertex.vs", "./data/fragment.frag");
+	mshader shad("./data/vertex.vs", "./data/fragment.frag");
 	obj.UsingTexture = &tex;
 	obj.PrepareTextureCoords();
 	Terrain ter;
@@ -339,7 +339,7 @@ int main(int argc, char** argv) {
 		if(ImGui::Button("Buffer")) {
 			ter.BufferData(shad.program);
 		}
-		ImGui::Text(mask);
+		ImGui::Text("%s", mask);
 		ImGui::End();
 		shad.use();
 		glUniformMatrix4fv(glGetUniformLocation(shad.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
