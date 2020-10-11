@@ -158,8 +158,9 @@ int main(int argc, char** argv) {
 	char* mask = NULL;
 	for(int y=0; y<15; y++) {
 		for(int x=0; x<15; x++) {
-			mask = sprcatr(mask, "%c", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].rot+'0');
+			mask = sprcatr(mask, "%c", ter.tiles[x][y].rot+'0');
 		}
+		mask = sprcatr(mask, "\n");
 	}
 	while(r==1) {
 		frame_time_start = SDL_GetTicks();
@@ -338,6 +339,7 @@ int main(int argc, char** argv) {
 		if(ImGui::Button("Buffer")) {
 			ter.BufferData(shad.program);
 		}
+		ImGui::Text(mask);
 		ImGui::End();
 		shad.use();
 		glUniformMatrix4fv(glGetUniformLocation(shad.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));

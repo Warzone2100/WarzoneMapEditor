@@ -231,7 +231,19 @@ void Terrain::UpdateTexpageCoords() {
 				tord[4] = 3;
 				tord[5] = 2;
 			}
-			if(tiles[x][y].fx) {
+			if(tiles[x][y].fx && tiles[x][y].fy) {
+				for(int i=0; i<6; i++) {
+					if(tord[i] == 3) {
+						tord[i] = 1;
+					} else if(tord[i] == 1) {
+						tord[i] = 3;
+					} else if(tord[i] == 2) {
+						tord[i] = 0;
+					} else if(tord[i] == 0) {
+						tord[i] = 2;
+					}
+				}
+			} else if(tiles[x][y].fx) {
 				for(int i=0; i<6; i++) {
 					if(tord[i] == 0) {
 						tord[i] = 1;
@@ -243,8 +255,7 @@ void Terrain::UpdateTexpageCoords() {
 						tord[i] = 2;
 					}
 				}
-			}
-			if(tiles[x][y].fy) {
+			} else if(tiles[x][y].fy) {
 				for(int i=0; i<6; i++) {
 					if(tord[i] == 0) {
 						tord[i] = 3;
@@ -259,9 +270,9 @@ void Terrain::UpdateTexpageCoords() {
 			}
 			for(int numrot = 0; numrot<tiles[x][y].rot; numrot++) {
 				for(int i=0; i<6; i++) {
-					tord[i]--;
-					if(tord[i] == -1) {
-						tord[i] = 3;
+					tord[i]++;
+					if(tord[i] == 4) {
+						tord[i] = 0;
 					}
 				}
 			}
