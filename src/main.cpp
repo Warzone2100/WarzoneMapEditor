@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
 		log_fatal("gladLoadGL failed");
 		abort();
 	}
-	log_info("OpenGL %d.%d", GLVersion.major, GLVersion.minor);
+	log_info("OpenGL %s", glGetString(GL_VERSION));
 	if(GLAD_GL_EXT_framebuffer_multisample) {
 		log_info("Supporting framebuffer multisample");
 	}
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
 	Texture tex;
 	tex.Load("./data/"+obj.TexturePath, rend);
 	mshader shad2("./data/vertex.vs", "./data/fragment.frag");
-	mshader shad("./data/vertex.vs", "./data/fragment.frag");
+	mshader TerrainShader("/home/max/Desktop/inf/WarzoneMapEditor/data/TerrainShaderVertex.vs", "/home/max/Desktop/inf/WarzoneMapEditor/data/TerrainShaderFragment.frag");
 	obj.UsingTexture = &tex;
 	obj.PrepareTextureCoords();
 	Terrain ter;
@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 	ter.GetHeightmapFromMWT(&map);
 	ter.CreateTexturePage(secure_getenv("TEXPAGES_PATH")?:(char*)"./data/texpages/", 128, rend);
 	ter.UpdateTexpageCoords();
-	ter.BufferData(shad.program);
+	ter.BufferData(TerrainShader.program);
 	obj.BufferData(shad2.program);
 
 	glm::vec3 cameraPosition(0, 2000, 1000);
@@ -337,13 +337,14 @@ int main(int argc, char** argv) {
 		ImGui::Value("xflip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].fx);
 		ImGui::Value("yflip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].fy);
 		if(ImGui::Button("Buffer")) {
-			ter.BufferData(shad.program);
+			ter.BufferData(TerrainShader.program);
 		}
 		ImGui::Text("%s", mask);
 		ImGui::End();
-		shad.use();
-		glUniformMatrix4fv(glGetUniformLocation(shad.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
-		ter.Render(shad.program);
+
+		TerrainShader.use();
+		glUniformMatrix4fv(glGetUniformLocation(TerrainShader.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
+		ter.Render(TerrainShader.program);
 
 		shad2.use();
 		glUniformMatrix4fv(glGetUniformLocation(shad2.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));

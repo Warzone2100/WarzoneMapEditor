@@ -27,6 +27,7 @@ public:
 	void UpdateTexpageCoords();
 	void GetHeightmapFromMWT(WZmap* m);
 	void CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend);
+	void BufferData(unsigned int shader);
 };
 
 #endif /* end of include guard: TERRAIN_H_INCLUDED */

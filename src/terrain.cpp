@@ -15,7 +15,7 @@ void Terrain::GetHeightmapFromMWT(WZmap* map) {
 	w = map->maptotalx;
 	h = map->maptotaly;
 	RenderingMode = GL_TRIANGLES;
-	GLvertexesCount = (h-1)*(w-1)*2*3*5;
+	GLvertexesCount = (h-1)*(w-1)*2*3*8;
 	GLvertexes = (float*)malloc(GLvertexesCount*sizeof(float));
 	size_t filled = 0;
 	auto addTriangle = [&] (float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3) {
@@ -24,19 +24,31 @@ void Terrain::GetHeightmapFromMWT(WZmap* map) {
 		GLvertexes[filled+2] = z1*128;
 		GLvertexes[filled+3] = 0;
 		GLvertexes[filled+4] = 0;
-		filled+=5;
+		GLvertexes[filled+5] = 0;
+		GLvertexes[filled+6] = 0;
+		GLvertexes[filled+7] = 0;
+		GLvertexes[filled+8] = 0;
+		filled+=9;
 		GLvertexes[filled+0] = x2*128;
 		GLvertexes[filled+1] = y2*128;
 		GLvertexes[filled+2] = z2*128;
 		GLvertexes[filled+3] = 0;
 		GLvertexes[filled+4] = 0;
-		filled+=5;
+		GLvertexes[filled+5] = 0;
+		GLvertexes[filled+6] = 0;
+		GLvertexes[filled+7] = 0;
+		GLvertexes[filled+8] = 0;
+		filled+=9;
 		GLvertexes[filled+0] = x3*128;
 		GLvertexes[filled+1] = y3*128;
 		GLvertexes[filled+2] = z3*128;
 		GLvertexes[filled+3] = 0;
 		GLvertexes[filled+4] = 0;
-		filled+=5;
+		GLvertexes[filled+5] = 0;
+		GLvertexes[filled+6] = 0;
+		GLvertexes[filled+7] = 0;
+		GLvertexes[filled+8] = 0;
+		filled+=9;
 	};
 	float scale = 32.0f;
 	for(int y=0; y<h; y++) {
@@ -190,7 +202,8 @@ void Terrain::UpdateTexpageCoords() {
 	auto SetNextTriangle = [&] (float c[2]) {
 		GLvertexes[filled+3] = c[0];
 		GLvertexes[filled+4] = c[1];
-		filled+=5;
+		GLvertexes[filled+5] = 1.0f;
+		filled+=9;
 	};
 	auto SetNextTile = [&] (int j[6], float t[4][2]) {
 		for(int i=0; i<6; i++) {
@@ -268,4 +281,19 @@ void Terrain::UpdateTexpageCoords() {
 			SetNextTile(tord, tex0);
 		}
 	}
+}
+
+// Makes up buffers and stores arrays
+void Terrain::BufferData(unsigned int shader) {
+	glGenVertexArrays(1, &VAOv);
+	glGenBuffers(1, &VBOv);
+	BindVAO();
+	BindVBO();
+	glBufferData(GL_ARRAY_BUFFER, GLvertexesCount*sizeof(float), GLvertexes, GL_STATIC_DRAW);
+	glVertexAttribPointer(glGetAttribLocation(shader, "VertexCoordinates"), 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(glGetAttribLocation(shader, "VertexCoordinates"));
+	glVertexAttribPointer(glGetAttribLocation(shader, "TextureCoordinates"), 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(glGetAttribLocation(shader, "TextureCoordinates"));
+	glVertexAttribPointer(glGetAttribLocation(shader, "TextureCliffCoordinates"), 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(glGetAttribLocation(shader, "TextureCliffCoordinates"));
 }
