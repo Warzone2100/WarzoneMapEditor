@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
 	Texture tex;
 	tex.Load("./data/"+obj.TexturePath, rend);
 	mshader shad2("./data/vertex.vs", "./data/fragment.frag");
-	mshader TerrainShader("/home/max/Desktop/inf/WarzoneMapEditor/data/TerrainShaderVertex.vs", "/home/max/Desktop/inf/WarzoneMapEditor/data/TerrainShaderFragment.frag");
+	mshader TerrainShader("./data/TerrainShaderVertex.vs", "./data/TerrainShaderFragment.frag");
 	obj.UsingTexture = &tex;
 	obj.PrepareTextureCoords();
 	Terrain ter;
