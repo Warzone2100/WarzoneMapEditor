@@ -111,13 +111,6 @@ bool Object3d::LoadFromPIE(std::string filepath) {
 	return true;
 }
 
-Object3d::~Object3d() {
-	if(GLvertexes) {
-		free(GLvertexes);
-		GLvertexesCount = 0;
-	}
-}
-
 // Convert texture w/h coords into 0.0f .. 1.0f coords
 void Object3d::PrepareTextureCoords() {
 	for(unsigned int i=0; i<GLvertexesCount/5; i++) {
@@ -177,6 +170,15 @@ void Object3d::Render(unsigned int shader) {
 	}
 }
 
+void Object3d::Free() {
+	if(UsingTexture) {
+		UsingTexture->Free();
+	}
+	if(GLvertexes) {
+		free(GLvertexes);
+	}
+}
+
 void Texture::Load(std::string path, SDL_Renderer *rend) {
 	this->path = path;
 	log_info("Loading [%s] texture...", this->path.c_str());
@@ -215,6 +217,15 @@ void Texture::Bind(int texid) {
 void Texture::Unbind() {
 	if(SDL_GL_UnbindTexture(this->tex)) {
 		log_error("Failed to unbind SDL_Texture: %s", SDL_GetError());
+	}
+	return;
+}
+
+void Texture::Free() {
+	if(tex != nullptr) {
+		Unbind();
+		SDL_DestroyTexture(tex);
+		glDeleteTextures(1, &GLid);
 	}
 	return;
 }

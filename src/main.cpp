@@ -147,7 +147,6 @@ int main(int argc, char** argv) {
 	bool cursorTrapped = false;
 
 	bool r=1;
-	int showtexture = 0;
 	glEnable(GL_DEPTH_TEST);
 	SDL_Event ev;
 	Uint32 frame_time_start = 0;
@@ -155,13 +154,6 @@ int main(int argc, char** argv) {
 	bool ShowTextureDebugger = true;
 	int TextureDebuggerTriangleX = 0;
 	int TextureDebuggerTriangleY = 0;
-	char* mask = NULL;
-	for(int y=0; y<15; y++) {
-		for(int x=0; x<15; x++) {
-			mask = sprcatr(mask, "%c", ter.tiles[x][y].rot+'0');
-		}
-		mask = sprcatr(mask, "\n");
-	}
 	while(r==1) {
 		frame_time_start = SDL_GetTicks();
 		while(SDL_PollEvent(&ev)) {
@@ -322,6 +314,7 @@ int main(int argc, char** argv) {
 			ShowTextureDebugger = true;
 		}
 		ImGui::End();
+		static bool ShowTextureDebugger = 0;
 		ImGui::Begin("Texture Viewer", &ShowTextureDebugger, 0);
 		ImGui::InputInt("TileX", &TextureDebuggerTriangleX, 1, 1);
 		ImGui::InputInt("TileY", &TextureDebuggerTriangleY, 1, 1);
@@ -339,7 +332,6 @@ int main(int argc, char** argv) {
 		if(ImGui::Button("Buffer")) {
 			ter.BufferData(TerrainShader.program);
 		}
-		ImGui::Text("%s", mask);
 		ImGui::End();
 
 		TerrainShader.use();
@@ -359,11 +351,14 @@ int main(int argc, char** argv) {
 			SDL_Delay(1000/FPS-(SDL_GetTicks()-frame_time_start));
 		}
 	}
-
+	obj.Free();
+	ter.Free();
+	// tex.Free();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 	SDL_GL_DeleteContext(glcontext);
+	SDL_DestroyRenderer(rend);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 	return 0;

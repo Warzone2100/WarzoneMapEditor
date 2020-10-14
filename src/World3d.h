@@ -15,7 +15,7 @@ public:
 	unsigned int GLid;
 	int id;
 	std::string path;
-	SDL_Texture *tex;
+	SDL_Texture *tex = nullptr;
 	int w, h;
 	bool valid;
 	void Load(std::string path, SDL_Renderer *rend);
@@ -23,6 +23,7 @@ public:
 	void Bind(int texid);
 	void Bind();
 	void Unbind();
+	void Free();
 };
 
 class Object3d {
@@ -32,14 +33,13 @@ public:
 	glm::vec3 GLpos;
 	glm::vec3 GLrot;
 	float GLscale;
-	Texture* UsingTexture;
+	Texture* UsingTexture = nullptr;
 	bool Visible;
 	std::string TexturePath;
 	unsigned int VAOv, VBOv;
 	int RenderingMode = GL_TRIANGLES;
 	bool FillTextures = true;
 	Object3d();
-	~Object3d();
 	bool LoadFromPIE(std::string filepath);
 	void PrepareTextureCoords();
 	void BufferData(unsigned int shader);
@@ -47,6 +47,7 @@ public:
 	void BindVBO();
 	glm::mat4 GetMatrix();
 	void Render(unsigned int shader);
+	void Free();
 };
 
 class World3d {
