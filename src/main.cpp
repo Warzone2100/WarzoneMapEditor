@@ -108,8 +108,8 @@ int main(int argc, char** argv) {
 	ter.BufferData(TerrainShader.program);
 	obj.BufferData(shad2.program);
 
-	glm::vec3 cameraPosition(0, 2000, 1000);
-	glm::vec3 cameraRotation(-45, 0, 0);
+	glm::vec3 cameraPosition(-249.569931, 2752.000000, 1513.794312);
+	glm::vec3 cameraRotation(-51.000000, -104.000000, 0.000000);
 	glm::vec3 cameraVelocity = {0, 0, 0};
 	float cameraSpeed = 2.0f;
 	glm::mat4 viewProjection;
@@ -313,6 +313,12 @@ int main(int argc, char** argv) {
 		if(ImGui::Button("Texture assigner")) {
 			ShowTextureDebugger = true;
 		}
+		if(ImGui::Button("Print camera pos")) {
+            log_info("Camera:\n\
+glm::vec3 cameraPosition(%f, %f, %f);\n\
+glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, cameraPosition.z,
+                                        cameraRotation.x, cameraRotation.y, cameraRotation.z);
+        }
 		ImGui::End();
 		static bool ShowTextureDebugger = 0;
 		ImGui::Begin("Texture Viewer", &ShowTextureDebugger, 0);
