@@ -143,7 +143,6 @@ int main(int argc, char** argv) {
 			glm::mat4(1);
 	};
 	cameraUpdate();
-	int CursorTrapWasX, CursorTrapWasY;
 	bool cursorTrapped = false;
 
 	bool r=1;
@@ -163,7 +162,6 @@ int main(int argc, char** argv) {
 				break;
 
 				case SDL_MOUSEMOTION:
-				printf("Mouse %i, %i\n", ev.motion.xrel, ev.motion.yrel);
 				if(cursorTrapped) {
 					cameraRotation.x -= ev.motion.yrel/2.0f;
 					cameraRotation.y -= ev.motion.xrel/2.0f;
@@ -208,7 +206,6 @@ int main(int argc, char** argv) {
 					case SDLK_SPACE:
 					if(!cursorTrapped) {
 						SDL_SetRelativeMouseMode(SDL_TRUE);
-						SDL_GetMouseState(&CursorTrapWasX, &CursorTrapWasY);
 					}
 					cursorTrapped = true;
 					break;
@@ -239,8 +236,6 @@ int main(int argc, char** argv) {
 					case SDLK_SPACE:
 					cursorTrapped = false;
 					SDL_SetRelativeMouseMode(SDL_FALSE);
-					SDL_WarpMouseInWindow(window, CursorTrapWasX, CursorTrapWasY);
-					log_info("Cursor restored at %d:%d", CursorTrapWasX, CursorTrapWasY);
 					break;
 					default:
 					break;
