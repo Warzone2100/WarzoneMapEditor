@@ -110,9 +110,12 @@ int main(int argc, char** argv) {
 	
 	mshader TileSelectionShader("./data/TileSelectionShader.vs", "./data/TileSelectionShader.frag");
 	float TileSelectionVertexArray[] = {
+		0.0f, 0.0f, 0.0f,
 		0.0f,  0.0f, 128.0f,
 		128.0f, 0.0f, 128.0f,
-		128.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		128.0f, 0.0f, 128.0f,
+		128.0f,  0.0f, 0.0f,
 	};
 	unsigned int TileSelectionVertexArrayObject;
 	unsigned int TileSelectionVertexBufferObject;
@@ -120,7 +123,7 @@ int main(int argc, char** argv) {
 	glBindVertexArray(TileSelectionVertexArrayObject);
 	glGenBuffers(1, &TileSelectionVertexBufferObject);
 	glBindBuffer(GL_ARRAY_BUFFER, TileSelectionVertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), TileSelectionVertexArray, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), TileSelectionVertexArray, GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(TileSelectionShader.program, "VertexCoordinates"), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(glGetAttribLocation(TileSelectionShader.program, "VertexCoordinates"));
 
@@ -384,9 +387,8 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
 		TileSelectionShader.use();
 		glUniformMatrix4fv(glGetUniformLocation(TileSelectionShader.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
 		glBindVertexArray(TileSelectionVertexArrayObject);
-		glBindBuffer(GL_ARRAY_BUFFER, TileSelectionVertexBufferObject);
 		glDisable(GL_DEPTH_TEST);  
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glEnable(GL_DEPTH_TEST);  
 
 		ImGui::Render();
