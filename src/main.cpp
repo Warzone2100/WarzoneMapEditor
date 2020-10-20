@@ -108,6 +108,7 @@ int main(int argc, char** argv) {
 	ter.BufferData(TerrainShader.program);
 	obj.BufferData(shad2.program);
 
+	glm::ivec2 mousePosition(0, 0);
 	glm::vec3 cameraPosition(-249.569931, 2752.000000, 1513.794312);
 	glm::vec3 cameraRotation(-51.000000, -104.000000, 0.000000);
 	glm::vec3 cameraVelocity = {0, 0, 0};
@@ -117,24 +118,22 @@ int main(int argc, char** argv) {
 	float cameraFOV = 75.0f;
 	glEnablei(GL_BLEND, 0);
 
-	// glm::ivec3 tileScreenCoords[256][256];
+	glm::ivec3 tileScreenCoords[256][256];
 	auto cameraUpdate = [&] () {
 		cameraMapPosition.x = glm::clamp((int)(map_coord(cameraPosition.x)), 0, ter.w);
 		cameraMapPosition.y = glm::clamp((int)(map_coord(cameraPosition.z)), 0, ter.h);
-		// for(int y = 0; y < ter.h; y++) {
-		// 	for(int x = 0; x < ter.w; x++) {
-		// 		auto projectedPosition = glm::vec4(viewProjection * glm::vec4(world_coord(x), world_coord(ter.tileHeight[y][x]), world_coord(y), 1.f));
-		// 		const float xx = projectedPosition.x / projectedPosition.w;
-		// 		const float yy = projectedPosition.y / projectedPosition.w;
-		// 		int screenX = (.5 + .5 * xx) * width;
-		// 		int screenY = (.5 - .5 * yy) * height;
-		// 		int screenZ = projectedPosition.w;
-		//
-		// 		tileScreenCoords[x][y] = glm::ivec3(screenX, screenY, screenZ);
-		// 	}
-		// }
-		// printf("position of %i, %i, %i : %i, %i (%i)\n", 0, 0, ter.tileHeight[0][0], tileScreenCoords[0][0].x, tileScreenCoords[0][0].y, tileScreenCoords[0][0].z);
-
+		for(int y = 0; y < ter.h; y++) {
+			for(int x = 0; x < ter.w; x++) {
+				auto projectedPosition = glm::vec4(viewProjection * glm::vec4(world_coord(x), world_coord(0), world_coord(y), 1.f));
+				const float xx = projectedPosition.x / projectedPosition.w;
+				const float yy = projectedPosition.y / projectedPosition.w;
+				int screenX = (.5 + .5 * xx) * width;
+				int screenY = (.5 - .5 * yy) * height;
+				int screenZ = projectedPosition.w;
+		
+				tileScreenCoords[x][y] = glm::ivec3(screenX, screenY, screenZ);
+			}
+		}
 		viewProjection = glm::perspective(glm::radians(cameraFOV), (float) width / (float)height, 30.0f, 100000.0f) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
@@ -162,6 +161,11 @@ int main(int argc, char** argv) {
 				break;
 
 				case SDL_MOUSEMOTION:
+				mousePosition.x = ev.motion.x;
+				mousePosition.y = ev.motion.y;
+				printf("Mouse: %i, %i\n", mousePosition.x, mousePosition.y);
+				printf("position of %i, %i, %i : %i, %i (%i)\n", 0, 0, 0, tileScreenCoords[0][0].x, tileScreenCoords[0][0].y, tileScreenCoords[0][0].z);
+
 				if(cursorTrapped) {
 					cameraRotation.x -= ev.motion.yrel/2.0f;
 					cameraRotation.y -= ev.motion.xrel/2.0f;
