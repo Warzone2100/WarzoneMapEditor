@@ -1,8 +1,10 @@
 #version 330 core
 
-attribute vec3 VertexCoordinates;
+attribute vec4 VertexCoordinates;
+
+uniform mat4 ViewProjection;
 
 void main()
 {
-    gl_Position = vec4(VertexCoordinates, 1);
+    gl_Position = ViewProjection * VertexCoordinates;
 }

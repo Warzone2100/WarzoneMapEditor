@@ -110,9 +110,9 @@ int main(int argc, char** argv) {
 	
 	mshader TileSelectionShader("./data/TileSelectionShader.vs", "./data/TileSelectionShader.frag");
 	float TileSelectionVertexArray[] = {
-		0.0f,  0.5f,  0.0f,
-		0.5f, -0.5f,  0.0f,
-		-0.5f, -0.5f,  0.0f
+		0.0f,  0.0f, 128.0f,
+		128.0f, 0.0f, 128.0f,
+		128.0f, 0.0f, 0.0f,
 	};
 	unsigned int TileSelectionVertexArrayObject;
 	unsigned int TileSelectionVertexBufferObject;
@@ -382,10 +382,12 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
 		obj.Render(shad2.program);
 
 		TileSelectionShader.use();
-		// glUniformMatrix4fv(glGetUniformLocation(TileSelectionShader.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f,1,1,1)));
+		glUniformMatrix4fv(glGetUniformLocation(TileSelectionShader.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
 		glBindVertexArray(TileSelectionVertexArrayObject);
 		glBindBuffer(GL_ARRAY_BUFFER, TileSelectionVertexBufferObject);
+		glDisable(GL_DEPTH_TEST);  
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glEnable(GL_DEPTH_TEST);  
 
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
