@@ -119,9 +119,8 @@ int main(int argc, char** argv) {
 	glEnablei(GL_BLEND, 0);
 
 	glm::ivec3 tileScreenCoords[256][256];
-	auto cameraUpdate = [&] () {
-		cameraMapPosition.x = glm::clamp((int)(map_coord(cameraPosition.x)), 0, ter.w);
-		cameraMapPosition.y = glm::clamp((int)(map_coord(cameraPosition.z)), 0, ter.h);
+	long visibleTilesUpdateTime = 0;
+	auto visibleTilesUpdate = [&] () {
 		for(int y = 0; y < ter.h; y++) {
 			for(int x = 0; x < ter.w; x++) {
 				auto projectedPosition = glm::vec4(viewProjection * glm::vec4(world_coord(x), world_coord(0), world_coord(y), 1.f));
@@ -134,6 +133,11 @@ int main(int argc, char** argv) {
 				tileScreenCoords[x][y] = glm::ivec3(screenX, screenY, screenZ);
 			}
 		}
+	};
+
+	auto cameraUpdate = [&] () {
+		cameraMapPosition.x = glm::clamp((int)(map_coord(cameraPosition.x)), 0, ter.w);
+		cameraMapPosition.y = glm::clamp((int)(map_coord(cameraPosition.z)), 0, ter.h);
 		viewProjection = glm::perspective(glm::radians(cameraFOV), (float) width / (float)height, 30.0f, 100000.0f) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
@@ -144,20 +148,20 @@ int main(int argc, char** argv) {
 	cameraUpdate();
 	bool cursorTrapped = false;
 
-	bool r=1;
+	bool running = true;
 	glEnable(GL_DEPTH_TEST);
 	SDL_Event ev;
 	Uint32 frame_time_start = 0;
 	log_info("Entering render loop...");
 	int TextureDebuggerTriangleX = 0;
 	int TextureDebuggerTriangleY = 0;
-	while(r==1) {
+	while(running) {
 		frame_time_start = SDL_GetTicks();
 		while(SDL_PollEvent(&ev)) {
 			ImGui_ImplSDL2_ProcessEvent(&ev);
 			switch(ev.type) {
 				case SDL_QUIT:
-				r = 0;
+				running = false;
 				break;
 
 				case SDL_MOUSEMOTION:
@@ -205,7 +209,7 @@ int main(int argc, char** argv) {
 				case SDL_KEYDOWN:
 				switch(ev.key.keysym.sym) {
 					case SDLK_ESCAPE:
-					r = 0;
+					running = false;
 					break;
 					case SDLK_w:
 					cameraVelocity.z = -8;
@@ -266,6 +270,10 @@ int main(int argc, char** argv) {
 			cameraPosition.z -= glm::sin(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.x;
 		}
 		cameraUpdate();
+		if(visibleTilesUpdateTime < SDL_GetTicks()){
+			visibleTilesUpdate();
+			visibleTilesUpdateTime = SDL_GetTicks() + 1000;
+		}
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		ImGui_ImplOpenGL3_NewFrame();
