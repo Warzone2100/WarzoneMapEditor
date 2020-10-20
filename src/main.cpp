@@ -107,6 +107,22 @@ int main(int argc, char** argv) {
 	ter.UpdateTexpageCoords();
 	ter.BufferData(TerrainShader.program);
 	obj.BufferData(shad2.program);
+	
+	mshader TileSelectionShader("./data/TileSelectionShader.vs", "./data/TileSelectionShader.frag");
+	float TileSelectionVertexArray[] = {
+		0.0f,  0.5f,  0.0f,
+		0.5f, -0.5f,  0.0f,
+		-0.5f, -0.5f,  0.0f
+	};
+	unsigned int TileSelectionVertexArrayObject;
+	unsigned int TileSelectionVertexBufferObject;
+	glGenVertexArrays(1, &TileSelectionVertexArrayObject);
+	glBindVertexArray(TileSelectionVertexArrayObject);
+	glGenBuffers(1, &TileSelectionVertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, TileSelectionVertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), TileSelectionVertexArray, GL_STATIC_DRAW);
+	glVertexAttribPointer(glGetAttribLocation(TileSelectionShader.program, "VertexCoordinates"), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(glGetAttribLocation(TileSelectionShader.program, "VertexCoordinates"));
 
 	glm::ivec2 mousePosition(0, 0);
 	glm::vec3 cameraPosition(-249.569931, 2752.000000, 1513.794312);
@@ -364,6 +380,12 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
 		shad2.use();
 		glUniformMatrix4fv(glGetUniformLocation(shad2.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
 		obj.Render(shad2.program);
+
+		TileSelectionShader.use();
+		// glUniformMatrix4fv(glGetUniformLocation(TileSelectionShader.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f,1,1,1)));
+		glBindVertexArray(TileSelectionVertexArrayObject);
+		glBindBuffer(GL_ARRAY_BUFFER, TileSelectionVertexBufferObject);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
