@@ -169,21 +169,19 @@ int main(int argc, char** argv) {
 				int maxY = std::max((int)aa.y, std::max((int)ba.y, std::max((int)ab.y, (int)bb.y)));
 
 				if(mousePosition.x < minX) {
-					break;
+					continue;
 				}
 				if(mousePosition.x > maxX) {
-					break;
+					continue;
 				}
 				if(mousePosition.y < minY) {
-					break;
+					continue;
 				}
 				if(mousePosition.y > maxY) {
-					break;
+					continue;
 				}
 
 				mouseTilePosition = { x, y };
-
-				printf("Match! Mouse is on tile %i, %i\n", x, y);
 			}
 		}
 	};
@@ -221,9 +219,6 @@ int main(int argc, char** argv) {
 				mousePosition.x = ev.motion.x;
 				mousePosition.y = ev.motion.y;
 				mouseTilePositionUpdate();
-				printf("Mouse: %i, %i\n", mousePosition.x, mousePosition.y);
-				printf("Mouse Tile: %i, %i\n", mouseTilePosition.x, mouseTilePosition.y);
-				// printf("position of %i, %i, %i : %i, %i (%i)\n", 0, 0, 0, tileScreenCoords[0][0].x, tileScreenCoords[0][0].y, tileScreenCoords[0][0].z);
 
 				if(cursorTrapped) {
 					cameraRotation.x -= ev.motion.yrel/2.0f;
@@ -423,11 +418,11 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
 		if(mouseTilePosition.x != -1){
 			glm::ivec2 mouseTileWorldCoordinates = { world_coord(mouseTilePosition.x), world_coord(mouseTilePosition.y) };
 			TileSelectionVertexArray[0] = { mouseTileWorldCoordinates.x + 0.0f, 0.0f, mouseTileWorldCoordinates.y + 0.0f };
-			TileSelectionVertexArray[1] = { mouseTileWorldCoordinates.x + 0.0f,  0.0f, mouseTileWorldCoordinates.y + 1280.0f };
-			TileSelectionVertexArray[2] = { mouseTileWorldCoordinates.x + 1280.0f, 0.0f, mouseTileWorldCoordinates.y + 1280.0f };
+			TileSelectionVertexArray[1] = { mouseTileWorldCoordinates.x + 0.0f,  0.0f, mouseTileWorldCoordinates.y + 128.0f };
+			TileSelectionVertexArray[2] = { mouseTileWorldCoordinates.x + 128.0f, 0.0f, mouseTileWorldCoordinates.y + 128.0f };
 			TileSelectionVertexArray[3] = { mouseTileWorldCoordinates.x + 0.0f, 0.0f, mouseTileWorldCoordinates.y + 0.0f };
-			TileSelectionVertexArray[4] = { mouseTileWorldCoordinates.x + 1280.0f, 0.0f, mouseTileWorldCoordinates.y + 1280.0f };
-			TileSelectionVertexArray[5] = { mouseTileWorldCoordinates.x + 1280.0f,  0.0f, mouseTileWorldCoordinates.y + 0.0f };
+			TileSelectionVertexArray[4] = { mouseTileWorldCoordinates.x + 128.0f, 0.0f, mouseTileWorldCoordinates.y + 128.0f };
+			TileSelectionVertexArray[5] = { mouseTileWorldCoordinates.x + 128.0f,  0.0f, mouseTileWorldCoordinates.y + 0.0f };
 			
 			glBindBuffer(GL_ARRAY_BUFFER, TileSelectionVertexBufferObject);
 			glBufferData(GL_ARRAY_BUFFER, TileSelectionVertexArray.size() * 3 * sizeof(float), &TileSelectionVertexArray[0], GL_STATIC_DRAW);
