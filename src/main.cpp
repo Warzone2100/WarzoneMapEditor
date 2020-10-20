@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
 				break;
 
 				case SDL_MOUSEWHEEL:
-				cameraFOV += ev.wheel.y*4;
+				cameraPosition.y += ev.wheel.y*128;
 				break;
 
 				case SDL_WINDOWEVENT:
@@ -178,6 +178,24 @@ int main(int argc, char** argv) {
 					width = ev.window.data1;
 					height = ev.window.data2;
 					cameraUpdate();
+				}
+				break;
+				case SDL_MOUSEBUTTONDOWN:
+				switch(ev.button.button) {
+					case SDL_BUTTON_RIGHT:
+					if(!cursorTrapped) {
+						SDL_SetRelativeMouseMode(SDL_TRUE);
+					}
+					cursorTrapped = true;
+					break;
+				}
+				break;
+				case SDL_MOUSEBUTTONUP:
+				switch(ev.button.button) {
+					case SDL_BUTTON_RIGHT:
+					cursorTrapped = false;
+					SDL_SetRelativeMouseMode(SDL_FALSE);
+					break;
 				}
 				break;
 				case SDL_KEYDOWN:
@@ -203,12 +221,6 @@ int main(int argc, char** argv) {
 					case SDLK_q:
 					cameraVelocity.y = -8;
 					break;
-					case SDLK_SPACE:
-					if(!cursorTrapped) {
-						SDL_SetRelativeMouseMode(SDL_TRUE);
-					}
-					cursorTrapped = true;
-					break;
 					default:
 					break;
 				}
@@ -232,10 +244,6 @@ int main(int argc, char** argv) {
 					break;
 					case SDLK_q:
 					cameraVelocity.y = 0;
-					break;
-					case SDLK_SPACE:
-					cursorTrapped = false;
-					SDL_SetRelativeMouseMode(SDL_FALSE);
 					break;
 					default:
 					break;
