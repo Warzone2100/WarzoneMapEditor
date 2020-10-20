@@ -163,9 +163,10 @@ int main(int argc, char** argv) {
 				break;
 
 				case SDL_MOUSEMOTION:
+				printf("Mouse %i, %i\n", ev.motion.xrel, ev.motion.yrel);
 				if(cursorTrapped) {
-					cameraRotation.x -= ev.motion.yrel/2;
-					cameraRotation.y -= ev.motion.xrel/2;
+					cameraRotation.x -= ev.motion.yrel/2.0f;
+					cameraRotation.y -= ev.motion.xrel/2.0f;
 					cameraUpdate();
 				}
 				break;
