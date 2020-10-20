@@ -386,22 +386,25 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
 		glUniformMatrix4fv(glGetUniformLocation(shad2.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
 		obj.Render(shad2.program);
 
-		TileSelectionVertexArray[0] = { 0.0f, 0.0f, 0.0f };
-		TileSelectionVertexArray[1] = { 0.0f,  0.0f, 1280.0f };
-		TileSelectionVertexArray[2] = { 1280.0f, 0.0f, 1280.0f };
-		TileSelectionVertexArray[3] = { 0.0f, 0.0f, 0.0f };
-		TileSelectionVertexArray[4] = { 1280.0f, 0.0f, 1280.0f };
-		TileSelectionVertexArray[5] = { 1280.0f,  0.0f, 0.0f };
-		
-		glBindBuffer(GL_ARRAY_BUFFER, TileSelectionVertexBufferObject);
-		glBufferData(GL_ARRAY_BUFFER, TileSelectionVertexArray.size() * 3 * sizeof(float), &TileSelectionVertexArray[0], GL_STATIC_DRAW);
+		if(mouseTilePosition.x != -1){
+			glm::ivec2 mouseTileWorldCoordinates = { world_coord(mouseTilePosition.x), world_coord(mouseTilePosition.y) };
+			TileSelectionVertexArray[0] = { mouseTileWorldCoordinates.x + 0.0f, 0.0f, mouseTileWorldCoordinates.y + 0.0f };
+			TileSelectionVertexArray[1] = { mouseTileWorldCoordinates.x + 0.0f,  0.0f, mouseTileWorldCoordinates.y + 1280.0f };
+			TileSelectionVertexArray[2] = { mouseTileWorldCoordinates.x + 1280.0f, 0.0f, mouseTileWorldCoordinates.y + 1280.0f };
+			TileSelectionVertexArray[3] = { mouseTileWorldCoordinates.x + 0.0f, 0.0f, mouseTileWorldCoordinates.y + 0.0f };
+			TileSelectionVertexArray[4] = { mouseTileWorldCoordinates.x + 1280.0f, 0.0f, mouseTileWorldCoordinates.y + 1280.0f };
+			TileSelectionVertexArray[5] = { mouseTileWorldCoordinates.x + 1280.0f,  0.0f, mouseTileWorldCoordinates.y + 0.0f };
+			
+			glBindBuffer(GL_ARRAY_BUFFER, TileSelectionVertexBufferObject);
+			glBufferData(GL_ARRAY_BUFFER, TileSelectionVertexArray.size() * 3 * sizeof(float), &TileSelectionVertexArray[0], GL_STATIC_DRAW);
 
-		TileSelectionShader.use();
-		glUniformMatrix4fv(glGetUniformLocation(TileSelectionShader.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
-		glBindVertexArray(TileSelectionVertexArrayObject);
-		glDisable(GL_DEPTH_TEST);  
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glEnable(GL_DEPTH_TEST);  
+			TileSelectionShader.use();
+			glUniformMatrix4fv(glGetUniformLocation(TileSelectionShader.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
+			glBindVertexArray(TileSelectionVertexArrayObject);
+			glDisable(GL_DEPTH_TEST);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glEnable(GL_DEPTH_TEST);
+		}
 
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
