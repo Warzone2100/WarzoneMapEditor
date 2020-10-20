@@ -128,7 +128,6 @@ int main(int argc, char** argv) {
 	glEnableVertexAttribArray(glGetAttribLocation(TileSelectionShader.program, "VertexCoordinates"));
 
 	glm::ivec2 mousePosition(0, 0);
-	glm::ivec2 mouseTilePosition(0, 0);
 	glm::vec3 cameraPosition(-249.569931, 2752.000000, 1513.794312);
 	glm::vec3 cameraRotation(-51.000000, -104.000000, 0.000000);
 	glm::vec3 cameraVelocity = {0, 0, 0};
@@ -151,6 +150,40 @@ int main(int argc, char** argv) {
 				int screenZ = projectedPosition.w;
 		
 				tileScreenCoords[x][y] = glm::ivec3(screenX, screenY, screenZ);
+			}
+		}
+	};
+
+	glm::ivec2 mouseTilePosition(0, 0);
+	auto mouseTilePositionUpdate = [&] () {
+		for(int y = 0; y < ter.h - 1; y++) {
+			for(int x = 0; x < ter.w - 1; x++) {
+				auto aa = tileScreenCoords[x][y];
+				auto ba = tileScreenCoords[x + 1][y];
+				auto ab = tileScreenCoords[x][y + 1];
+				auto bb = tileScreenCoords[x + 1][y + 1];
+
+				int minX = std::min((int)aa.x, std::min((int)ba.x, std::min((int)ab.x, (int)bb.x)));
+				int maxX = std::max((int)aa.x, std::max((int)ba.x, std::max((int)ab.x, (int)bb.x)));
+				int minY = std::min((int)aa.y, std::min((int)ba.y, std::min((int)ab.y, (int)bb.y)));
+				int maxY = std::max((int)aa.y, std::max((int)ba.y, std::max((int)ab.y, (int)bb.y)));
+
+				if(mousePosition.x < minX) {
+					break;
+				}
+				if(mousePosition.x > maxX) {
+					break;
+				}
+				if(mousePosition.y < minY) {
+					break;
+				}
+				if(mousePosition.y > maxY) {
+					break;
+				}
+
+				mouseTilePosition = { x, y };
+
+				printf("Match! Mouse is on tile %i, %i\n", x, y);
 			}
 		}
 	};
@@ -187,9 +220,10 @@ int main(int argc, char** argv) {
 				case SDL_MOUSEMOTION:
 				mousePosition.x = ev.motion.x;
 				mousePosition.y = ev.motion.y;
-				mouseTilePosition = { 3, 3 };
+				mouseTilePositionUpdate();
 				printf("Mouse: %i, %i\n", mousePosition.x, mousePosition.y);
-				printf("position of %i, %i, %i : %i, %i (%i)\n", 0, 0, 0, tileScreenCoords[0][0].x, tileScreenCoords[0][0].y, tileScreenCoords[0][0].z);
+				printf("Mouse Tile: %i, %i\n", mouseTilePosition.x, mouseTilePosition.y);
+				// printf("position of %i, %i, %i : %i, %i (%i)\n", 0, 0, 0, tileScreenCoords[0][0].x, tileScreenCoords[0][0].y, tileScreenCoords[0][0].z);
 
 				if(cursorTrapped) {
 					cameraRotation.x -= ev.motion.yrel/2.0f;
