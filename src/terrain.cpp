@@ -194,6 +194,57 @@ void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 	free(folderpath);
 }
 
+void Terrain::LoadTerrainGrounds(char *basepath) {
+	if(basepath == NULL) {
+		log_fatal("Base path is null!");
+		return;
+	}
+	int tilesetnum;
+	switch(tileset) {
+		case tileset_arizona:
+		tilesetnum = 1;
+		break;
+		case tileset_urban:
+		tilesetnum = 2;
+		break;
+		case tileset_rockies:
+		tilesetnum = 3;
+		break;
+	}
+	char* filename = sprcatr(NULL, "%stileset/tertilesc%dhwGtype.txt", tilesetnum);
+	if(filename == NULL) {
+		log_fatal("Terrain ground filename generated is null!");
+	}
+	FILE* f = fopen(filename, "r");
+	if(f == NULL) {
+		log_fatal("Failed to open [%s]", filename);
+		free(filename);
+		return;
+	}
+	int r = -2;
+	int datasetnum = -1, typesnum = -1;
+	r = fscanf(f, "tertilesc%dhw,%d", &datasetnum, &typesnum);
+	if(r != 2) {
+		log_error("scanf failed with %d fields readed instead of %d");
+	}
+	if(datasetnum != tilesetnum) {
+		log_error("File [%s] reported dataset number %d instead of expected %d.", filename, datasetnum, tilesetnum);
+	}
+	if(typesnum > GTYPESMAX) {
+		log_warn("Too many gtypes loading, turncating %d -> %d", typesnum, GTYPESMAX);
+		typesnum = GTYPESMAX;
+	}
+	log_info("Loading %d terrain types...", typesnum);
+	for(int i=0; i<typesnum; i++) {
+		char tmp[14] = {0};
+		r = fscanf(f, "%[^,]%[^,]%[^,]", gtypes[i].groundtype, gtypes[i].pagename, tmp);
+		if(r != 3) {
+			log_error("fscanf readed %d fields instead of %d on %d element.", r, 3, i);
+		}
+		gtypes[i].size = atof(tmp);
+	}
+}
+
 void Terrain::UpdateTexpageCoords() {
 	int filled = 0;
 	int tw = UsingTexture->w/DatasetLoaded;

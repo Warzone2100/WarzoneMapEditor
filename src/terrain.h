@@ -6,6 +6,8 @@
 
 extern char* texpagesPath;
 
+#define GTYPESMAX 15
+
 /* The shift on a world coordinate to get the tile coordinate */
 #define TILE_SHIFT 7
 static inline int32_t world_coord(int32_t mapCoord) { return (uint32_t)mapCoord << TILE_SHIFT; }
@@ -24,6 +26,14 @@ public:
 	int w, h;
 	WZtileset tileset;
 	int DatasetLoaded;
+	struct GroundType {
+		char groundtype[80];
+		char pagename[256];
+		double size; // wif is this for?
+		Texture* tex;
+	} gtypes[GTYPESMAX];
+	Texture* waterpage;
+	void LoadTerrainGrounds(char *basepath);
 	void UpdateTexpageCoords();
 	void GetHeightmapFromMWT(WZmap* m);
 	void CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend);
