@@ -151,7 +151,6 @@ int main(int argc, char** argv) {
 	SDL_Event ev;
 	Uint32 frame_time_start = 0;
 	log_info("Entering render loop...");
-	bool ShowTextureDebugger = true;
 	int TextureDebuggerTriangleX = 0;
 	int TextureDebuggerTriangleY = 0;
 	while(r==1) {
@@ -267,6 +266,7 @@ int main(int argc, char** argv) {
 
 		static bool show_window = true;
 		static bool FPSlimiter = true;
+		static bool ShowTextureDebugger = 0;
 		ImGui::SetNextWindowPos({0, 0}, 1);
 		ImGui::Begin("##bmain", &show_window,   ImGuiWindowFlags_NoMove |
 		 										ImGuiWindowFlags_NoResize |
@@ -320,25 +320,26 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
                                         cameraRotation.x, cameraRotation.y, cameraRotation.z);
         }
 		ImGui::End();
-		static bool ShowTextureDebugger = 0;
-		ImGui::Begin("Texture Viewer", &ShowTextureDebugger, 0);
-		ImGui::InputInt("TileX", &TextureDebuggerTriangleX, 1, 1);
-		ImGui::InputInt("TileY", &TextureDebuggerTriangleY, 1, 1);
-		int GLVpos = (TextureDebuggerTriangleY*ter.w + TextureDebuggerTriangleX)*30;
-		ImGui::InputFloat2("V0", &ter.GLvertexes[GLVpos+0 +3], "%f");
-		ImGui::InputFloat2("V1", &ter.GLvertexes[GLVpos+5 +3], "%f");
-		ImGui::InputFloat2("V2", &ter.GLvertexes[GLVpos+10+3], "%f");
-		ImGui::InputFloat2("V3", &ter.GLvertexes[GLVpos+15+3], "%f");
-		ImGui::InputFloat2("V4", &ter.GLvertexes[GLVpos+20+3], "%f");
-		ImGui::InputFloat2("V5", &ter.GLvertexes[GLVpos+25+3], "%f");
-		ImGui::Value("Flip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].triflip);
-		ImGui::Value("Rot", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].rot);
-		ImGui::Value("xflip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].fx);
-		ImGui::Value("yflip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].fy);
-		if(ImGui::Button("Buffer")) {
-			ter.BufferData(TerrainShader.program);
+		if(ShowTextureDebugger) {
+			ImGui::Begin("Texture Viewer", &ShowTextureDebugger, 0);
+			ImGui::InputInt("TileX", &TextureDebuggerTriangleX, 1, 1);
+			ImGui::InputInt("TileY", &TextureDebuggerTriangleY, 1, 1);
+			int GLVpos = (TextureDebuggerTriangleY*ter.w + TextureDebuggerTriangleX)*30;
+			ImGui::InputFloat2("V0", &ter.GLvertexes[GLVpos+0 +3], "%f");
+			ImGui::InputFloat2("V1", &ter.GLvertexes[GLVpos+5 +3], "%f");
+			ImGui::InputFloat2("V2", &ter.GLvertexes[GLVpos+10+3], "%f");
+			ImGui::InputFloat2("V3", &ter.GLvertexes[GLVpos+15+3], "%f");
+			ImGui::InputFloat2("V4", &ter.GLvertexes[GLVpos+20+3], "%f");
+			ImGui::InputFloat2("V5", &ter.GLvertexes[GLVpos+25+3], "%f");
+			ImGui::Value("Flip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].triflip);
+			ImGui::Value("Rot", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].rot);
+			ImGui::Value("xflip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].fx);
+			ImGui::Value("yflip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].fy);
+			if(ImGui::Button("Buffer")) {
+				ter.BufferData(TerrainShader.program);
+			}
+			ImGui::End();
 		}
-		ImGui::End();
 
 		TerrainShader.use();
 		glUniformMatrix4fv(glGetUniformLocation(TerrainShader.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
