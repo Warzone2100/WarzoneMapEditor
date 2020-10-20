@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
 	obj.BufferData(shad2.program);
 	
 	mshader TileSelectionShader("./data/TileSelectionShader.vs", "./data/TileSelectionShader.frag");
-	float TileSelectionVertexArray[] = {
+	std::vector<float> TileSelectionVertexArray = {
 		0.0f, 0.0f, 0.0f,
 		0.0f,  0.0f, 128.0f,
 		128.0f, 0.0f, 128.0f,
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
 	glBindVertexArray(TileSelectionVertexArrayObject);
 	glGenBuffers(1, &TileSelectionVertexBufferObject);
 	glBindBuffer(GL_ARRAY_BUFFER, TileSelectionVertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), TileSelectionVertexArray, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, TileSelectionVertexArray.size() * sizeof(float), &TileSelectionVertexArray[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(glGetAttribLocation(TileSelectionShader.program, "VertexCoordinates"), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(glGetAttribLocation(TileSelectionShader.program, "VertexCoordinates"));
 
