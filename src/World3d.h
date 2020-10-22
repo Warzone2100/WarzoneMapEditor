@@ -12,12 +12,12 @@
 
 class Texture {
 public:
-	unsigned int GLid;
-	int id;
-	std::string path;
+	unsigned int GLid = 0;
+	int id = 0;
+	std::string path = "";
 	SDL_Texture *tex = nullptr;
-	int w, h;
-	bool valid;
+	int w = -1, h = -1;
+	bool valid = false;
 	void Load(std::string path, SDL_Renderer *rend);
 	void Load(SDL_Texture* texture);
 	void Bind(int texid);
