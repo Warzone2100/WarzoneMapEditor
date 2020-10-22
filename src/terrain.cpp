@@ -15,10 +15,18 @@ void Terrain::GetHeightmapFromMWT(WZmap* map) {
 	w = map->maptotalx;
 	h = map->maptotaly;
 	RenderingMode = GL_TRIANGLES;
-	GLvertexesCount = (h-1)*(w-1)*2*3*8;
+	GLvertexesCount = ((h-1)*(w-1)*2)*3*3*3+9*3;
 	GLvertexes = (float*)malloc(GLvertexesCount*sizeof(float));
 	size_t filled = 0;
 	auto addTriangle = [&] (float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3) {
+		// float* realloced = (float*)realloc(GLvertexes, (GLvertexesCount+9*3)*sizeof(float));
+		// if(realloced == NULL) {
+		// 	log_fatal("Realloc gived up at %ld", (GLvertexesCount+9*3)*sizeof(float));
+		// 	abort();
+		// }
+		if(filled >= GLvertexesCount-9-9-9) {
+			log_fatal("Terrain vertex buffer overflow at %ld", filled);
+		}
 		GLvertexes[filled+0] = x1*128;
 		GLvertexes[filled+1] = y1*128;
 		GLvertexes[filled+2] = z1*128;
@@ -93,6 +101,8 @@ void Terrain::GetHeightmapFromMWT(WZmap* map) {
 			}
 		}
 	}
+	log_info("Allocated: %ld", GLvertexesCount);
+	log_info("Filled:    %ld", filled);
 	// FillTextures = false;
 	return;
 }
