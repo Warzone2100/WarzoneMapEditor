@@ -10,6 +10,10 @@ set(WMT_INCLUDE_LOG OFF CACHE BOOL "Build WMT and log library" FORCE)
 add_definitions(-DLOG_USE_COLOR)
 add_subdirectory(lib/WMT)
 
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
+set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address")
+
+
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(OpenGL REQUIRED)
