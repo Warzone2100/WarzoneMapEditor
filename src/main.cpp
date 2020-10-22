@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
 	ter.UpdateTexpageCoords();
 	ter.BufferData(TerrainShader.program);
 	obj.BufferData(shad2.program);
-	
+
 	mshader TileSelectionShader("./data/TileSelectionShader.vs", "./data/TileSelectionShader.frag");
 	std::vector<glm::vec3> TileSelectionVertexArray = {
 		{ 0.0f, 0.0f, 0.0f },
@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
 				int screenX = (.5 + .5 * xx) * width;
 				int screenY = (.5 - .5 * yy) * height;
 				int screenZ = projectedPosition.w;
-		
+
 				tileScreenCoords[x][y] = glm::ivec3(screenX, screenY, screenZ);
 			}
 		}
@@ -423,7 +423,7 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
 			TileSelectionVertexArray[3] = { mouseTileWorldCoordinates.x + 0.0f, 0.0f, mouseTileWorldCoordinates.y + 0.0f };
 			TileSelectionVertexArray[4] = { mouseTileWorldCoordinates.x + 128.0f, 0.0f, mouseTileWorldCoordinates.y + 128.0f };
 			TileSelectionVertexArray[5] = { mouseTileWorldCoordinates.x + 128.0f,  0.0f, mouseTileWorldCoordinates.y + 0.0f };
-			
+
 			glBindBuffer(GL_ARRAY_BUFFER, TileSelectionVertexBufferObject);
 			glBufferData(GL_ARRAY_BUFFER, TileSelectionVertexArray.size() * 3 * sizeof(float), &TileSelectionVertexArray[0], GL_STATIC_DRAW);
 
@@ -454,6 +454,7 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
 	SDL_DestroyRenderer(rend);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
+	glfwTerminate();
 	WMT_FreeMap(&map);
 	return 0;
 }

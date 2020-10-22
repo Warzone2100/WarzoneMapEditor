@@ -164,6 +164,7 @@ void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 		textsa[TotalTextures].n = atoi(strtileid);
 		textsa[TotalTextures].t = t;
 		TotalTextures++;
+		free(strtileid);
 	}
 	closedir(d);
 	log_info("Loaded %d tiles.", TotalTextures);
@@ -357,4 +358,11 @@ void Terrain::BufferData(unsigned int shader) {
 	glEnableVertexAttribArray(glGetAttribLocation(shader, "TextureCoordinates"));
 	glVertexAttribPointer(glGetAttribLocation(shader, "TextureCliffCoordinates"), 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(glGetAttribLocation(shader, "TextureCliffCoordinates"));
+}
+
+Terrain::~Terrain() {
+	if(UsingTexture) {
+		delete UsingTexture;
+		UsingTexture = nullptr;
+	}
 }
