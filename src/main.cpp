@@ -14,7 +14,7 @@
 #include "wmt.hpp"
 
 #include "log.hpp"
-#include "myshader.h"
+#include "Shader.h"
 #include "pie.h"
 #include "World3d.h"
 #include "terrain.h"
@@ -92,24 +92,17 @@ int main(int argc, char** argv) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
-	Object3d obj;
-	obj.LoadFromPIE(demopieobjectpath);
-	Texture tex;
-	tex.Load("./data/"+obj.TexturePath, rend);
-	mshader shad2("./data/vertex.vs", "./data/fragment.frag");
-	mshader TerrainShader("./data/TerrainShaderVertex.vs", "./data/TerrainShaderFragment.frag");
-	obj.UsingTexture = &tex;
-	obj.PrepareTextureCoords();
-	Terrain ter;
-	WZmap map;
-	WMT_ReadMap(secure_getenv("OPENMAP")?:(char*)"./data/8c-Stone-Jungle-E.wz", &map);
-	ter.GetHeightmapFromMWT(&map);
-	ter.CreateTexturePage(secure_getenv("TEXPAGES_PATH")?:(char*)"./data/texpages/", 128, rend);
-	ter.UpdateTexpageCoords();
-	ter.BufferData(TerrainShader.program);
-	obj.BufferData(shad2.program);
 
-	mshader TileSelectionShader("./data/TileSelectionShader.vs", "./data/TileSelectionShader.frag");
+	WZmap *map = (WZmap*)malloc(sizeof(WZmap));
+	WMT_ReadMap(secure_getenv("OPENMAP")?:(char*)"./data/8c-Stone-Jungle-E.wz", map);
+	if(!map->valid) {
+		log_error("Failed to open map!");
+		abort();
+	}
+
+	World3d World(map, rend);
+
+	Shader TileSelectionShader("./data/TileSelectionShader.vs", "./data/TileSelectionShader.frag");
 	std::vector<glm::vec3> TileSelectionVertexArray = {
 		{ 0.0f, 0.0f, 0.0f },
 		{ 0.0f,  0.0f, 128.0f },
@@ -141,9 +134,9 @@ int main(int argc, char** argv) {
 	glm::ivec3 tileScreenCoords[256][256];
 	long visibleTilesUpdateTime = 0;
 	auto visibleTilesUpdate = [&] () {
-		for(int y = 0; y < ter.h; y++) {
-			for(int x = 0; x < ter.w; x++) {
-				auto projectedPosition = glm::vec4(viewProjection * glm::vec4(world_coord(x), world_coord(ter.tiles[x][y].height), world_coord(y), 1.f));
+		for(int y = 0; y < World.Ter.h; y++) {
+			for(int x = 0; x < World.Ter.w; x++) {
+				auto projectedPosition = glm::vec4(viewProjection * glm::vec4(world_coord(x), world_coord(World.Ter.tiles[x][y].height), world_coord(y), 1.f));
 				const float xx = projectedPosition.x / projectedPosition.w;
 				const float yy = projectedPosition.y / projectedPosition.w;
 				int screenX = (.5 + .5 * xx) * width;
@@ -158,8 +151,8 @@ int main(int argc, char** argv) {
 	glm::ivec2 mouseTilePosition(0, 0);
 	bool mouseTilePositionDirty = false;
 	auto mouseTilePositionUpdate = [&] () {
-		for(int y = 0; y < ter.h - 1; y++) {
-			for(int x = 0; x < ter.w - 1; x++) {
+		for(int y = 0; y < World.Ter.h - 1; y++) {
+			for(int x = 0; x < World.Ter.w - 1; x++) {
 				auto aa = tileScreenCoords[x][y];
 				auto ba = tileScreenCoords[x + 1][y];
 				auto ab = tileScreenCoords[x][y + 1];
@@ -189,8 +182,8 @@ int main(int argc, char** argv) {
 	};
 
 	auto cameraUpdate = [&] () {
-		cameraMapPosition.x = glm::clamp((int)(map_coord(cameraPosition.x)), 0, ter.w);
-		cameraMapPosition.y = glm::clamp((int)(map_coord(cameraPosition.z)), 0, ter.h);
+		cameraMapPosition.x = glm::clamp((int)(map_coord(cameraPosition.x)), 0, World.Ter.w);
+		cameraMapPosition.y = glm::clamp((int)(map_coord(cameraPosition.z)), 0, World.Ter.h);
 		viewProjection = glm::perspective(glm::radians(cameraFOV), (float) width / (float)height, 30.0f, 100000.0f) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.x), glm::vec3(1, 0, 0)) *
 			glm::rotate(glm::mat4(1), glm::radians(-cameraRotation.y), glm::vec3(0, 1, 0)) *
@@ -358,45 +351,12 @@ int main(int argc, char** argv) {
 												ImGuiWindowFlags_NoCollapse |
 												ImGuiWindowFlags_AlwaysAutoResize |
 												ImGuiWindowFlags_NoBackground);
-		// if(ImGui::Button("Load object")) {
-		// 	igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".pie", ".");
-		// }
-		// if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey")) {
-		// 	if (igfd::ImGuiFileDialog::Instance()->IsOk == true) {
-		// 		unsigned long long load_start = SDL_GetTicks();
-		// 		std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilePathName();
-		// 		std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
-		// 		PIEobject* nobjects = (PIEobject*)realloc(objects, (objectsCount+1)*sizeof(PIEobject));
-		// 		if(nobjects == NULL) {
-		// 			log_fatal("Memeory realloc failed!");
-		// 		}
-		// 		objects = nobjects;
-		// 		objects[objectsCount] = ReadPIE((char*)filePathName.c_str(), rend);
-		// 		PIEreadTexture(&objects[objectsCount], rend);
-		// 		PIEprepareGLarrays(&objects[objectsCount]);
-		// 		unsigned int* ntextures = (unsigned int*)realloc(textures, (objectsCount+1)*sizeof(unsigned int));
-		// 		if(ntextures == NULL) {
-		// 			log_fatal("Memeory realloc failed!");
-		// 		}
-		// 		textures = ntextures;
-		// 		glGenTextures(1, &textures[objectsCount]);
-		// 		glActiveTexture(GL_TEXTURE0+objectsCount);
-		// 		PIEbindTexpage(&objects[objectsCount]);
-		// 		objectsCount++;
-		// 		log_info("Object loading complete at %ldms", SDL_GetTicks()-load_start);
-		// 	}
-		// 	igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
-		// }
-		// ImGui::SliderInt("Object", &editobject, 0, objectsCount-1);
 		ImGui::Checkbox("Fps limit", &FPSlimiter);
-		ImGui::Checkbox("Wireframe", &ter.FillTextures);
+		ImGui::Checkbox("Wireframe", &World.Ter.FillTextures);
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Text("Cam map pos: %3d %3d", cameraMapPosition.x, cameraMapPosition.y);
 		ImGui::Text("Cam fov: %f", cameraFOV);
-		ImGui::Text("Dataset: %s", TilesetStrings[map.tileset]);
-		if(ImGui::Button("Texture assigner")) {
-			ShowTextureDebugger = true;
-		}
+		ImGui::Text("Dataset: %s", TilesetStrings[map->tileset]);
 		if(ImGui::Button("Terrain types")) {
 			ShowTerrainTypesDebugger = true;
 		}
@@ -407,59 +367,33 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
                                         cameraRotation.x, cameraRotation.y, cameraRotation.z);
         }
 		ImGui::End();
-		if(ShowTextureDebugger) {
-			ImGui::Begin("Texture Viewer", &ShowTextureDebugger, 0);
-			ImGui::InputInt("TileX", &TextureDebuggerTriangleX, 1, 1);
-			ImGui::InputInt("TileY", &TextureDebuggerTriangleY, 1, 1);
-			int GLVpos = (TextureDebuggerTriangleY*ter.w + TextureDebuggerTriangleX)*30;
-			ImGui::InputFloat2("V0", &ter.GLvertexes[GLVpos+0 +3], "%f");
-			ImGui::InputFloat2("V1", &ter.GLvertexes[GLVpos+5 +3], "%f");
-			ImGui::InputFloat2("V2", &ter.GLvertexes[GLVpos+10+3], "%f");
-			ImGui::InputFloat2("V3", &ter.GLvertexes[GLVpos+15+3], "%f");
-			ImGui::InputFloat2("V4", &ter.GLvertexes[GLVpos+20+3], "%f");
-			ImGui::InputFloat2("V5", &ter.GLvertexes[GLVpos+25+3], "%f");
-			ImGui::Value("Flip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].triflip);
-			ImGui::Value("Rot", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].rot);
-			ImGui::Value("xflip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].fx);
-			ImGui::Value("yflip", ter.tiles[TextureDebuggerTriangleX][TextureDebuggerTriangleY].fy);
-			if(ImGui::Button("Buffer")) {
-				ter.BufferData(TerrainShader.program);
-			}
-			ImGui::End();
-		}
 		if(ShowTerrainTypesDebugger) {
 			ImGui::SetNextWindowSize({150, 260});
 			ImGui::Begin("Terrain types", &ShowTerrainTypesDebugger, ImGuiWindowFlags_NoResize);
-			ImGui::Text("Version: %d", map.ttypver);
-			ImGui::Text("Count: %d", map.ttypnum);
+			ImGui::Text("Version: %d", map->ttypver);
+			ImGui::Text("Count: %d", map->ttypnum);
 			ImGui::Separator();
 			char num[10] = {0};
-			for(int i=0; i<map.ttypnum; i++) {
+			for(int i=0; i<map->ttypnum; i++) {
 				snprintf(num, 10, "%d", i);
-				int j = map.ttyptt[i];
+				int j = map->ttyptt[i];
 				ImGui::InputInt(num, &j);
-				if(j != (int)map.ttyptt[i]) {
-					map.ttyptt[i] = (short unsigned int)j;
+				if(j != (int)map->ttyptt[i]) {
+					map->ttyptt[i] = (short unsigned int)j;
 				}
 			}
 			ImGui::End();
 		}
 
-		TerrainShader.use();
-		glUniformMatrix4fv(glGetUniformLocation(TerrainShader.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
-		ter.Render(TerrainShader.program);
-
-		shad2.use();
-		glUniformMatrix4fv(glGetUniformLocation(shad2.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
-		obj.Render(shad2.program);
+		World.RenderScene(viewProjection);
 
 		if(mouseTilePosition.x != -1){
 			glm::ivec2 mouseTileWorldCoordinates = { world_coord(mouseTilePosition.x), world_coord(mouseTilePosition.y) };
-			auto aa = world_coord(ter.tiles[mouseTilePosition.x][mouseTilePosition.y].height);
-			auto ab = world_coord(ter.tiles[mouseTilePosition.x + 1][mouseTilePosition.y].height);
-			auto ba = world_coord(ter.tiles[mouseTilePosition.x][mouseTilePosition.y + 1].height);
-			auto bb = world_coord(ter.tiles[mouseTilePosition.x + 1][mouseTilePosition.y + 1].height);
-			
+			auto aa = world_coord(World.Ter.tiles[mouseTilePosition.x][mouseTilePosition.y].height);
+			auto ab = world_coord(World.Ter.tiles[mouseTilePosition.x + 1][mouseTilePosition.y].height);
+			auto ba = world_coord(World.Ter.tiles[mouseTilePosition.x][mouseTilePosition.y + 1].height);
+			auto bb = world_coord(World.Ter.tiles[mouseTilePosition.x + 1][mouseTilePosition.y + 1].height);
+
 			TileSelectionVertexArray[0] = { mouseTileWorldCoordinates.x + 0.0f, aa, mouseTileWorldCoordinates.y + 0.0f };
 			TileSelectionVertexArray[1] = { mouseTileWorldCoordinates.x + 0.0f, ba, mouseTileWorldCoordinates.y + 128.0f };
 			TileSelectionVertexArray[2] = { mouseTileWorldCoordinates.x + 128.0f, bb, mouseTileWorldCoordinates.y + 128.0f };
@@ -487,17 +421,19 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
 			SDL_Delay(1000/FPS-(SDL_GetTicks()-frame_time_start));
 		}
 	}
-	obj.Free();
-	ter.Free();
-	// tex.Free();
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
+
 	SDL_GL_DeleteContext(glcontext);
 	SDL_DestroyRenderer(rend);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
+
 	glfwTerminate();
-	WMT_FreeMap(&map);
+
+	WMT_FreeMap(map);
+
 	return 0;
 }

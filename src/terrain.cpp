@@ -6,6 +6,10 @@
 
 #include "other.h"
 
+Terrain::Terrain() {
+	TerrainShader = new Shader("./data/TerrainShaderVertex.vs", "./data/TerrainShaderFragment.frag");
+}
+
 void Terrain::GetHeightmapFromMWT(WZmap* map) {
 	if(!map->valid) {
 		log_error("WMT failed to read map!");
@@ -346,7 +350,8 @@ void Terrain::UpdateTexpageCoords() {
 }
 
 // Makes up buffers and stores arrays
-void Terrain::BufferData(unsigned int shader) {
+void Terrain::BufferData() {
+	int shader = this->TerrainShader->program;
 	glGenVertexArrays(1, &VAOv);
 	glGenBuffers(1, &VBOv);
 	BindVAO();
@@ -360,9 +365,11 @@ void Terrain::BufferData(unsigned int shader) {
 	glEnableVertexAttribArray(glGetAttribLocation(shader, "TextureCliffCoordinates"));
 }
 
+void Terrain::RenderV(glm::mat4 view) {
+	this->TerrainShader->use();
+	glUniformMatrix4fv(glGetUniformLocation(this->TerrainShader->program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(view));
+	this->Render(this->TerrainShader->program);
+}
+
 Terrain::~Terrain() {
-	if(UsingTexture) {
-		delete UsingTexture;
-		UsingTexture = nullptr;
-	}
 }
