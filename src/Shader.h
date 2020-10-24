@@ -5,10 +5,11 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-class mshader {
-	public:
-		unsigned int program;
-		mshader(const char* vp, const char* fp);
-		void use();
+class Shader {
+public:
+	unsigned int program;
+	Shader(const char* vp, const char* fp);
+	~Shader();
+	void use();
 };
 #endif

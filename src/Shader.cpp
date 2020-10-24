@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "myshader.h"
+#include "Shader.h"
 #include "log.hpp"
 
-mshader::mshader(const GLchar* vp, const GLchar* fp) {
+Shader::Shader(const GLchar* vp, const GLchar* fp) {
 	log_info("Opening files...");
 	FILE *vf = fopen(vp, "r"), *ff = fopen(fp, "r");
 	if(vf == NULL) {
@@ -35,7 +35,6 @@ mshader::mshader(const GLchar* vp, const GLchar* fp) {
 	}
 	fclose(vf);
 	vcode[vcodelen-1] = '\0';
-	log_info("read done");
 	while((readed = fread(nbuf, 1, nbuflen, ff)) > 0) {
 		fcode = (char*)realloc(fcode, fcodelen+readed);
 		if(fcode == NULL) {
@@ -48,7 +47,6 @@ mshader::mshader(const GLchar* vp, const GLchar* fp) {
 	}
 	fclose(ff);
 	fcode[fcodelen-1] = '\0';
-	log_info("Read done");
 	GLuint v, f;
 	GLint s;
 	GLchar l[512];
@@ -68,7 +66,6 @@ mshader::mshader(const GLchar* vp, const GLchar* fp) {
 		glGetShaderInfoLog(f, 512, NULL, l);
 		log_fatal("Shader compile error: %s", l);
 	}
-	log_info("Compile done");
 	this->program = glCreateProgram();
 	glAttachShader(this->program, v);
 	glAttachShader(this->program, f);
@@ -80,11 +77,15 @@ mshader::mshader(const GLchar* vp, const GLchar* fp) {
 	}
 	glDeleteShader(v);
 	glDeleteShader(f);
-	log_info("Link done");
+	log_info("Shader [%s] [%s] loaded.", vp, fp);
 	free(vcode);
 	free(fcode);
 }
 
-void mshader::use() {
+void Shader::use() {
 	glUseProgram(this->program);
+}
+
+Shader::~Shader() {
+	glDeleteProgram(this->program);
 }
