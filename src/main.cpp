@@ -156,6 +156,7 @@ int main(int argc, char** argv) {
 	};
 
 	glm::ivec2 mouseTilePosition(0, 0);
+	bool mouseTilePositionDirty = false;
 	auto mouseTilePositionUpdate = [&] () {
 		for(int y = 0; y < ter.h - 1; y++) {
 			for(int x = 0; x < ter.w - 1; x++) {
@@ -220,7 +221,7 @@ int main(int argc, char** argv) {
 				if(!io.WantCaptureMouse) {
 					mousePosition.x = ev.motion.x;
 					mousePosition.y = ev.motion.y;
-					mouseTilePositionUpdate();
+					mouseTilePositionDirty = true;
 
 					if(cursorTrapped) {
 						cameraRotation.x -= ev.motion.yrel/2.0f;
@@ -329,10 +330,16 @@ int main(int argc, char** argv) {
 			cameraPosition.z -= glm::sin(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.x;
 		}
 		cameraUpdate();
-		// if(visibleTilesUpdateTime < SDL_GetTicks()){
+
+		if(mouseTilePositionDirty){
+			mouseTilePositionUpdate();
+			mouseTilePositionDirty = false;
+		}
+
+		if(visibleTilesUpdateTime < SDL_GetTicks()){
 			visibleTilesUpdate();
-			// visibleTilesUpdateTime = SDL_GetTicks() + 1000;
-		// }
+			visibleTilesUpdateTime = SDL_GetTicks() + 1000;
+		}
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		ImGui_ImplOpenGL3_NewFrame();
