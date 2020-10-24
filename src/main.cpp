@@ -32,6 +32,7 @@ int height = 480;
 
 const char* demopieobjectpath = "./data/blbrbgen.pie";
 const char* demopieobjectpath2 = "./data/vtolfactory_module1.pie";
+const char* TilesetStrings[] = {"Arizona", "Urban", "Rockies"};
 
 int main(int argc, char** argv) {
 	log_set_level(2);
@@ -76,7 +77,7 @@ int main(int argc, char** argv) {
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGuiIO& io = ImGui::GetIO();
 	ImGui::StyleColorsDark();
 	ImGui_ImplSDL2_InitForOpenGL(window, glcontext);
 	const char* glsl_version = "#version 130";
@@ -216,19 +217,23 @@ int main(int argc, char** argv) {
 				break;
 
 				case SDL_MOUSEMOTION:
-				mousePosition.x = ev.motion.x;
-				mousePosition.y = ev.motion.y;
-				mouseTilePositionUpdate();
+				if(!io.WantCaptureMouse) {
+					mousePosition.x = ev.motion.x;
+					mousePosition.y = ev.motion.y;
+					mouseTilePositionUpdate();
 
-				if(cursorTrapped) {
-					cameraRotation.x -= ev.motion.yrel/2.0f;
-					cameraRotation.y -= ev.motion.xrel/2.0f;
-					cameraUpdate();
+					if(cursorTrapped) {
+						cameraRotation.x -= ev.motion.yrel/2.0f;
+						cameraRotation.y -= ev.motion.xrel/2.0f;
+						cameraUpdate();
+					}
 				}
 				break;
 
 				case SDL_MOUSEWHEEL:
-				cameraPosition.y += ev.wheel.y*128;
+				if(!io.WantCaptureMouse) {
+					cameraPosition.y += ev.wheel.y*128;
+				}
 				break;
 
 				case SDL_WINDOWEVENT:
@@ -239,21 +244,25 @@ int main(int argc, char** argv) {
 				}
 				break;
 				case SDL_MOUSEBUTTONDOWN:
-				switch(ev.button.button) {
-					case SDL_BUTTON_RIGHT:
-					if(!cursorTrapped) {
-						SDL_SetRelativeMouseMode(SDL_TRUE);
+				if(!io.WantCaptureMouse) {
+					switch(ev.button.button) {
+						case SDL_BUTTON_RIGHT:
+						if(!cursorTrapped) {
+							SDL_SetRelativeMouseMode(SDL_TRUE);
+						}
+						cursorTrapped = true;
+						break;
 					}
-					cursorTrapped = true;
-					break;
 				}
 				break;
 				case SDL_MOUSEBUTTONUP:
-				switch(ev.button.button) {
-					case SDL_BUTTON_RIGHT:
-					cursorTrapped = false;
-					SDL_SetRelativeMouseMode(SDL_FALSE);
-					break;
+				if(!io.WantCaptureMouse) {
+					switch(ev.button.button) {
+						case SDL_BUTTON_RIGHT:
+						cursorTrapped = false;
+						SDL_SetRelativeMouseMode(SDL_FALSE);
+						break;
+					}
 				}
 				break;
 				case SDL_KEYDOWN:
@@ -320,10 +329,10 @@ int main(int argc, char** argv) {
 			cameraPosition.z -= glm::sin(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.x;
 		}
 		cameraUpdate();
-		if(visibleTilesUpdateTime < SDL_GetTicks()){
+		// if(visibleTilesUpdateTime < SDL_GetTicks()){
 			visibleTilesUpdate();
-			visibleTilesUpdateTime = SDL_GetTicks() + 1000;
-		}
+			// visibleTilesUpdateTime = SDL_GetTicks() + 1000;
+		// }
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		ImGui_ImplOpenGL3_NewFrame();
@@ -333,6 +342,7 @@ int main(int argc, char** argv) {
 		static bool show_window = true;
 		static bool FPSlimiter = true;
 		static bool ShowTextureDebugger = 0;
+		static bool ShowTerrainTypesDebugger = 0;
 		ImGui::SetNextWindowPos({0, 0}, 1);
 		ImGui::Begin("##bmain", &show_window,   ImGuiWindowFlags_NoMove |
 		 										ImGuiWindowFlags_NoResize |
@@ -376,8 +386,12 @@ int main(int argc, char** argv) {
 		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Text("Cam map pos: %3d %3d", cameraMapPosition.x, cameraMapPosition.y);
 		ImGui::Text("Cam fov: %f", cameraFOV);
+		ImGui::Text("Dataset: %s", TilesetStrings[map.tileset]);
 		if(ImGui::Button("Texture assigner")) {
 			ShowTextureDebugger = true;
+		}
+		if(ImGui::Button("Terrain types")) {
+			ShowTerrainTypesDebugger = true;
 		}
 		if(ImGui::Button("Print camera pos")) {
             log_info("Camera:\n\
@@ -406,6 +420,23 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
 			}
 			ImGui::End();
 		}
+		if(ShowTerrainTypesDebugger) {
+			ImGui::SetNextWindowSize({150, 260});
+			ImGui::Begin("Terrain types", &ShowTerrainTypesDebugger, ImGuiWindowFlags_NoResize);
+			ImGui::Text("Version: %d", map.ttypver);
+			ImGui::Text("Count: %d", map.ttypnum);
+			ImGui::Separator();
+			char num[10] = {0};
+			for(int i=0; i<map.ttypnum; i++) {
+				snprintf(num, 10, "%d", i);
+				int j = map.ttyptt[i];
+				ImGui::InputInt(num, &j);
+				if(j != (int)map.ttyptt[i]) {
+					map.ttyptt[i] = (short unsigned int)j;
+				}
+			}
+			ImGui::End();
+		}
 
 		TerrainShader.use();
 		glUniformMatrix4fv(glGetUniformLocation(TerrainShader.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
@@ -417,6 +448,7 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
 
 		if(mouseTilePosition.x != -1){
 			glm::ivec2 mouseTileWorldCoordinates = { world_coord(mouseTilePosition.x), world_coord(mouseTilePosition.y) };
+			float mh[] = {0.0f, 0.0f, 0.0f, 0.0f};
 			TileSelectionVertexArray[0] = { mouseTileWorldCoordinates.x + 0.0f, 0.0f, mouseTileWorldCoordinates.y + 0.0f };
 			TileSelectionVertexArray[1] = { mouseTileWorldCoordinates.x + 0.0f,  0.0f, mouseTileWorldCoordinates.y + 128.0f };
 			TileSelectionVertexArray[2] = { mouseTileWorldCoordinates.x + 128.0f, 0.0f, mouseTileWorldCoordinates.y + 128.0f };
