@@ -233,7 +233,7 @@ int main(int argc, char** argv) {
 
 				case SDL_MOUSEWHEEL:
 				if(!io.WantCaptureMouse) {
-					cameraPosition.y += ev.wheel.y*128;
+					cameraPosition.y -= ev.wheel.y*128;
 				}
 				break;
 
