@@ -6,7 +6,6 @@
 #include "log.hpp"
 
 Shader::Shader(const GLchar* vp, const GLchar* fp) {
-	log_info("Opening files...");
 	FILE *vf = fopen(vp, "r"), *ff = fopen(fp, "r");
 	if(vf == NULL) {
 		log_fatal("Cannot open vertex shader file");
