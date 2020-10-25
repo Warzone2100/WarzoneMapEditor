@@ -75,6 +75,8 @@ Shader::Shader(const GLchar* vp, const GLchar* fp) {
 		glGetProgramInfoLog(this->program, 512, NULL, l);
 		log_fatal("Shader link error: %s", l);
 	}
+	glDetachShader(this->program, v);
+	glDetachShader(this->program, f);
 	glDeleteShader(v);
 	glDeleteShader(f);
 	log_info("Shader [%s] [%s] loaded.", vp, fp);
