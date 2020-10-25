@@ -6,7 +6,7 @@
 
 #include "other.h"
 
-Terrain::Terrain() {
+void Terrain::CreateShader() {
 	TerrainShader = new Shader("./data/TerrainShaderVertex.vs", "./data/TerrainShaderFragment.frag");
 }
 
@@ -367,7 +367,4 @@ void Terrain::RenderV(glm::mat4 view) {
 	this->TerrainShader->use();
 	glUniformMatrix4fv(glGetUniformLocation(this->TerrainShader->program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(view));
 	this->Render(this->TerrainShader->program);
-}
-
-Terrain::~Terrain() {
 }

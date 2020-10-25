@@ -16,9 +16,8 @@ static inline int32_t world_coord(int32_t mapCoord) { return (uint32_t)mapCoord 
 static inline int32_t map_coord(int32_t worldCoord) { return worldCoord >> TILE_SHIFT; }
 
 class Terrain : public Object3d {
-private:
-	Shader* TerrainShader = nullptr;
 public:
+	Shader* TerrainShader = nullptr;
 	struct tileinfo {
 		bool triflip;
 		float height;
@@ -36,9 +35,7 @@ public:
 		double size; // wif is this for?
 		Texture* tex;
 	} gtypes[GTYPESMAX];
-	Texture* waterpage;
-	Terrain();
-	~Terrain();
+	void CreateShader();
 	void LoadTerrainGrounds(char *basepath);
 	void UpdateTexpageCoords();
 	void GetHeightmapFromMWT(WZmap* m);

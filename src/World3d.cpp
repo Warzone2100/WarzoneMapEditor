@@ -8,6 +8,7 @@
 #include <SDL2/SDL_image.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
+#include <unistd.h>
 
 // // Search in textures, maybe we already loaded it...
 // Texture* World3d::GetTexture(std::string filepath) {
@@ -61,6 +62,7 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 	Ter.GetHeightmapFromMWT(this->map);
 	Ter.CreateTexturePage(secure_getenv("TEXPAGES_PATH")?:(char*)"./data/texpages/", 128, Renderer);
 	Ter.UpdateTexpageCoords();
+	Ter.CreateShader();
 	Ter.BufferData();
 }
 
