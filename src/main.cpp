@@ -318,6 +318,7 @@ int main(int argc, char** argv) {
 		}
 
 		if(cameraVelocity.x != 0 || cameraVelocity.y != 0 || cameraVelocity.z != 0){
+			mouseTilePositionDirty = true;
 			cameraPosition.x += glm::sin(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.z;
 			// cameraPosition.y -= glm::sin(glm::radians(cameraRotation.x))*cameraSpeed*cameraVelocity.z;
 			cameraPosition.z += glm::cos(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.z;
@@ -392,10 +393,10 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
 
 		if(mouseTilePosition.x != -1){
 			glm::ivec2 mouseTileWorldCoordinates = { world_coord(mouseTilePosition.x), world_coord(mouseTilePosition.y) };
-			auto aa = world_coord(World.Ter.tiles[mouseTilePosition.x][mouseTilePosition.y].height);
-			auto ab = world_coord(World.Ter.tiles[mouseTilePosition.x + 1][mouseTilePosition.y].height);
-			auto ba = world_coord(World.Ter.tiles[mouseTilePosition.x][mouseTilePosition.y + 1].height);
-			auto bb = world_coord(World.Ter.tiles[mouseTilePosition.x + 1][mouseTilePosition.y + 1].height);
+			auto aa = 32+world_coord(World.Ter.tiles[mouseTilePosition.x][mouseTilePosition.y].height);
+			auto ab = 32+world_coord(World.Ter.tiles[mouseTilePosition.x + 1][mouseTilePosition.y].height);
+			auto ba = 32+world_coord(World.Ter.tiles[mouseTilePosition.x][mouseTilePosition.y + 1].height);
+			auto bb = 32+world_coord(World.Ter.tiles[mouseTilePosition.x + 1][mouseTilePosition.y + 1].height);
 
 			TileSelectionVertexArray[0] = { mouseTileWorldCoordinates.x + 0.0f, aa, mouseTileWorldCoordinates.y + 0.0f };
 			TileSelectionVertexArray[1] = { mouseTileWorldCoordinates.x + 0.0f, ba, mouseTileWorldCoordinates.y + 128.0f };

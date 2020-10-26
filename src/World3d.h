@@ -21,6 +21,7 @@ private:
 	// int GetNextTextureId();
 	// Texture* GetTexture(std::string filepath);
 	WZmap* map;
+	Shader* ObjectsShader = nullptr;
 public:
 	std::vector<Object3d*> Objects;
 	std::vector<Texture*> Textures;

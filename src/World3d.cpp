@@ -45,9 +45,9 @@
 
 void World3d::RenderScene(glm::mat4 view) {
 	Ter.RenderV(view);
-	// for(auto a : Objects) {
-	// 	a.Render(shader);
-	// }
+	for(auto &a : Objects) {
+		a->Render(ObjectsShader->program);
+	}
 }
 
 World3d::World3d(WZmap* m, SDL_Renderer *r) {
@@ -64,6 +64,7 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 	Ter.UpdateTexpageCoords();
 	Ter.CreateShader();
 	Ter.BufferData();
+	ObjectsShader = new Shader("./data/vertex.vs", "./data/fragment.frag");
 }
 
 World3d::~World3d() {
@@ -71,5 +72,8 @@ World3d::~World3d() {
 	for(auto a : this->Textures) {
 		a->~Texture();
 		delete a;
+	}
+	if(ObjectsShader) {
+		delete ObjectsShader;
 	}
 }
