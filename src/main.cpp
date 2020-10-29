@@ -365,6 +365,7 @@ int main(int argc, char** argv) {
 			ImGui::EndMainMenuBar();
 		}
 		if(ShowDemoWindow) {ImGui::ShowDemoWindow(&ShowDemoWindow);}
+		if(ShowDemoWindowMetrics) {ImGui::ShowMetricsWindow(&ShowDemoWindowMetrics);}
 		if(ShowOverlay) {
 			ImGui::SetNextWindowPos({0, ImGui::GetItemRectSize()[1]}, 1);
 			ImGui::Begin("##bmain", &ShowOverlay,   ImGuiWindowFlags_NoMove |
