@@ -343,39 +343,61 @@ int main(int argc, char** argv) {
 		ImGui_ImplSDL2_NewFrame(window);
 		ImGui::NewFrame();
 
-		static bool show_window = true;
+		static bool ShowOverlay = true;
 		static bool FPSlimiter = true;
-		static bool ShowTextureDebugger = 0;
+		static bool ShowDemoWindow = false;
+		static bool ShowDemoWindowMetrics = false;
+		static bool ShowDebugger = 0;
 		static bool ShowTerrainTypesDebugger = 0;
-		ImGui::SetNextWindowPos({0, 0}, 1);
-		ImGui::Begin("##bmain", &show_window,   ImGuiWindowFlags_NoMove |
-		 										ImGuiWindowFlags_NoResize |
-												ImGuiWindowFlags_NoTitleBar |
-												ImGuiWindowFlags_NoResize |
-												ImGuiWindowFlags_NoCollapse |
-												ImGuiWindowFlags_AlwaysAutoResize |
-												ImGuiWindowFlags_NoBackground);
-		ImGui::Checkbox("Fps limit", &FPSlimiter);
-		ImGui::Checkbox("Wireframe", &World.Ter.FillTextures);
-		ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::Text("Cam map pos: %3d %3d", cameraMapPosition.x, cameraMapPosition.y);
-		ImGui::Text("Cam fov: %f", cameraFOV);
-		ImGui::Text("Dataset: %s", TilesetStrings[map->tileset]);
-		if(ImGui::Button("Terrain types")) {
-			ShowTerrainTypesDebugger = true;
+		static bool ShowTileDebugger = 0;
+		if(ImGui::BeginMainMenuBar()) {
+			if(ImGui::BeginMenu("Debuggers")) {
+				ImGui::MenuItem("Overlay", NULL, &ShowOverlay);
+				ImGui::MenuItem("TTypes", NULL, &ShowTerrainTypesDebugger);
+				ImGui::MenuItem("Tile", NULL, &ShowTileDebugger);
+				ImGui::EndMenu();
+			}
+			if(ImGui::BeginMenu("Misc")) {
+				ImGui::MenuItem("Demo window", NULL, &ShowDemoWindow);
+				ImGui::MenuItem("GUI metrics", NULL, &ShowDemoWindowMetrics);
+				ImGui::EndMenu();
+			}
+			ImGui::EndMainMenuBar();
 		}
-		if(ImGui::Button("Print camera pos")) {
-            log_info("Camera:\n\
-glm::vec3 cameraPosition(%f, %f, %f);\n\
-glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, cameraPosition.z,
-                                        cameraRotation.x, cameraRotation.y, cameraRotation.z);
-        }
-		ImGui::End();
+		if(ShowDemoWindow) {ImGui::ShowDemoWindow(&ShowDemoWindow);}
+		if(ShowOverlay) {
+			ImGui::SetNextWindowPos({0, ImGui::GetItemRectSize()[1]}, 1);
+			ImGui::Begin("##bmain", &ShowOverlay,   ImGuiWindowFlags_NoMove |
+			 										ImGuiWindowFlags_NoResize |
+													ImGuiWindowFlags_NoTitleBar |
+													ImGuiWindowFlags_NoResize |
+													ImGuiWindowFlags_NoCollapse |
+													ImGuiWindowFlags_AlwaysAutoResize |
+													ImGuiWindowFlags_NoBackground);
+			ImGui::Checkbox("Fps limit", &FPSlimiter);
+			ImGui::Checkbox("Wireframe", &World.Ter.FillTextures);
+			ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::Text("Cam map pos: %3d %3d", cameraMapPosition.x, cameraMapPosition.y);
+			ImGui::Text("Cam fov: %f", cameraFOV);
+			ImGui::Text("Dataset: %s", TilesetStrings[map->tileset]);
+			if(ImGui::Button("Print camera pos")) {
+	            log_info("Camera:\n\
+	glm::vec3 cameraPosition(%f, %f, %f);\n\
+	glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, cameraPosition.z,
+	                                        cameraRotation.x, cameraRotation.y, cameraRotation.z);
+	        }
+			ImGui::End();
+		}
 		if(ShowTerrainTypesDebugger) {
 			ImGui::SetNextWindowSize({150, 260});
-			ImGui::Begin("Terrain types", &ShowTerrainTypesDebugger, ImGuiWindowFlags_NoResize);
+			ImGui::Begin("Terrain types", &ShowTerrainTypesDebugger);
 			ImGui::Text("Version: %d", map->ttypver);
 			ImGui::Text("Count: %d", map->ttypnum);
+			if(ImGui::Button("Add")) {
+				if(ImGui::BeginPopupModal("Add terrain type")){
+					ImGui::EndPopup();
+				}
+			}
 			ImGui::Separator();
 			char num[10] = {0};
 			for(int i=0; i<map->ttypnum; i++) {
@@ -386,6 +408,16 @@ glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, came
 					map->ttyptt[i] = (short unsigned int)j;
 				}
 			}
+			ImGui::End();
+		}
+		if(ShowTileDebugger) {
+			ImGui::Begin("Tile debugger", &ShowTileDebugger);
+			ImGui::Text("Tile x%d y%d", mouseTilePosition[0], mouseTilePosition[1]);
+			struct Terrain::tileinfo t = World.Ter.tiles[mouseTilePosition[0]][mouseTilePosition[1]];
+			ImGui::Text("Flip: %c:%c Rot: %d", t.fx?'X':'_', t.fy?'Y':'_', t.rot);
+			ImGui::Text("Texture: %3d Flip: %c", t.texture, t.triflip?'Y':'N');
+			ImGui::Text("Height: %f", t.height);
+			ImGui::Text("TT: %s", WMT_TerrainTypesStrings[(int)t.tt]);
 			ImGui::End();
 		}
 
