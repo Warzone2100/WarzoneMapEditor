@@ -207,26 +207,75 @@ void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 	free(folderpath);
 }
 
-void Terrain::LoadTerrainGrounds(char *basepath) {
+int GetTerrainTilesetNumber(WZtileset t) {
+	switch(t) {
+		case tileset_arizona:
+		return 1;
+		case tileset_urban:
+		return 2;
+		case tileset_rockies:
+		return 3;
+	}
+	return -1;
+}
+
+const char* TerrainTilesetToString(WZtileset t) {
+	switch(t) {
+		case tileset_arizona:
+		return "arizona";
+		case tileset_urban:
+		return "urban";
+		case tileset_rockies:
+		return "rockies";
+	}
+	return "unknown";
+}
+
+void Terrain::LoadTerrainGrounds(char* basepath) {
 	if(basepath == NULL) {
 		log_fatal("Base path is null!");
 		return;
 	}
-	int tilesetnum;
-	switch(tileset) {
-		case tileset_arizona:
-		tilesetnum = 1;
-		break;
-		case tileset_urban:
-		tilesetnum = 2;
-		break;
-		case tileset_rockies:
-		tilesetnum = 3;
-		break;
+	int tilesetnum = GetTerrainTilesetNumber(this->tileset);
+	char* filename = sprcatr(NULL, "%stileset/%sground.txt", tilesetnum, TerrainTilesetToString(this->tileset));
+	if(filename == NULL) {
+		log_fatal("Terrain grounds filename generated is null!");
 	}
+	FILE* f = fopen(filename, "r");
+	if(f == NULL) {
+		log_fatal("Failed to open [%s]", filename);
+		free(filename);
+		return;
+	}
+	int count = -1;
+	char name[80] = {0};
+	int ret = fscanf(f, "%[^,]%d", name, &count);
+	if(ret != 2) {
+		log_error("fscanf failed with %d fields readed instead of %d", ret, 2);
+	}
+	for(int i=0; i<count; i++) {
+		ret = fscanf(f, "%25[^,]%25[^,]%25[^,]%25[^,]",
+						TileGrounds[i].names[0],
+						TileGrounds[i].names[1],
+						TileGrounds[i].names[2],
+						TileGrounds[i].names[3]);
+		if(ret != 4) {
+			log_error("fscanf failed with %d fields readed instead of %d", ret, 4);
+		}
+	}
+	fclose(f);
+	free(filename);
+}
+
+void Terrain::LoadTerrainGroundTypes(char *basepath) {
+	if(basepath == NULL) {
+		log_fatal("Base path is null!");
+		return;
+	}
+	int tilesetnum = GetTerrainTilesetNumber(this->tileset);
 	char* filename = sprcatr(NULL, "%stileset/tertilesc%dhwGtype.txt", tilesetnum);
 	if(filename == NULL) {
-		log_fatal("Terrain ground filename generated is null!");
+		log_fatal("Terrain ground types filename generated is null!");
 	}
 	FILE* f = fopen(filename, "r");
 	if(f == NULL) {
@@ -238,7 +287,7 @@ void Terrain::LoadTerrainGrounds(char *basepath) {
 	int datasetnum = -1, typesnum = -1;
 	r = fscanf(f, "tertilesc%dhw,%d", &datasetnum, &typesnum);
 	if(r != 2) {
-		log_error("scanf failed with %d fields readed instead of %d");
+		log_error("scanf failed with %d fields readed instead of %d", r, 2);
 	}
 	if(datasetnum != tilesetnum) {
 		log_error("File [%s] reported dataset number %d instead of expected %d.", filename, datasetnum, tilesetnum);
@@ -256,6 +305,8 @@ void Terrain::LoadTerrainGrounds(char *basepath) {
 		}
 		gtypes[i].size = atof(tmp);
 	}
+	fclose(f);
+	free(filename);
 }
 
 void Terrain::UpdateTexpageCoords() {

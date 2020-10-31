@@ -35,8 +35,12 @@ public:
 		double size; // wif is this for?
 		Texture* tex;
 	} gtypes[GTYPESMAX];
+	struct TileGround {
+		char names[4][25] = {0}; // 25 prob. overkill but who cares at this point
+	} TileGrounds[120]; // abstract size, recheck required
 	void CreateShader();
 	void LoadTerrainGrounds(char *basepath);
+	void LoadTerrainGroundTypes(char *basepath);
 	void UpdateTexpageCoords();
 	void GetHeightmapFromMWT(WZmap* m);
 	void CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend);
