@@ -228,7 +228,7 @@ void Terrain::LoadTerrainGrounds(char* basepath) {
 		return;
 	}
 	int tilesetnum = GetTerrainTilesetNumber(this->tileset);
-	char* filename = sprcatr(NULL, "%stileset/%sground.txt", tilesetnum, TerrainTilesetToString(this->tileset));
+	char* filename = sprcatr(NULL, "%stileset/%sground.txt", basepath, TerrainTilesetToString(this->tileset));
 	if(filename == NULL) {
 		log_fatal("Terrain grounds filename generated is null!");
 	}
