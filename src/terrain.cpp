@@ -299,6 +299,7 @@ void Terrain::LoadTerrainGroundTypes(char *basepath) {
 	}
 	fclose(f);
 	free(filename);
+	// TODO free this
 	log_info("Ground types loaded.");
 	LoadGroundTypesTextures(basepath);
 }
@@ -328,6 +329,7 @@ void Terrain::LoadGroundTypesTextures(char* basepath) {
 		log_debug("%02d Loading done", i);
 	}
 	log_info("Ground textures loaded");
+	// TODO free this
 }
 
 void Terrain::ConstructGroundAlphas() {
