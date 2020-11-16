@@ -5,6 +5,8 @@
 #include <errno.h>
 
 #include "other.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 void Terrain::CreateShader() {
 	TerrainShader = new Shader("./data/TerrainShaderVertex.vs", "./data/TerrainShaderFragment.frag");
@@ -109,23 +111,36 @@ void Terrain::GetHeightmapFromMWT(WZmap* map) {
 	return;
 }
 
+int GetTerrainTilesetNumber(WZtileset t) {
+	switch(t) {
+		case tileset_arizona:
+		return 1;
+		case tileset_urban:
+		return 2;
+		case tileset_rockies:
+		return 3;
+	}
+	return -1;
+}
+
+const char* TerrainTilesetToString(WZtileset t) {
+	switch(t) {
+		case tileset_arizona:
+		return "arizona";
+		case tileset_urban:
+		return "urban";
+		case tileset_rockies:
+		return "rockies";
+	}
+	return "unknown";
+}
+
 // Accepts path to directory with textures and qual as quality of tiles
 // qual can be 16, 32, 64 or 128
 void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 	log_trace("Loading tiles");
-	int tilesetnum;
-	switch(tileset) {
-		case tileset_arizona:
-		tilesetnum = 1;
-		break;
-		case tileset_urban:
-		tilesetnum = 2;
-		break;
-		case tileset_rockies:
-		tilesetnum = 3;
-		break;
-	}
-	char* folderpath = sprcatr(NULL, "%stertilesc%dhw-%d/", basepath, tilesetnum, qual);
+	int tilesetnum = GetTerrainTilesetNumber(tileset);
+	char* folderpath = sprcatr(NULL, "%stexpages/tertilesc%dhw-%d/", basepath, tilesetnum, qual);
 	log_trace("Folder path to search tiles: [%s]", folderpath);
 	int TotalTextures = 0;
 	struct TempTextures {
@@ -207,30 +222,6 @@ void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 	free(folderpath);
 }
 
-int GetTerrainTilesetNumber(WZtileset t) {
-	switch(t) {
-		case tileset_arizona:
-		return 1;
-		case tileset_urban:
-		return 2;
-		case tileset_rockies:
-		return 3;
-	}
-	return -1;
-}
-
-const char* TerrainTilesetToString(WZtileset t) {
-	switch(t) {
-		case tileset_arizona:
-		return "arizona";
-		case tileset_urban:
-		return "urban";
-		case tileset_rockies:
-		return "rockies";
-	}
-	return "unknown";
-}
-
 void Terrain::LoadTerrainGrounds(char* basepath) {
 	if(basepath == NULL) {
 		log_fatal("Base path is null!");
@@ -273,7 +264,7 @@ void Terrain::LoadTerrainGroundTypes(char *basepath) {
 		return;
 	}
 	int tilesetnum = GetTerrainTilesetNumber(this->tileset);
-	char* filename = sprcatr(NULL, "%stileset/tertilesc%dhwGtype.txt", tilesetnum);
+	char* filename = sprcatr(NULL, "%stileset/tertilesc%dhwGtype.txt", basepath, tilesetnum);
 	if(filename == NULL) {
 		log_fatal("Terrain ground types filename generated is null!");
 	}
@@ -285,7 +276,7 @@ void Terrain::LoadTerrainGroundTypes(char *basepath) {
 	}
 	int r = -2;
 	int datasetnum = -1, typesnum = -1;
-	r = fscanf(f, "tertilesc%dhw,%d", &datasetnum, &typesnum);
+	r = fscanf(f, "tertilesc%dhw,%d\n", &datasetnum, &typesnum);
 	if(r != 2) {
 		log_error("scanf failed with %d fields readed instead of %d", r, 2);
 	}
@@ -297,9 +288,10 @@ void Terrain::LoadTerrainGroundTypes(char *basepath) {
 		typesnum = GTYPESMAX;
 	}
 	log_info("Loading %d terrain types...", typesnum);
+	gtypescount = typesnum;
 	for(int i=0; i<typesnum; i++) {
 		char tmp[14] = {0};
-		r = fscanf(f, "%[^,]%[^,]%[^,]", gtypes[i].groundtype, gtypes[i].pagename, tmp);
+		r = fscanf(f, "%[^,],%[^,],%[^\n]\n", gtypes[i].groundtype, gtypes[i].pagename, tmp);
 		if(r != 3) {
 			log_error("fscanf readed %d fields instead of %d on %d element.", r, 3, i);
 		}
@@ -307,6 +299,51 @@ void Terrain::LoadTerrainGroundTypes(char *basepath) {
 	}
 	fclose(f);
 	free(filename);
+	log_info("Ground types loaded.");
+	LoadGroundTypesTextures(basepath);
+}
+
+void Terrain::LoadGroundTypesTextures(char* basepath) {
+	for(int i=0; i<gtypescount; i++) {
+		log_debug("%02d Generating texture", i);
+		glGenTextures(1, &gtypes[i].tex);
+
+		log_debug("%02d Binding texture", i);
+		glBindTexture(GL_TEXTURE_2D, gtypes[i].tex);
+
+		char* path = sprcatr(NULL, "%stexpages/%s", basepath, gtypes[i].pagename);
+		int width, height, nrChannels;
+		log_debug("%02d Loading page [%s]", i, path);
+		unsigned char *data = stbi_load(path, &width, &height, &nrChannels, 0);
+		if(!data) {
+			log_fatal("%02d Failed to load page [%s]", i, path);
+			continue;
+		}
+		log_debug("%02d Loading image to gl", i);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		log_debug("%02d Generating mipmap", i);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		log_debug("%02d Freeing raw image", i);
+		stbi_image_free(data);
+		log_debug("%02d Loading done", i);
+	}
+	log_info("Ground textures loaded");
+}
+
+void Terrain::ConstructGroundAlphas() {
+	if(groundalphas) {
+		free(groundalphas);
+	}
+	groundalphas = NULL;
+	size_t layersize = w*h*sizeof(float);
+	groundalphas = (float*)malloc(layersize*gtypescount);
+	if(groundalphas == NULL) {
+		log_fatal("Allocation fail");
+		exit(1);
+	}
+	for(int i=0; i<gtypescount; i++) {
+
+	}
 }
 
 void Terrain::UpdateTexpageCoords() {
@@ -318,6 +355,8 @@ void Terrain::UpdateTexpageCoords() {
 		GLvertexes[filled+3] = c[0];
 		GLvertexes[filled+4] = c[1];
 		GLvertexes[filled+5] = 1.0f;
+		GLvertexes[filled+6] = 0.0f;
+		GLvertexes[filled+7] = 1.0f;
 		filled+=9;
 	};
 	auto SetNextTile = [&] (int j[6], float t[4][2]) {
@@ -417,5 +456,26 @@ void Terrain::BufferData() {
 void Terrain::RenderV(glm::mat4 view) {
 	this->TerrainShader->use();
 	glUniformMatrix4fv(glGetUniformLocation(this->TerrainShader->program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(view));
-	this->Render(this->TerrainShader->program);
+	this->Render();
+}
+
+void Terrain::Render() {
+	int shader = this->TerrainShader->program;
+	if(UsingTexture != nullptr) {
+		UsingTexture->Bind(UsingTexture->id);
+		glUniform1i(glGetUniformLocation(shader, "Texture"), UsingTexture->id);
+	}
+	glUniformMatrix4fv(glGetUniformLocation(shader, "Model"), 1, GL_FALSE, glm::value_ptr(GetMatrix()));
+	BindVAO();
+	BindVBO();
+	if(FillTextures) {
+		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+	} else {
+		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+	}
+	glDrawArrays(RenderingMode, 0, GLvertexesCount);
+	glFlush();
+	if(UsingTexture != nullptr) {
+		UsingTexture->Unbind();
+	}
 }

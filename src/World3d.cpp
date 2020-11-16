@@ -60,7 +60,9 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 	}
 	this->map = m;
 	Ter.GetHeightmapFromMWT(this->map);
-	Ter.CreateTexturePage(secure_getenv("TEXPAGES_PATH")?:(char*)"./data/texpages/", 128, Renderer);
+	char* datapath = secure_getenv("WZMAP_DATA_PATH")?:(char*)"./data/";
+	Ter.CreateTexturePage(datapath, 128, Renderer);
+	Ter.LoadTerrainGroundTypes(datapath);
 	Ter.UpdateTexpageCoords();
 	Ter.CreateShader();
 	Ter.BufferData();

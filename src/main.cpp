@@ -376,7 +376,7 @@ int main(int argc, char** argv) {
 													ImGuiWindowFlags_AlwaysAutoResize |
 													ImGuiWindowFlags_NoBackground);
 			ImGui::Checkbox("Fps limit", &FPSlimiter);
-			ImGui::Checkbox("Wireframe", &World.Ter.FillTextures);
+			ImGui::Checkbox("Fill textures", &World.Ter.FillTextures);
 			ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::Text("Cam map pos: %3d %3d", cameraMapPosition.x, cameraMapPosition.y);
 			ImGui::Text("Cam fov: %f", cameraFOV);

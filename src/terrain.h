@@ -33,19 +33,25 @@ public:
 		char groundtype[80];
 		char pagename[256];
 		double size; // wif is this for?
-		Texture* tex;
+		unsigned int tex;
 	} gtypes[GTYPESMAX];
+	int gtypescount = 0;
+	float* groundalphas = NULL;
 	struct TileGround {
 		char names[4][25] = {0}; // 25 prob. overkill but who cares at this point
 	} TileGrounds[120]; // abstract size, recheck required
+	Texture *GroundTexpage = nullptr;
 	void CreateShader();
 	void LoadTerrainGrounds(char *basepath);
 	void LoadTerrainGroundTypes(char *basepath);
+	void LoadGroundTypesTextures(char *basepath);
+	void ConstructGroundAlphas();
 	void UpdateTexpageCoords();
 	void GetHeightmapFromMWT(WZmap* m);
 	void CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend);
 	void BufferData();
 	void RenderV(glm::mat4 view);
+	void Render();
 };
 
 #endif /* end of include guard: TERRAIN_H_INCLUDED */
