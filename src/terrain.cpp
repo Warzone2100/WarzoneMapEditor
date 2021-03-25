@@ -150,7 +150,7 @@ const char* TerrainTilesetToString(WZtileset t) {
 		case tileset_urban:
 		return "urban";
 		case tileset_rockies:
-		return "rockies";
+		return "rockie";
 	}
 	return "unknown";
 }
