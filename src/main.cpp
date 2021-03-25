@@ -367,14 +367,17 @@ int main(int argc, char** argv) {
 		static bool FPSlimiter = true;
 		static bool ShowDemoWindow = false;
 		static bool ShowDemoWindowMetrics = false;
-		static bool ShowDebugger = 0;
-		static bool ShowTerrainTypesDebugger = 0;
-		static bool ShowTileDebugger = 0;
+		static bool ShowDebugger = false;
+		static bool ShowTerrainTypesDebugger = false;
+		static bool ShowTileDebugger = false;
+		static bool ShowStructureEditor = false;
+		static int StructureEditorN = 0;
 		if(ImGui::BeginMainMenuBar()) {
 			if(ImGui::BeginMenu("Debuggers")) {
 				ImGui::MenuItem("Overlay", NULL, &ShowOverlay);
 				ImGui::MenuItem("TTypes", NULL, &ShowTerrainTypesDebugger);
 				ImGui::MenuItem("Tile", NULL, &ShowTileDebugger);
+				ImGui::MenuItem("Structure", NULL, &ShowStructureEditor);
 				ImGui::EndMenu();
 			}
 			if(ImGui::BeginMenu("Misc")) {
@@ -439,6 +442,37 @@ int main(int argc, char** argv) {
 			ImGui::Text("Texture: %3d Flip: %c", t.texture, t.triflip?'Y':'N');
 			ImGui::Text("Height: %f", t.height);
 			ImGui::Text("TT: %s", WMT_TerrainTypesStrings[(int)t.tt]);
+			ImGui::End();
+		}
+		if(ShowStructureEditor) {
+			ImGui::Begin("Structure editor", &ShowStructureEditor);
+			ImGui::Text("Structure version: %d", World.map->structVersion);
+			if(!World.map->structs) {
+				ImGui::Text("Structure pointer is NULL!");
+			} else {
+				ImGui::AlignTextToFramePadding();
+				ImGui::Text("Object:");
+				ImGui::SameLine();
+				float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+				ImGui::PushButtonRepeat(true);
+				if(ImGui::ArrowButton("##left", ImGuiDir_Left) && StructureEditorN > 0) {StructureEditorN--;}
+				ImGui::SameLine(0.0f, spacing);
+				if(ImGui::ArrowButton("##right", ImGuiDir_Right) && StructureEditorN < World.map->numStructures) {StructureEditorN++;}
+				ImGui::PopButtonRepeat();
+				ImGui::SameLine();
+				ImGui::Text("%d/%d", StructureEditorN, World.map->numStructures);
+				WZobject o = World.map->structs[StructureEditorN];
+				ImGui::InputText("Name", o.name, 127);
+				int oid = o.id, ox = o.x, oy = o.y, oz = o.z, odir = o.direction, opl = o.player;
+				ImGui::InputInt("Id", &oid);
+				ImGui::InputInt("X", &ox);
+				ImGui::InputInt("Y", &oy);
+				ImGui::InputInt("Z", &oz);
+				ImGui::InputInt("Direction", &odir);
+				ImGui::InputInt("Player", &opl);
+				ImGui::InputInt3("Rotation", o.rotation);
+				
+			}
 			ImGui::End();
 		}
 

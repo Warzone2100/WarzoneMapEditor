@@ -40,9 +40,9 @@ private:
 	int texids = 0;
 	// int GetNextTextureId();
 	// Texture* GetTexture(std::string filepath);
-	WZmap* map;
 	Shader* ObjectsShader = nullptr;
 public:
+	WZmap* map;
 	std::vector<Object3d*> Objects;
 	std::vector<Texture*> Textures;
 	Terrain Ter;
