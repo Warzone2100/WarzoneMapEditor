@@ -162,9 +162,15 @@ int main(int argc, char** argv) {
 				auto projectedPosition = glm::vec4(viewProjection * glm::vec4(world_coord(x), world_coord(World.Ter.tiles[x][y].height), world_coord(y), 1.f));
 				const float xx = projectedPosition.x / projectedPosition.w;
 				const float yy = projectedPosition.y / projectedPosition.w;
-				int screenX = (.5 + .5 * xx) * width;
-				int screenY = (.5 - .5 * yy) * height;
+				int screenX = (.5 + (.5 * xx)) * width;
+				int screenY = (.5 - (.5 * yy)) * height;
+
+				// This prevents tiles "behind the camera" from interfering
+				// Once projectedPosition.w hits 0 or under, the view "inverts" and goes back into regular XY screen coordinates
 				int screenZ = projectedPosition.w;
+				if (projectedPosition.w <= 0) {
+					screenZ = -1;
+				}
 
 				tileScreenCoords[x][y] = glm::ivec3(screenX, screenY, screenZ);
 			}
@@ -185,6 +191,12 @@ int main(int argc, char** argv) {
 				int maxX = std::max((int)aa.x, std::max((int)ba.x, std::max((int)ab.x, (int)bb.x)));
 				int minY = std::min((int)aa.y, std::min((int)ba.y, std::min((int)ab.y, (int)bb.y)));
 				int maxY = std::max((int)aa.y, std::max((int)ba.y, std::max((int)ab.y, (int)bb.y)));
+
+				// If any point is behind the camera, the tile is not valid for this check
+				int minW = std::min(aa.z, std::min(ba.z, std::min(ab.z, bb.z)));
+				if(minW < 0) {
+					continue;
+				}
 
 				if(mousePosition.x < minX) {
 					continue;
