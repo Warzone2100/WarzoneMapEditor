@@ -25,8 +25,6 @@
 #include <errno.h>
 
 #include "other.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 void Terrain::CreateShader() {
 	TerrainShader = new Shader("./data/TerrainShaderVertex.vs", "./data/TerrainShaderFragment.frag");
@@ -42,47 +40,31 @@ void Terrain::GetHeightmapFromMWT(WZmap* map) {
 	h = map->maptotaly;
 	RenderingMode = GL_TRIANGLES;
 	GLvertexesCount = ((h-1)*(w-1)*2)*3*3*3;
-	GLvertexes = (float*)malloc(GLvertexesCount*sizeof(float));
-	size_t filled = 0;
+	glVerticesTerrain = (wme_terrain_glvertex_t *) malloc(GLvertexesCount*sizeof(wme_terrain_glvertex_t));
+	wme_terrain_glvertex_t * filled = glVerticesTerrain;
 	auto addTriangle = [&] (float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3) {
 		// float* realloced = (float*)realloc(GLvertexes, (GLvertexesCount+9*3)*sizeof(float));
 		// if(realloced == NULL) {
 		// 	log_fatal("Realloc gived up at %ld", (GLvertexesCount+9*3)*sizeof(float));
 		// 	abort();
 		// }
-		if(filled > GLvertexesCount-9-9-9) {
-			log_fatal("Terrain vertex buffer overflow at %ld", filled);
+		if((filled - glVerticesTerrain) >= GLvertexesCount) {
+			log_fatal("Terrain vertex buffer overflow");
 		}
-		GLvertexes[filled+0] = x1*128;
-		GLvertexes[filled+1] = y1*128;
-		GLvertexes[filled+2] = z1*128;
-		GLvertexes[filled+3] = 0;
-		GLvertexes[filled+4] = 0;
-		GLvertexes[filled+5] = 0;
-		GLvertexes[filled+6] = 0;
-		GLvertexes[filled+7] = 0;
-		GLvertexes[filled+8] = 0;
-		filled+=9;
-		GLvertexes[filled+0] = x2*128;
-		GLvertexes[filled+1] = y2*128;
-		GLvertexes[filled+2] = z2*128;
-		GLvertexes[filled+3] = 0;
-		GLvertexes[filled+4] = 0;
-		GLvertexes[filled+5] = 0;
-		GLvertexes[filled+6] = 0;
-		GLvertexes[filled+7] = 0;
-		GLvertexes[filled+8] = 0;
-		filled+=9;
-		GLvertexes[filled+0] = x3*128;
-		GLvertexes[filled+1] = y3*128;
-		GLvertexes[filled+2] = z3*128;
-		GLvertexes[filled+3] = 0;
-		GLvertexes[filled+4] = 0;
-		GLvertexes[filled+5] = 0;
-		GLvertexes[filled+6] = 0;
-		GLvertexes[filled+7] = 0;
-		GLvertexes[filled+8] = 0;
-		filled+=9;
+		filled->x = x1*128;
+		filled->y = y1*128;
+		filled->z = z1*128;
+		filled++;
+
+		filled->x = x2*128;
+		filled->y = y2*128;
+		filled->z = z2*128;
+		filled++;
+
+		filled->x = x3*128;
+		filled->y = y3*128;
+		filled->z = z3*128;
+		filled++;
 	};
 	float scale = 32.0f;
 	for(int y=0; y<h; y++) {
@@ -158,7 +140,7 @@ const char* TerrainTilesetToString(WZtileset t) {
 // Accepts path to directory with textures and qual as quality of tiles
 // qual can be 16, 32, 64 or 128
 void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
-	log_trace("Loading tiles");
+	log_info("Loading tiles");
 	int tilesetnum = GetTerrainTilesetNumber(tileset);
 	char* folderpath = sprcatr(NULL, "%stexpages/tertilesc%dhw-%d/", basepath, tilesetnum, qual);
 	log_trace("Folder path to search tiles: [%s]", folderpath);
@@ -198,6 +180,7 @@ void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 			log_fatal("Yo wtf, more than 512 tiles? Crazy...");
 			break;
 		}
+		SDL_SetTextureBlendMode(t, SDL_BLENDMODE_BLEND);
 		textsa[TotalTextures].n = atoi(strtileid);
 		textsa[TotalTextures].t = t;
 		TotalTextures++;
@@ -215,16 +198,15 @@ void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 			mh = textsa[i].h;
 		}
 	}
-	UsingTexture = new Texture;
-	UsingTexture->tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, TotalTextures*mw, mh);
-	UsingTexture->w = TotalTextures*mw;
-	UsingTexture->h = mh;
+	GroundTilePage = new Texture;
+	GroundTilePage->tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, TotalTextures*mw, mh);
+	GroundTilePage->w = TotalTextures*mw;
+	GroundTilePage->h = mh;
 	DatasetLoaded = TotalTextures;
 	SDL_Texture* savedt = SDL_GetRenderTarget(rend);
-	SDL_SetRenderDrawBlendMode(rend, SDL_BLENDMODE_BLEND);
-	SDL_SetRenderTarget(rend, UsingTexture->tex);
+	SDL_SetRenderTarget(rend, GroundTilePage->tex);
 	SDL_RenderClear(rend);
-	for(int i=0; i<TotalTextures; i++) {
+	for(int i=0; i<TILEGROUNDSMAX; i++) {
 		int pn = -1;
 		for(int j=0; j<TotalTextures; j++) {
 			if(textsa[j].n == i) {
@@ -232,14 +214,47 @@ void Terrain::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 				break;
 			}
 		}
+		if (pn == -1)
+			continue;
 		SDL_Rect from = {.x=0, .y=0, .w=textsa[pn].w, .h=textsa[pn].h};
 		SDL_Rect to = {.x=i*mw, .y=0, .w=textsa[pn].w, .h=textsa[pn].h};
+		for (int j = 0; j < 4; j++) {
+			SDL_Rect toQ = to;
+			toQ.w /= 2; toQ.h /= 2;
+			if ((j & 1))
+				toQ.x += toQ.w;
+			if ((j & 2))
+				toQ.y += toQ.h;
+			int gt = TileGrounds[i].groundTypes[j];
+			if ((gt >= 0) && (gt < GTYPESMAX) && (gtypes[gt].tex))
+				SDL_RenderCopy(rend, gtypes[gt].tex, &from, &toQ);
+		}
 		SDL_RenderCopy(rend, textsa[pn].t, &from, &to);
-		SDL_DestroyTexture(textsa[pn].t);
+	}
+	for(int i=0; i<TotalTextures; i++) {
+		SDL_DestroyTexture(textsa[i].t);
 	}
 	SDL_SetRenderTarget(rend, savedt);
 	log_info("Tiles max resolution %dx%d", mw, mh);
 	free(folderpath);
+}
+
+static size_t csv_split(FILE * input, char * lineBuf, size_t bufferLen, char ** xptr, size_t xptrCount) {
+	// kept getting fscanf failures
+	fgets(lineBuf, bufferLen, input);
+	xptr[0] = lineBuf;
+	size_t xptrI = 1;
+	// be absolutely sure a null guard is in place for any possible comma
+	lineBuf[bufferLen - 1] = 0;
+	for (size_t j = 0; j < (bufferLen - 1); j++) {
+		if ((lineBuf[j] == ',') || (lineBuf[j] < 32)) {
+			lineBuf[j] = 0;
+			if (xptrI < xptrCount) {
+				xptr[xptrI++] = lineBuf + j + 1;
+			}
+		}
+	}
+	return xptrI;
 }
 
 void Terrain::LoadTerrainGrounds(char* basepath) {
@@ -247,7 +262,6 @@ void Terrain::LoadTerrainGrounds(char* basepath) {
 		log_fatal("Base path is null!");
 		return;
 	}
-	int tilesetnum = GetTerrainTilesetNumber(this->tileset);
 	char* filename = sprcatr(NULL, "%stileset/%sground.txt", basepath, TerrainTilesetToString(this->tileset));
 	if(filename == NULL) {
 		log_fatal("Terrain grounds filename generated is null!");
@@ -259,26 +273,26 @@ void Terrain::LoadTerrainGrounds(char* basepath) {
 		return;
 	}
 	int count = -1;
-	char name[80] = {0};
-	int ret = fscanf(f, "%[^,]%d", name, &count);
-	if(ret != 2) {
-		log_error("fscanf failed with %d fields readed instead of %d", ret, 2);
+	while (fgetc(f) > 44); // skip to the comma because fscanf keeps failing
+	int ret = fscanf(f, "%d\n", &count);
+	if(ret != 1) {
+		log_error("*ground.txt header fscanf failed with %d fields readed instead of 1", ret);
 	}
+	char lineBuf[80];
 	for(int i=0; i<count; i++) {
-		ret = fscanf(f, "%25[^,]%25[^,]%25[^,]%25[^,]",
-						TileGrounds[i].names[0],
-						TileGrounds[i].names[1],
-						TileGrounds[i].names[2],
-						TileGrounds[i].names[3]);
-		if(ret != 4) {
-			log_error("fscanf failed with %d fields readed instead of %d", ret, 4);
+		// kept getting fscanf failures
+		char * xptr[4];
+		size_t xptrI = csv_split(f, lineBuf, 80, xptr, 4);
+		for (size_t j = 0; j < xptrI; j++) {
+			if (strlen(xptr[j]) < 25)
+				strcpy(TileGrounds[i].names[j], xptr[j]);
 		}
 	}
 	fclose(f);
 	free(filename);
 }
 
-void Terrain::LoadTerrainGroundTypes(char *basepath) {
+void Terrain::LoadTerrainGroundTypes(char *basepath, SDL_Renderer* rend) {
 	if(basepath == NULL) {
 		log_fatal("Base path is null!");
 		return;
@@ -295,13 +309,11 @@ void Terrain::LoadTerrainGroundTypes(char *basepath) {
 		return;
 	}
 	int r = -2;
-	int datasetnum = -1, typesnum = -1;
-	r = fscanf(f, "tertilesc%dhw,%d\n", &datasetnum, &typesnum);
-	if(r != 2) {
-		log_error("scanf failed with %d fields readed instead of %d", r, 2);
-	}
-	if(datasetnum != tilesetnum) {
-		log_error("File [%s] reported dataset number %d instead of expected %d.", filename, datasetnum, tilesetnum);
+	int typesnum = -1;
+	while (fgetc(f) > 44); // skip to the comma because fscanf keeps failing
+	r = fscanf(f, "%d\n", &typesnum);
+	if(r != 1) {
+		log_error("hwGtype header fscanf failed, returned %d", r);
 	}
 	if(typesnum > GTYPESMAX) {
 		log_warn("Too many gtypes loading, turncating %d -> %d", typesnum, GTYPESMAX);
@@ -309,44 +321,51 @@ void Terrain::LoadTerrainGroundTypes(char *basepath) {
 	}
 	log_info("Loading %d terrain types...", typesnum);
 	gtypescount = typesnum;
+	char lineBuf[80];
 	for(int i=0; i<typesnum; i++) {
-		char tmp[14] = {0};
-		r = fscanf(f, "%[^,],%[^,],%[^\n]\n", gtypes[i].groundtype, gtypes[i].pagename, tmp);
-		if(r != 3) {
+		// kept getting fscanf failures
+		char * xptr[3];
+		if (csv_split(f, lineBuf, 80, xptr, 3) != 3) {
 			log_error("fscanf readed %d fields instead of %d on %d element.", r, 3, i);
+			continue;
 		}
-		gtypes[i].size = atof(tmp);
+		strcpy(gtypes[i].groundtype, xptr[0]);
+		strcpy(gtypes[i].pagename, xptr[1]);
+		gtypes[i].size = atof(xptr[2]);
 	}
 	fclose(f);
 	free(filename);
 	// TODO free this
 	log_info("Ground types loaded.");
-	LoadGroundTypesTextures(basepath);
+	LoadGroundTypesTextures(basepath, rend);
 }
 
-void Terrain::LoadGroundTypesTextures(char* basepath) {
-	for(int i=0; i<gtypescount; i++) {
-		log_debug("%02d Generating texture", i);
-		glGenTextures(1, &gtypes[i].tex);
-
-		log_debug("%02d Binding texture", i);
-		glBindTexture(GL_TEXTURE_2D, gtypes[i].tex);
-
-		char* path = sprcatr(NULL, "%stexpages/%s", basepath, gtypes[i].pagename);
-		int width, height, nrChannels;
-		log_debug("%02d Loading page [%s]", i, path);
-		unsigned char *data = stbi_load(path, &width, &height, &nrChannels, 0);
-		if(!data) {
-			log_fatal("%02d Failed to load page [%s]", i, path);
-			continue;
+void Terrain::AssociateGroundTypesWithTileGrounds() {
+	for (int i = 0; i < TILEGROUNDSMAX; i++) {
+		auto & tg = TileGrounds[i];
+		for (int j = 0; j < 4; j++) {
+			for (int k = 0; k < gtypescount; k++) {
+				auto & gt = gtypes[k];
+				if (!strcmp(tg.names[j], gt.groundtype)) {
+					// log_info("Association %i : GT %s", i, gt.groundtype);
+					tg.groundTypes[j] = k;
+					break;
+				}
+			}
 		}
-		log_debug("%02d Loading image to gl", i);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		log_debug("%02d Generating mipmap", i);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		log_debug("%02d Freeing raw image", i);
-		stbi_image_free(data);
-		log_debug("%02d Loading done", i);
+	}
+}
+
+void Terrain::LoadGroundTypesTextures(char* basepath, SDL_Renderer* rend) {
+	for(int i=0; i<gtypescount; i++) {
+		char* path = sprcatr(NULL, "%stexpages/%s", basepath, gtypes[i].pagename);
+		log_debug("%02d Loading page [%s]", i, path);
+		gtypes[i].tex = IMG_LoadTexture(rend, path);
+		if (!gtypes[i].tex) {
+			log_error("Failed to load ground type %i's page [%s], expect oddities", i, path);
+			log_error("Details: %s (%s)", IMG_GetError(), strerror(errno));
+		}
+		free(path);
 	}
 	log_info("Ground textures loaded");
 	// TODO free this
@@ -370,16 +389,14 @@ void Terrain::ConstructGroundAlphas() {
 
 void Terrain::UpdateTexpageCoords() {
 	int filled = 0;
-	int tw = UsingTexture->w/DatasetLoaded;
-	log_info("%d %d %d", tw, UsingTexture->w, DatasetLoaded);
-	// // int th = UsingTexture->h;
+	int tw = GroundTilePage->w/DatasetLoaded;
+	log_info("%d %d %d", tw, GroundTilePage->w, DatasetLoaded);
+	// // int th = GroundTilePage->h;
 	auto SetNextTriangle = [&] (float c[2]) {
-		GLvertexes[filled+3] = c[0];
-		GLvertexes[filled+4] = c[1];
-		GLvertexes[filled+5] = 1.0f;
-		GLvertexes[filled+6] = 0.0f;
-		GLvertexes[filled+7] = 1.0f;
-		filled+=9;
+		auto vtx = glVerticesTerrain + filled;
+		vtx->ux = c[0];
+		vtx->uy = c[1];
+		filled++;
 	};
 	auto SetNextTile = [&] (int j[6], float t[4][2]) {
 		for(int i=0; i<6; i++) {
@@ -466,13 +483,12 @@ void Terrain::BufferData() {
 	glGenBuffers(1, &VBOv);
 	BindVAO();
 	BindVBO();
-	glBufferData(GL_ARRAY_BUFFER, GLvertexesCount*sizeof(float), GLvertexes, GL_STATIC_DRAW);
-	glVertexAttribPointer(glGetAttribLocation(shader, "VertexCoordinates"), 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+	// see wme_terrain_glvertex_t
+	glBufferData(GL_ARRAY_BUFFER, GLvertexesCount*sizeof(wme_terrain_glvertex_t), glVerticesTerrain, GL_STATIC_DRAW);
+	glVertexAttribPointer(glGetAttribLocation(shader, "VertexCoordinates"), 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(glGetAttribLocation(shader, "VertexCoordinates"));
-	glVertexAttribPointer(glGetAttribLocation(shader, "TextureCoordinates"), 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(glGetAttribLocation(shader, "TextureCoordinates"), 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(glGetAttribLocation(shader, "TextureCoordinates"));
-	glVertexAttribPointer(glGetAttribLocation(shader, "TextureCliffCoordinates"), 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(glGetAttribLocation(shader, "TextureCliffCoordinates"));
 }
 
 void Terrain::RenderV(glm::mat4 view) {
@@ -483,10 +499,10 @@ void Terrain::RenderV(glm::mat4 view) {
 
 void Terrain::Render() {
 	int shader = this->TerrainShader->program;
-	if(UsingTexture != nullptr) {
-		UsingTexture->Bind(UsingTexture->id);
-		glUniform1i(glGetUniformLocation(shader, "Texture"), UsingTexture->id);
+	if(GroundTilePage != nullptr) {
+		GroundTilePage->Bind(0);
 	}
+	glUniform1i(glGetUniformLocation(shader, "Texture"), 0);
 	glUniformMatrix4fv(glGetUniformLocation(shader, "Model"), 1, GL_FALSE, glm::value_ptr(GetMatrix()));
 	BindVAO();
 	BindVBO();
@@ -496,8 +512,7 @@ void Terrain::Render() {
 		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	}
 	glDrawArrays(RenderingMode, 0, GLvertexesCount);
-	glFlush();
-	if(UsingTexture != nullptr) {
-		UsingTexture->Unbind();
+	if(GroundTilePage != nullptr) {
+		GroundTilePage->Unbind();
 	}
 }

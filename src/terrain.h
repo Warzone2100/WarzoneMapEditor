@@ -29,11 +29,18 @@
 extern char* texpagesPath;
 
 #define GTYPESMAX 15
+#define TILEGROUNDSMAX 120
 
 /* The shift on a world coordinate to get the tile coordinate */
 #define TILE_SHIFT 7
 static inline int32_t world_coord(int32_t mapCoord) { return (uint32_t)mapCoord << TILE_SHIFT; }
 static inline int32_t map_coord(int32_t worldCoord) { return worldCoord >> TILE_SHIFT; }
+
+// also see Terrain::BufferData
+typedef struct {
+	float x, y, z;
+	float ux, uy;
+} wme_terrain_glvertex_t;
 
 class Terrain : public Object3d {
 public:
@@ -53,18 +60,21 @@ public:
 		char groundtype[80];
 		char pagename[256];
 		double size; // wif is this for?
-		unsigned int tex;
+		SDL_Texture * tex;
 	} gtypes[GTYPESMAX];
 	int gtypescount = 0;
 	float* groundalphas = NULL;
 	struct TileGround {
 		char names[4][25] = {0}; // 25 prob. overkill but who cares at this point
-	} TileGrounds[120]; // abstract size, recheck required
-	Texture *GroundTexpage = nullptr;
+		int groundTypes[4];
+	} TileGrounds[TILEGROUNDSMAX]; // abstract size, recheck required
+	Texture *GroundTilePage = nullptr;
+	wme_terrain_glvertex_t * glVerticesTerrain = nullptr;
 	void CreateShader();
 	void LoadTerrainGrounds(char *basepath);
-	void LoadTerrainGroundTypes(char *basepath);
-	void LoadGroundTypesTextures(char *basepath);
+	void LoadTerrainGroundTypes(char *basepath, SDL_Renderer* rend);
+	void AssociateGroundTypesWithTileGrounds();
+	void LoadGroundTypesTextures(char *basepath, SDL_Renderer* rend);
 	void ConstructGroundAlphas();
 	void UpdateTexpageCoords();
 	void GetHeightmapFromMWT(WZmap* m);
