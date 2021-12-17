@@ -45,6 +45,7 @@ public:
 	WZmap* map;
 	std::vector<Object3d*> Objects;
 	std::vector<Texture*> Textures;
+	Tileset Tst;
 	Terrain Ter;
 	SDL_Renderer *Renderer;
 	World3d(WZmap *m, SDL_Renderer *r);

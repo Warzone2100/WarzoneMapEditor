@@ -26,10 +26,7 @@
 #include "Texture.h"
 #include "Object3d.h"
 
-extern char* texpagesPath;
-
-#define GTYPESMAX 15
-#define TILEGROUNDSMAX 120
+#include "tileset.h"
 
 /* The shift on a world coordinate to get the tile coordinate */
 #define TILE_SHIFT 7
@@ -54,31 +51,14 @@ public:
 		WMT_TerrainTypes tt;
 	} tiles[256][256];
 	int w, h;
-	WZtileset tileset;
-	int DatasetLoaded;
-	struct GroundType {
-		char groundtype[80];
-		char pagename[256];
-		double size; // wif is this for?
-		SDL_Texture * tex;
-	} gtypes[GTYPESMAX];
+	Tileset * TilesetPtr = nullptr;
 	int gtypescount = 0;
 	float* groundalphas = NULL;
-	struct TileGround {
-		char names[4][25] = {0}; // 25 prob. overkill but who cares at this point
-		int groundTypes[4];
-	} TileGrounds[TILEGROUNDSMAX]; // abstract size, recheck required
-	Texture *GroundTilePage = nullptr;
 	wme_terrain_glvertex_t * glVerticesTerrain = nullptr;
 	void CreateShader();
-	void LoadTerrainGrounds(char *basepath);
-	void LoadTerrainGroundTypes(char *basepath, SDL_Renderer* rend);
-	void AssociateGroundTypesWithTileGrounds();
-	void LoadGroundTypesTextures(char *basepath, SDL_Renderer* rend);
 	void ConstructGroundAlphas();
 	void UpdateTexpageCoords();
 	void GetHeightmapFromMWT(WZmap* m);
-	void CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend);
 	void BufferData();
 	void RenderV(glm::mat4 view);
 	void Render();
