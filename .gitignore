@@ -4,3 +4,4 @@ imgui.ini
 build/
 depend
 *.d
+*.diff
