@@ -92,7 +92,7 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 	Ter.UpdateTexpageCoords();
 	Ter.CreateShader();
 	Ter.BufferData();
-	ObjectsShader = new Shader("./data/vertex.vs", "./data/fragment.frag");
+	ObjectsShader = new Shader("./data/shaders/vertex.vs", "./data/shaders/fragment.frag");
 }
 
 World3d::~World3d() {

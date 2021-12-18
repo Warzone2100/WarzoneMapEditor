@@ -76,7 +76,10 @@ int main(int argc, char** argv) {
 	SDL_Window* window = SDL_CreateWindow("3d", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	SDL_SetWindowResizable(window, SDL_TRUE);
 	SDL_Renderer* rend = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	log_info("%s", SDL_GetError());
+	if(rend == NULL) {
+		log_fatal("%s", SDL_GetError());
+		return 1;
+	}
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -125,7 +128,7 @@ int main(int argc, char** argv) {
 
 	World3d World(map, rend);
 
-	Shader TileSelectionShader("./data/TileSelectionShader.vs", "./data/TileSelectionShader.frag");
+	Shader TileSelectionShader("./data/shaders/TileSelectionShader.vs", "./data/shaders/TileSelectionShader.frag");
 	std::vector<glm::vec3> TileSelectionVertexArray = {
 		{ 0.0f, 0.0f, 0.0f },
 		{ 0.0f,  0.0f, 128.0f },

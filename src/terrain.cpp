@@ -27,7 +27,7 @@
 #include "other.h"
 
 void Terrain::CreateShader() {
-	TerrainShader = new Shader("./data/TerrainShaderVertex.vs", "./data/TerrainShaderFragment.frag");
+	TerrainShader = new Shader("./data/shaders/TerrainShaderVertex.vs", "./data/shaders/TerrainShaderFragment.frag");
 }
 
 void Terrain::GetHeightmapFromMWT(WZmap* map) {
