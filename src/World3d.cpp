@@ -79,11 +79,16 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 		abort();
 	}
 	this->map = m;
-	Ter.GetHeightmapFromMWT(this->map);
 	char* datapath = secure_getenv("WZMAP_DATA_PATH")?:(char*)"./data/";
-	Ter.CreateTexturePage(datapath, 128, Renderer);
-	Ter.LoadTerrainGrounds(datapath);
-	Ter.LoadTerrainGroundTypes(datapath);
+	// data involving ground types 'n' stuff (tm)
+	Tst.tileset = map->tileset;
+	Tst.LoadTerrainGrounds(datapath);
+	Tst.LoadTerrainGroundTypes(datapath, Renderer);
+	Tst.AssociateGroundTypesWithTileGrounds();
+	Tst.CreateTexturePage(datapath, 128, Renderer);
+	Ter.TilesetPtr = &Tst;
+	//
+	Ter.GetHeightmapFromMWT(this->map);
 	Ter.UpdateTexpageCoords();
 	Ter.CreateShader();
 	Ter.BufferData();
