@@ -29,43 +29,53 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <unistd.h>
+#include <algorithm>
+#include <cctype>
+#include <string>
 
-// // Search in textures, maybe we already loaded it...
-// Texture* World3d::GetTexture(std::string filepath) {
-// 	for(long unsigned int i=0; i<Textures.size(); i++) {
-// 		if(Textures[i]->valid && Textures[i]->path == filepath) {
-// 			return Textures[i];
-// 		}
-// 	}
-// 	return nullptr;
-// }
-//
-// void World3d::AddObject(std::string filename, unsigned int Shader) {
-// 	return;
-// 	Object3d creating;
-// 	creating.LoadFromPIE(filename);
-// 	Texture* found = GetTexture(creating.TexturePath);
-// 	if(found != nullptr) {
-// 		creating.UsingTexture = found;
-// 	} else {
-// 		Texture* newtex = new Texture();
-// 		newtex->Load(creating.TexturePath, Renderer);
-// 		// newtex.Bind(GetNextTextureId());
-// 		Textures.push_back(&newtex);
-// 		creating.UsingTexture = &Textures[Textures.size()-1];
-// 	}
-// 	creating.PrepareTextureCoords();
-// 	creating.BufferData(Shader);
-// 	Objects.push_back(creating);
-// }
-//
-// int World3d::GetNextTextureId() {
-// 	return texids++;
-// }
+#include "stats.h"
+
+Texture* World3d::GetTexture(std::string filepath) {
+	for(long unsigned int i=0; i<Textures.size(); i++) {
+		if(Textures[i]->valid && Textures[i]->path == filepath) {
+			return Textures[i];
+		}
+	}
+	return nullptr;
+}
+
+Texture* World3d::GetOrLoadTexture(std::string filepath) {
+	Texture* newtex = GetTexture(filepath);
+	if(newtex == nullptr) {
+		newtex = new Texture();
+		newtex->Load(filepath, Renderer);
+		newtex->Bind(GetNextTextureId());
+		Textures.push_back(newtex);
+	}
+	return newtex;
+}
+
+Object3d* World3d::AddObject(std::string filename, unsigned int Shader) {
+	Object3d* creating = new Object3d();
+	if(!creating->LoadFromPIE(filename)) {
+		return nullptr;
+	}
+	std::string texpath = "./data/texpages/" + creating->TexturePath;
+	creating->UsingTexture = GetOrLoadTexture(texpath);
+	creating->PrepareTextureCoords();
+	creating->BufferData(Shader);
+	Objects.push_back(creating);
+	return creating;
+}
+
+int World3d::GetNextTextureId() {
+	return texids++;
+}
 
 void World3d::RenderScene(glm::mat4 view) {
 	Ter.RenderV(view);
 	for(auto &a : Objects) {
+		// a->BufferData(ObjectsShader->program);
 		a->Render(ObjectsShader->program);
 	}
 }
@@ -93,12 +103,38 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 	Ter.CreateShader();
 	Ter.BufferData();
 	ObjectsShader = new Shader("./data/shaders/vertex.vs", "./data/shaders/fragment.frag");
+	for(int i=0; i<this->map->numStructures; i++) {
+		WZobject o = this->map->structs[i];
+		if(!Sstructures.count(o.name)) {
+			log_warn("Failed to load object %.128s! Stat not found", o.name);
+			continue;
+		}
+		if(Sstructures[o.name].structureModel.size() < 1) {
+			log_fatal("Structure %.128s with no model?!", o.name);
+		}
+		std::string firstpie = Sstructures[o.name].structureModel[0];
+		std::transform(firstpie.begin(), firstpie.end(), firstpie.begin(), [](unsigned char c){ return std::tolower(c); });
+		std::string loadpath = "/home/max/warzone2100/data/base/structs/"+firstpie;
+		log_info("Loading [%s]", loadpath.c_str());
+		Object3d* a = this->AddObject(loadpath, ObjectsShader->program);
+		if(!a) {
+			log_error("Unable to load object %s! Failed to add model", o.name);
+			continue;
+		}
+		a->GLpos[0] = o.x;
+		a->GLpos[1] = o.z;
+		a->GLpos[2] = o.y;
+	}
 }
 
 World3d::~World3d() {
 	Ter.~Terrain();
 	for(auto a : this->Textures) {
-		a->~Texture();
+		a->Free();
+		delete a;
+	}
+	for(auto a : this->Objects) {
+		a->Free();
 		delete a;
 	}
 	if(ObjectsShader) {

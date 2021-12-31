@@ -17,29 +17,34 @@
     along with WZ2100 Map Editor; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 */
+#ifndef STATS_H_INCLUDED
+#define STATS_H_INCLUDED
 
-#ifndef TEXTURE_H_DEFINED
-#define TEXTURE_H_DEFINED
-
+#include <map>
 #include <string>
-#include <SDL2/SDL.h>
-#include "glad/glad.h"
-#include <GLFW/glfw3.h>
+#include <vector>
 
-class Texture {
-public:
-	GLuint GLid = 0;
-	int id = 0;
-	std::string path = "";
-	SDL_Texture *tex = nullptr;
-	int w = -1, h = -1;
-	bool valid = false;
-	void Load(std::string path, SDL_Renderer *rend);
-	void Load(SDL_Texture* texture);
-	void Bind(int texid);
-	void Bind();
-	void Unbind();
-	void Free();
+struct Sstructure {
+	int armour;
+	int breadth;
+	int buildPoints;
+	bool combinesWithWall;
+	std::string ecmID;
+	int height;
+	int hitpoints;
+	std::string id;
+	std::string name;
+	int resistance;
+	std::string sensorID;
+	std::vector<std::string> structureModel;
+	int thermal;
+	std::string type;
+	std::vector<std::string> weapons;
+	int width;
 };
 
-#endif /* end of include guard: TEXTURE_H_DEFINED */
+extern std::map<std::string, Sstructure> Sstructures;
+
+bool ParseStats(std::string path);
+
+#endif

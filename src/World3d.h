@@ -38,8 +38,9 @@
 class World3d {
 private:
 	int texids = 0;
-	// int GetNextTextureId();
-	// Texture* GetTexture(std::string filepath);
+	int GetNextTextureId();
+	Texture* GetTexture(std::string filepath);
+	Texture* GetOrLoadTexture(std::string filepath);
 	Shader* ObjectsShader = nullptr;
 public:
 	WZmap* map;
@@ -50,7 +51,7 @@ public:
 	SDL_Renderer *Renderer;
 	World3d(WZmap *m, SDL_Renderer *r);
 	~World3d();
-	// void AddObject(std::string filename, unsigned int);
+	Object3d* AddObject(std::string filename, unsigned int);
 	void RenderScene(glm::mat4 view);
 };
 

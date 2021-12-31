@@ -29,9 +29,14 @@ void Texture::Load(std::string path, SDL_Renderer *rend) {
 	this->path = path;
 	log_info("Loading [%s] texture...", this->path.c_str());
 	this->tex = IMG_LoadTexture(rend, this->path.c_str());
+	if(this->tex == NULL) {
+		log_error("Failed to load texture [%s]: %s", path.c_str(), IMG_GetError());
+		abort();
+	}
 	SDL_QueryTexture(this->tex, NULL, NULL, &this->w, &this->h);
 	glGenTextures(1, &GLid);
-	log_info("Loaded [%s] texture.", this->path.c_str());
+	log_info("Loaded [%s] texture. (w%f h%f)", this->path.c_str(), this->w, this->h);
+	this->valid = true;
 	return;
 }
 
@@ -47,6 +52,7 @@ void Texture::Bind() {
 	float texw, texh;
 	if(SDL_GL_BindTexture(this->tex, &texw, &texh)) {
 		log_error("Failed to bind SDL_Texture: %s", SDL_GetError());
+		abort();
 	}
 	if(texw != 1.0f || texh != 1.0f) {
 		log_warn("Texture sizes seems to be wrong: %f %f", texw, texh);

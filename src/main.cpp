@@ -40,6 +40,7 @@
 #include "terrain.h"
 #include "args.h"
 #include "other.h"
+#include "stats.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -117,7 +118,11 @@ int main(int argc, char** argv) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-
+	log_info("Loading stats...");
+	if(!ParseStats("/home/max/warzone2100/data/base/stats/")) {
+		return 1;
+	}
+	log_info("Stats loaded, opening map...");
 
 	WZmap *map = (WZmap*)malloc(sizeof(WZmap));
 	WMT_ReadMap(secure_getenv("OPENMAP")?:(char*)"./data/8c-Stone-Jungle-E.wz", map);

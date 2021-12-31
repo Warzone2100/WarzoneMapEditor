@@ -36,15 +36,15 @@ Object3d::Object3d() {
 bool Object3d::LoadFromPIE(std::string filepath) {
 	FILE* f = fopen(filepath.c_str(), "r");
 	if(f == NULL) {
-		log_error("Error opening file");
+		log_error("Error opening file: %s", strerror(errno));
 		return false;
 	}
 	int type, pointscount, ret, ver;
 	char texturepagepath[512];
 	ret = fscanf(f, "PIE %d\nTYPE %d\nTEXTURE %*d %s %*d %*d\nLEVELS %*d\nLEVEL %*d\nPOINTS %d\n", &ver, &type, texturepagepath, &pointscount);
 	if(ret!=4) {
-		log_error("PIE scanf 1 %d", ret);
-		abort();
+		log_error("PIE [%s] scanf 1 %d", filepath.c_str(), ret);
+		return false;
 	}
 	this->TexturePath = texturepagepath;
 	std::vector<glm::vec3> points;
@@ -53,7 +53,7 @@ bool Object3d::LoadFromPIE(std::string filepath) {
 		ret = fscanf(f, "\t%f %f %f\n", &newpoint.x, &newpoint.y, &newpoint.z);
 		if(ret!=3) {
 			log_error("PIE scanf 2 %d", ret);
-			abort();
+			return false;
 		}
 		points.push_back(newpoint);
 	}
@@ -62,7 +62,7 @@ bool Object3d::LoadFromPIE(std::string filepath) {
 	ret = fscanf(f, "POLYGONS %d", &polycount);
 	if(ret!=1) {
 		log_error("PIE scanf 3 %d", ret);
-		abort();
+		return false;
 	}
 	struct PIEpolygon {
 		int flags;
@@ -76,24 +76,24 @@ bool Object3d::LoadFromPIE(std::string filepath) {
 		ret = fscanf(f, "\t%d %d", &newpolygon.flags, &newpolygon.pcount);
 		if(ret!=2) {
 			log_error("PIE scanf 4 %d (%d)", ret, i);
-			abort();
+			return false;
 		}
 		for(int j=0; j<newpolygon.pcount; j++) {
 			ret = fscanf(f, " %d", &newpolygon.porder[j]);
 			if(ret!=1) {
 				log_error("PIE scanf 5 %d (%d) (%d)", ret, i, j);
-				abort();
+				return false;
 			}
 		}
 		if(newpolygon.flags!=200) {
 			log_error("Polygons bad flag");
-			abort();
+			return false;
 		}
 		for(int j=0; j<newpolygon.pcount*2; j++) {
 			ret = fscanf(f, " %f", &newpolygon.texcoords[j]);
 			if(ret!=1) {
 				log_error("PIE scanf 6 %d (%d) (%d)\n", ret, i, j);
-				abort();
+				return false;
 			}
 		}
 		polygons.push_back(newpolygon);
@@ -111,7 +111,8 @@ bool Object3d::LoadFromPIE(std::string filepath) {
 	for(unsigned int i=0; i<polygons.size(); i++) {
 		if(polygons[i].pcount != 3) {
 			log_fatal("Polygon converter error!");
-			abort();
+			free(GLvertexes);
+			return false;
 		}
 		for(int j=0; j<polygons[i].pcount; j++) {
 			GLvertexes[filled+0] = points[polygons[i].porder[j]].x;
@@ -186,9 +187,6 @@ void Object3d::Render(unsigned int shader) {
 }
 
 void Object3d::Free() {
-	if(UsingTexture) {
-		UsingTexture->Free();
-	}
 	if(GLvertexes) {
 		free(GLvertexes);
 	}
