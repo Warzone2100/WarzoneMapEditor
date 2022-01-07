@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.9)
-project(warzone_map_editor)
+
+include("cmake/git.cmake")
+
+project(warzone_map_editor VERSION ${GIT_TAG})
 
 set(CMAKE_COLOR_MAKEFILE   ON)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -13,11 +16,12 @@ add_subdirectory(lib/WMT)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
 set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address")
 
-
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 set(OpenGL_GL_PREFERENCE LEGACY)
 find_package(OpenGL REQUIRED)
+
+configure_file(src/build.h.in src/build.h)
 
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD)
 file(GLOB srcfiles "src/*.cpp" "src/*.c" "src/*.hpp" "src/*.h" "lib/imgui/*.cpp" "lib/imgui/*.h")
@@ -27,7 +31,7 @@ file(GLOB gladfiles "lib/glad/src/glad.cpp" "lib/glad/include/glad.h")
 add_executable(main ${libfiles} ${srcfiles} ${gladfiles})
 set_property(TARGET main PROPERTY CXX_STANDARD 17)
 link_directories("lib/" "lib/glad/src/")
-include_directories("lib/glad/include/" "lib/imgui/" "lib/" ${GLFW3_INCLUDE_DIR} ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR} "lib/glad/include/" "lib/imgui/" "lib/" ${GLFW3_INCLUDE_DIR} ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS})
 target_link_libraries(main libwmt GL GLU glfw GLEW ${GLFW3_LIBRARY} ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES})
 
 set(GLAD_DIR "lib/glad")

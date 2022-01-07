@@ -35,7 +35,7 @@
 
 #include "log.hpp"
 #include "Shader.h"
-#include "pie.h"
+#include "Pie.h"
 #include "World3d.h"
 #include "terrain.h"
 #include "args.h"
@@ -60,30 +60,38 @@ int main(int argc, char** argv) {
 	ProcessArgs(argc, argv);
 	time_t t;
 	srand((unsigned) time(&t));
-	log_info("Hello world!");
+	print_configuration();
 
-	glfwInit();
-	log_info("glfw init done");
-
-	if(SDL_Init(SDL_INIT_EVERYTHING)<0) {
-		log_fatal("SDL init error: %s", SDL_GetError());
+	if(glfwInit() != GLFW_TRUE) {
+		char* ep;
+		int er = glfwGetError((const char**)&ep);
+		log_fatal("Failed to initialize GLFW: code %d [%s]", er, ep);
+		return 1;
 	}
-	if(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)) {log_fatal("attr error");}
-	if(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5)) {log_fatal("attr error");}
-	if(SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6)) {log_fatal("attr error");}
-	if(SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5)) {log_fatal("attr error");}
-	if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3)) {log_fatal("attr error");}
 
-	SDL_Window* window = SDL_CreateWindow("3d", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+	if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+		log_fatal("SDL init error: %s", SDL_GetError());
+		return 1;
+	}
+	if(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)) {log_fatal("Failed to set SDL_GL_DOUBLEBUFFER: %s", SDL_GetError()); return 1;}
+	if(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5)) 	{log_fatal("Failed to set SDL_GL_RED_SIZE: %s", SDL_GetError()); return 1;}
+	if(SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6))	{log_fatal("Failed to set SDL_GL_GREEN_SIZE: %s", SDL_GetError()); return 1;}
+	if(SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5)) 	{log_fatal("Failed to set SDL_GL_BLUE_SIZE: %s", SDL_GetError()); return 1;}
+
+	SDL_Window* window = SDL_CreateWindow("Warzone Map Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+	if(window == NULL) {
+		log_fatal("Failed to create window: %s", SDL_GetError());
+		return 1;
+	}
 	SDL_SetWindowResizable(window, SDL_TRUE);
 	SDL_Renderer* rend = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	if(rend == NULL) {
-		log_fatal("%s", SDL_GetError());
+		log_fatal("Failed to create renderer: %s", SDL_GetError());
 		return 1;
 	}
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE)) {log_fatal("Failed to set SDL_GL_CONTEXT_PROFILE_MASK: %s", SDL_GetError()); return 1;}
+	if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3)) {log_fatal("Failed to set SDL_GL_CONTEXT_MAJOR_VERSION: %s", SDL_GetError()); return 1;}
+	if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3)) {log_fatal("Failed to set SDL_GL_CONTEXT_MINOR_VERSION: %s", SDL_GetError()); return 1;}
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
 	if(!glcontext) {
 		log_fatal("gl context");

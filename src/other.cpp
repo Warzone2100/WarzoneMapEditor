@@ -21,8 +21,12 @@
 #include "other.h"
 
 #include "log.hpp"
+#include "build.h"
 #include <string.h>
 #include <stdlib.h>
+#include <GLFW/glfw3.h>
+#include <SDL2/SDL.h>
+#include <gnu/libc-version.h>
 
 size_t snprcat(char* str, size_t stroffs, size_t strmax, const char* format, ...) {
 	va_list args;
@@ -141,4 +145,15 @@ void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum se
 	debugmsg = sprcatr(debugmsg, " :::\n[%s]", message);
 	log_info(debugmsg);
 	free(debugmsg);
+}
+
+void print_configuration() {
+	log_info("Warzone Map Editor version %s.%s", WME_VERSION_MAJOR, WME_VERSION_MINOR);
+	if(strncmpl(WME_VERSION_HASH, "N/A")) {
+		log_info("GIT:   %s %s %s", WME_VERSION_HASH, WME_VERSION_BRANCH, WME_VERSION_TAG);
+	}
+	log_info("GLFW:  %s", glfwGetVersionString());
+	SDL_version compiled; SDL_version linked; SDL_VERSION(&compiled); SDL_GetVersion(&linked);
+	log_info("SDL:   compiled %d.%d.%d linked %d.%d.%d", compiled.major, compiled.minor, compiled.patch, linked.major, linked.minor, linked.patch);
+	log_info("GLIBC: %s\n", gnu_get_libc_version());
 }

@@ -1,0 +1,10 @@
+#ifndef BUILD_H_INCLUDED
+#define BUILD_H_INCLUDED
+
+#define WME_VERSION_MAJOR "@warzone_map_editor_VERSION_MAJOR@"
+#define WME_VERSION_MINOR "@warzone_map_editor_VERSION_MINOR@"
+#define WME_VERSION_HASH "@GIT_REV@"
+#define WME_VERSION_BRANCH "@GIT_BRANCH@"
+#define WME_VERSION_TAG "@GIT_TAG@"
+
+#endif
