@@ -400,12 +400,14 @@ int main(int argc, char** argv) {
 		static bool ShowTileDebugger = false;
 		static bool ShowStructureEditor = false;
 		static int StructureEditorN = 0;
+		static bool ShowWorldRenderObjectsDebugger = false;
 		if(ImGui::BeginMainMenuBar()) {
 			if(ImGui::BeginMenu("Debuggers")) {
 				ImGui::MenuItem("Overlay", NULL, &ShowOverlay);
 				ImGui::MenuItem("TTypes", NULL, &ShowTerrainTypesDebugger);
 				ImGui::MenuItem("Tile", NULL, &ShowTileDebugger);
 				ImGui::MenuItem("Structure", NULL, &ShowStructureEditor);
+				ImGui::MenuItem("World - Structures", NULL, &ShowWorldRenderObjectsDebugger);
 				ImGui::EndMenu();
 			}
 			if(ImGui::BeginMenu("Misc")) {
@@ -499,7 +501,18 @@ int main(int argc, char** argv) {
 				ImGui::InputInt("Direction", &odir);
 				ImGui::InputInt("Player", &opl);
 				ImGui::InputInt3("Rotation", o.rotation);
-				
+			}
+			ImGui::End();
+		}
+		if(ShowWorldRenderObjectsDebugger) {
+			ImGui::Begin("World structures debugger", &ShowWorldRenderObjectsDebugger);
+			long objsize = World.Objects.size();
+			ImGui::Text("Structures count: %ld", objsize);
+			for(int i = 0; i < objsize; i++) {
+				ImGui::Text("Object: %d", i);
+				char label[120] = {0};
+				snprintf(label, 119, "GLpos %d", i);
+				ImGui::InputFloat3(label, (float*)&World.Objects[i]->GLpos.x);
 			}
 			ImGui::End();
 		}

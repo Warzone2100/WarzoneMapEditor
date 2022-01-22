@@ -121,9 +121,9 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 			log_error("Unable to load object %s! Failed to add model", o.name);
 			continue;
 		}
-		a->GLpos[0] = o.x;
-		a->GLpos[1] = o.z;
-		a->GLpos[2] = o.y;
+		a->GLpos[0] = -((float)o.x);
+		a->GLpos[1] = -((float)o.z)*2;
+		a->GLpos[2] = -((float)o.y);
 	}
 }
 
