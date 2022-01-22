@@ -27,6 +27,25 @@
 #include <SDL2/SDL_image.h>
 #include <string>
 
+void PIElevel::InitAtZero() {
+	this->points = nullptr;
+	this->pointscount = 0;
+	this->normals = nullptr;
+	this->normalscount = 0;
+	this->polygons = nullptr;
+	this->polygonscount = 0;
+	this->connectors = nullptr;
+	this->connectorscount = 0;
+	this->anim = nullptr;
+	this->animtime = 0;
+	this->animcycles = 0;
+	this->animframes = 0;
+	this->shadowpoints = nullptr;
+	this->shadowpointscount = 0;
+	this->shadowpolygons = nullptr;
+	this->shadowpolygonscount = 0;
+}
+
 PIElevel::~PIElevel() {
 	if(this->points) {
 		free(points);
@@ -54,6 +73,9 @@ PIEmodel::~PIEmodel() {
 			this->levels[i].~PIElevel();
 		}
 	}
+}
+
+PIEmodel::PIEmodel() {
 }
 
 class AutoFreeFileHandle {
@@ -163,6 +185,9 @@ bool PIEmodel::ReadPIE(std::string path) {
 				log_fatal("Failed to allocate levels!!! [%s]", strerror(errno));
 				return false;
 			}
+			for(int i = 0; i < this->levelscount; i++) {
+				this->levels[i].InitAtZero();
+			}
 		} else if(!strncmpl(str, "LEVEL ")) {
 			int newlevel = -1;
 			int r = sscanf(str, "LEVEL %d", &nowlevel);
@@ -170,11 +195,8 @@ bool PIEmodel::ReadPIE(std::string path) {
 				log_error("PIE READ [%s] LEVEL line %d ret %d", path.c_str(), snum, r);
 				return false;
 			}
-			if(newlevel != -1 && newlevel <= this->levelscount && newlevel > 0) {
-				nowlevel = newlevel-1;
-			} else {
-				log_error("PIE READ [%s] LEVEL %d line %d outside level allocation", path.c_str(), newlevel, snum);
-			}
+			nowlevel = nowlevel - 1;
+			log_info("Set level %d", nowlevel);
 		} else if(!strncmpl(str, "MATERIALS ")) {
 		} else if(!strncmpl(str, "SHADERS ")) {
 		} else if(!strncmpl(str, "POINTS ")) {
@@ -192,13 +214,14 @@ bool PIEmodel::ReadPIE(std::string path) {
 				log_error("PIE READ [%s] POINTS line %d level %d malloc failed, no memory left?!", path.c_str(), snum, nowlevel);
 				return false;
 			}
+			log_info("Allocated points for level %d at %#016x", nowlevel, this->levels[nowlevel].points);
 			char* pstr = NULL;
 			size_t plen = 0;
 			ssize_t pread;
 			for(int pointnum = 0; pointnum < this->levels[nowlevel].pointscount; pointnum++) {
 				pread = getline(&pstr, &plen, f);
-				if(pread != -1) {
-					log_error("PIE READ [%s] POINTS line %d level %d getline failed %d %s", path.c_str(), snum, nowlevel, errno, strerror(errno));
+				if(pread == -1) {
+					log_error("PIE READ [%s] POINTS line %d level %d getline failed %d %d %s", path.c_str(), snum, pread, nowlevel, errno, strerror(errno));
 					free(pstr);
 					return false;
 				}
@@ -274,25 +297,59 @@ bool PIEmodel::ReadPIE(std::string path) {
 			ssize_t pread;
 			for(int polygonnum = 0; polygonnum < this->levels[nowlevel].polygonscount; polygonnum++) {
 				pread = getline(&pstr, &plen, f);
-				if(pread != -1) {
+				if(pread == -1) {
 					log_error("PIE READ [%s] POLYGONS line %d level %d getline failed %d %s", path.c_str(), snum, nowlevel, errno, strerror(errno));
 					free(pstr);
 					return false;
 				}
 				int pr = sscanf(pstr, "\t%d %d", &this->levels[nowlevel].polygons[polygonnum].flags, &this->levels[nowlevel].polygons[polygonnum].pcount);
 				if(pr != 2) {
-					log_error("PIE READ [%s] POLYGONS line %d level %d sscanf failed %d", path.c_str(), snum, nowlevel, pr);
+					log_error("PIE READ [%s] POLYGONS line %d level %d sscanf flag failed %d", path.c_str(), snum, nowlevel, pr);
 					free(pstr);
 					return false;
 				}
-				if(!(this->levels[nowlevel].polygons[polygonnum].flags & 0x00000200)) {
+				int ffff = this->levels[nowlevel].polygons[polygonnum].flags;
+				if(ffff != 200 && ffff != 4200) {
 					log_error("PIE READ [%s] POLYGONS line %d level %d flag is not 200 %d", path.c_str(), snum, nowlevel, this->levels[nowlevel].polygons[polygonnum].flags);
 					free(pstr);
 					return false;
 				}
+				if(this->levels[nowlevel].polygons[polygonnum].pcount != 3) {
+					log_error("PIE READ [%s] POLYGONS line %d level %d wrong polygon pcount %d", path.c_str(), snum, nowlevel, this->levels[nowlevel].polygons[polygonnum].pcount);
+					free(pstr);
+					return false;
+				}
+				int prr = sscanf(pstr, "\t%*d %*d %d %d %d", &this->levels[nowlevel].polygons[polygonnum].porder[0],
+															 &this->levels[nowlevel].polygons[polygonnum].porder[1],
+															 &this->levels[nowlevel].polygons[polygonnum].porder[2]);
+				if(prr != 3) {
+					log_error("PIE READ [%s] POLYGONS line %d level %d sscanf porder failed %d", path.c_str(), snum, nowlevel, prr);
+					free(pstr);
+					return false;
+				}
+				if(ffff == 4000 || ffff == 4200) {
+					log_error("PIE READ [%s] POLYGONS line %d level %d sscanf ANIM", path.c_str(), snum, nowlevel);
+					free(pstr);
+					return false;
+				} else {
+					int prrr = sscanf(pstr, "\t%*d %*d %*d %*d %*d %f %f %f %f %f %f",
+						&this->levels[nowlevel].polygons[polygonnum].texcoords[0],
+						&this->levels[nowlevel].polygons[polygonnum].texcoords[1],
+						&this->levels[nowlevel].polygons[polygonnum].texcoords[2],
+						&this->levels[nowlevel].polygons[polygonnum].texcoords[3],
+						&this->levels[nowlevel].polygons[polygonnum].texcoords[4],
+						&this->levels[nowlevel].polygons[polygonnum].texcoords[5]);
+					if(prrr != 6) {
+						log_error("PIE READ [%s] POLYGONS line %d level %d sscanf texcoords failed %d", path.c_str(), snum, nowlevel, prrr);
+						free(pstr);
+						return false;
+					}
+				}
 				snum++;
 			}
 			free(pstr);
+		} else if(!strncmpl(str, "CONNECTORS ")) {
+		} else if(!strncmpl(str, "ANIMOBJECT ")) {
 		}
 		snum++;
 	}

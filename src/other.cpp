@@ -21,7 +21,7 @@
 #include "other.h"
 
 #include "log.hpp"
-#include "build.h"
+#include "src/build.h"
 #include <string.h>
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
@@ -155,5 +155,5 @@ void print_configuration() {
 	log_info("GLFW:  %s", glfwGetVersionString());
 	SDL_version compiled; SDL_version linked; SDL_VERSION(&compiled); SDL_GetVersion(&linked);
 	log_info("SDL:   compiled %d.%d.%d linked %d.%d.%d", compiled.major, compiled.minor, compiled.patch, linked.major, linked.minor, linked.patch);
-	log_info("GLIBC: %s\n", gnu_get_libc_version());
+	log_info("GLIBC: %s", gnu_get_libc_version());
 }
