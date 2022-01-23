@@ -111,11 +111,31 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 		}
 		if(Sstructures[o.name].structureModel.size() < 1) {
 			log_fatal("Structure %.128s with no model?!", o.name);
+			continue;
 		}
 		std::string firstpie = Sstructures[o.name].structureModel[0];
 		std::transform(firstpie.begin(), firstpie.end(), firstpie.begin(), [](unsigned char c){ return std::tolower(c); });
 		std::string loadpath = "/home/max/warzone2100/data/base/structs/"+firstpie;
-		log_info("Loading [%s]", loadpath.c_str());
+		// log_info("Loading [%s]", loadpath.c_str());
+		Object3d* a = this->AddObject(loadpath, ObjectsShader->program);
+		if(!a) {
+			log_error("Unable to load object %s! Failed to add model", o.name);
+			continue;
+		}
+		a->GLpos[0] = -((float)o.x);
+		a->GLpos[1] = -((float)o.z)*2;
+		a->GLpos[2] = -((float)o.y);
+	}
+	for(int i=0; i<this->map->featuresCount; i++) {
+		WZfeature o = this->map->features[i];
+		if(!Sfeatures.count(o.name)) {
+			log_warn("Failed to load object %.128s! Stat not found", o.name);
+			continue;
+		}
+		std::string firstpie = Sfeatures[o.name].model;
+		std::transform(firstpie.begin(), firstpie.end(), firstpie.begin(), [](unsigned char c){ return std::tolower(c); });
+		std::string loadpath = "/home/max/warzone2100/data/base/features/"+firstpie;
+		// log_info("Loading [%s]", loadpath.c_str());
 		Object3d* a = this->AddObject(loadpath, ObjectsShader->program);
 		if(!a) {
 			log_error("Unable to load object %s! Failed to add model", o.name);

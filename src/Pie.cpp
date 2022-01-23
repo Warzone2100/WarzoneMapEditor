@@ -196,7 +196,7 @@ bool PIEmodel::ReadPIE(std::string path) {
 				return false;
 			}
 			nowlevel = nowlevel - 1;
-			log_info("Set level %d", nowlevel);
+			log_trace("Set level %d", nowlevel);
 		} else if(!strncmpl(str, "MATERIALS ")) {
 		} else if(!strncmpl(str, "SHADERS ")) {
 		} else if(!strncmpl(str, "POINTS ")) {
@@ -214,7 +214,7 @@ bool PIEmodel::ReadPIE(std::string path) {
 				log_error("PIE READ [%s] POINTS line %d level %d malloc failed, no memory left?!", path.c_str(), snum, nowlevel);
 				return false;
 			}
-			log_info("Allocated points for level %d at %#016x", nowlevel, this->levels[nowlevel].points);
+			log_trace("Allocated points for level %d at %#016x", nowlevel, this->levels[nowlevel].points);
 			char* pstr = NULL;
 			size_t plen = 0;
 			ssize_t pread;
@@ -327,23 +327,23 @@ bool PIEmodel::ReadPIE(std::string path) {
 					free(pstr);
 					return false;
 				}
+				const char* polyformat;
 				if(ffff == 4000 || ffff == 4200) {
-					log_error("PIE READ [%s] POLYGONS line %d level %d sscanf ANIM", path.c_str(), snum, nowlevel);
+					polyformat = "\t%*d %*d %*d %*d %*d %*d %*d %*d %*d %f %f %f %f %f %f";
+				} else {
+					polyformat = "\t%*d %*d %*d %*d %*d %f %f %f %f %f %f";
+				}
+				int prrr = sscanf(pstr, polyformat,
+					&this->levels[nowlevel].polygons[polygonnum].texcoords[0],
+					&this->levels[nowlevel].polygons[polygonnum].texcoords[1],
+					&this->levels[nowlevel].polygons[polygonnum].texcoords[2],
+					&this->levels[nowlevel].polygons[polygonnum].texcoords[3],
+					&this->levels[nowlevel].polygons[polygonnum].texcoords[4],
+					&this->levels[nowlevel].polygons[polygonnum].texcoords[5]);
+				if(prrr != 6) {
+					log_error("PIE READ [%s] POLYGONS line %d level %d sscanf texcoords failed %d", path.c_str(), snum, nowlevel, prrr);
 					free(pstr);
 					return false;
-				} else {
-					int prrr = sscanf(pstr, "\t%*d %*d %*d %*d %*d %f %f %f %f %f %f",
-						&this->levels[nowlevel].polygons[polygonnum].texcoords[0],
-						&this->levels[nowlevel].polygons[polygonnum].texcoords[1],
-						&this->levels[nowlevel].polygons[polygonnum].texcoords[2],
-						&this->levels[nowlevel].polygons[polygonnum].texcoords[3],
-						&this->levels[nowlevel].polygons[polygonnum].texcoords[4],
-						&this->levels[nowlevel].polygons[polygonnum].texcoords[5]);
-					if(prrr != 6) {
-						log_error("PIE READ [%s] POLYGONS line %d level %d sscanf texcoords failed %d", path.c_str(), snum, nowlevel, prrr);
-						free(pstr);
-						return false;
-					}
 				}
 				snum++;
 			}

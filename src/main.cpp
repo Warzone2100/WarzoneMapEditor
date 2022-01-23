@@ -49,8 +49,8 @@
 
 #define FPS 60
 
-int width = 640;
-int height = 480;
+int width = 1280;
+int height = 720;
 
 const char* demopieobjectpath = "./data/blbrbgen.pie";
 const char* demopieobjectpath2 = "./data/vtolfactory_module1.pie";
@@ -75,9 +75,9 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	if(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)) {log_fatal("Failed to set SDL_GL_DOUBLEBUFFER: %s", SDL_GetError()); return 1;}
-	if(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5)) 	{log_fatal("Failed to set SDL_GL_RED_SIZE: %s", SDL_GetError()); return 1;}
-	if(SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6))	{log_fatal("Failed to set SDL_GL_GREEN_SIZE: %s", SDL_GetError()); return 1;}
-	if(SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5)) 	{log_fatal("Failed to set SDL_GL_BLUE_SIZE: %s", SDL_GetError()); return 1;}
+	if(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8)) 	{log_fatal("Failed to set SDL_GL_RED_SIZE: %s", SDL_GetError()); return 1;}
+	if(SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8))	{log_fatal("Failed to set SDL_GL_GREEN_SIZE: %s", SDL_GetError()); return 1;}
+	if(SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8)) 	{log_fatal("Failed to set SDL_GL_BLUE_SIZE: %s", SDL_GetError()); return 1;}
 
 	SDL_Window* window = SDL_CreateWindow("Warzone Map Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	if(window == NULL) {
@@ -127,6 +127,14 @@ int main(int argc, char** argv) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	int drawfb;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (int*)&drawfb);
+	log_info("Framebuffer %d is for drawing");
+	unsigned int idfb[2];
+	glGenFramebuffers(2, (unsigned int*)&idfb);
+	log_info("Framebuffer %d and %d for ids");
+
+
 	log_info("Loading stats...");
 	if(!ParseStats("/home/max/warzone2100/data/base/stats/")) {
 		return 1;
@@ -142,96 +150,15 @@ int main(int argc, char** argv) {
 
 	World3d World(map, rend);
 
-	Shader TileSelectionShader("./data/shaders/TileSelectionShader.vs", "./data/shaders/TileSelectionShader.frag");
-	std::vector<glm::vec3> TileSelectionVertexArray = {
-		{ 0.0f, 0.0f, 0.0f },
-		{ 0.0f,  0.0f, 128.0f },
-		{ 128.0f, 0.0f, 128.0f },
-		{ 0.0f, 0.0f, 0.0f },
-		{ 128.0f, 0.0f, 128.0f },
-		{ 128.0f,  0.0f, 0.0f },
-	};
-	unsigned int TileSelectionVertexArrayObject;
-	unsigned int TileSelectionVertexBufferObject;
-	glGenVertexArrays(1, &TileSelectionVertexArrayObject);
-	glBindVertexArray(TileSelectionVertexArrayObject);
-	glGenBuffers(1, &TileSelectionVertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, TileSelectionVertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, TileSelectionVertexArray.size() * 3 * sizeof(float), &TileSelectionVertexArray[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(glGetAttribLocation(TileSelectionShader.program, "VertexCoordinates"), 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(glGetAttribLocation(TileSelectionShader.program, "VertexCoordinates"));
-
 	glm::ivec2 mousePosition(0, 0);
-	glm::vec3 cameraPosition(-249.569931, 2752.000000, 1513.794312);
-	glm::vec3 cameraRotation(-51.000000, -104.000000, 0.000000);
+	glm::vec3 cameraPosition(-147.772217, 15040.000000, 372.934570);
+	glm::vec3 cameraRotation(-53.500000, -135.500000, 0.000000);
 	glm::vec3 cameraVelocity = {0, 0, 0};
 	float cameraSpeed = 2.0f;
 	glm::mat4 viewProjection;
 	glm::ivec2 cameraMapPosition;
 	float cameraFOV = 75.0f;
 	glEnablei(GL_BLEND, 0);
-
-	glm::ivec3 tileScreenCoords[256][256];
-	long visibleTilesUpdateTime = 0;
-	auto visibleTilesUpdate = [&] () {
-		for(int y = 0; y < World.Ter.h; y++) {
-			for(int x = 0; x < World.Ter.w; x++) {
-				auto projectedPosition = glm::vec4(viewProjection * glm::vec4(world_coord(x), world_coord(World.Ter.tiles[x][y].height), world_coord(y), 1.f));
-				const float xx = projectedPosition.x / projectedPosition.w;
-				const float yy = projectedPosition.y / projectedPosition.w;
-				int screenX = (.5 + (.5 * xx)) * width;
-				int screenY = (.5 - (.5 * yy)) * height;
-
-				// This prevents tiles "behind the camera" from interfering
-				// Once projectedPosition.w hits 0 or under, the view "inverts" and goes back into regular XY screen coordinates
-				int screenZ = projectedPosition.w;
-				if (projectedPosition.w <= 0) {
-					screenZ = -1;
-				}
-
-				tileScreenCoords[x][y] = glm::ivec3(screenX, screenY, screenZ);
-			}
-		}
-	};
-
-	glm::ivec2 mouseTilePosition(0, 0);
-	bool mouseTilePositionDirty = false;
-	auto mouseTilePositionUpdate = [&] () {
-		for(int y = 0; y < World.Ter.h - 1; y++) {
-			for(int x = 0; x < World.Ter.w - 1; x++) {
-				auto aa = tileScreenCoords[x][y];
-				auto ba = tileScreenCoords[x + 1][y];
-				auto ab = tileScreenCoords[x][y + 1];
-				auto bb = tileScreenCoords[x + 1][y + 1];
-
-				int minX = std::min((int)aa.x, std::min((int)ba.x, std::min((int)ab.x, (int)bb.x)));
-				int maxX = std::max((int)aa.x, std::max((int)ba.x, std::max((int)ab.x, (int)bb.x)));
-				int minY = std::min((int)aa.y, std::min((int)ba.y, std::min((int)ab.y, (int)bb.y)));
-				int maxY = std::max((int)aa.y, std::max((int)ba.y, std::max((int)ab.y, (int)bb.y)));
-
-				// If any point is behind the camera, the tile is not valid for this check
-				int minW = std::min(aa.z, std::min(ba.z, std::min(ab.z, bb.z)));
-				if(minW < 0) {
-					continue;
-				}
-
-				if(mousePosition.x < minX) {
-					continue;
-				}
-				if(mousePosition.x > maxX) {
-					continue;
-				}
-				if(mousePosition.y < minY) {
-					continue;
-				}
-				if(mousePosition.y > maxY) {
-					continue;
-				}
-
-				mouseTilePosition = { x, y };
-			}
-		}
-	};
 
 	auto cameraUpdate = [&] () {
 		cameraMapPosition.x = glm::clamp((int)(map_coord(cameraPosition.x)), 0, World.Ter.w);
@@ -251,8 +178,6 @@ int main(int argc, char** argv) {
 	SDL_Event ev;
 	Uint32 frame_time_start = 0;
 	log_info("Entering render loop...");
-	int TextureDebuggerTriangleX = 0;
-	int TextureDebuggerTriangleY = 0;
 	while(running) {
 		frame_time_start = SDL_GetTicks();
 		while(SDL_PollEvent(&ev)) {
@@ -266,8 +191,6 @@ int main(int argc, char** argv) {
 				if(!io.WantCaptureMouse) {
 					mousePosition.x = ev.motion.x;
 					mousePosition.y = ev.motion.y;
-					mouseTilePositionDirty = true;
-
 					if(cursorTrapped) {
 						cameraRotation.x -= ev.motion.yrel/2.0f;
 						cameraRotation.y -= ev.motion.xrel/2.0f;
@@ -367,7 +290,6 @@ int main(int argc, char** argv) {
 		}
 
 		if(cameraVelocity.x != 0 || cameraVelocity.y != 0 || cameraVelocity.z != 0){
-			mouseTilePositionDirty = true;
 			cameraPosition.x += glm::sin(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.z;
 			// cameraPosition.y -= glm::sin(glm::radians(cameraRotation.x))*cameraSpeed*cameraVelocity.z;
 			cameraPosition.z += glm::cos(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.z;
@@ -376,16 +298,6 @@ int main(int argc, char** argv) {
 			cameraPosition.z -= glm::sin(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.x;
 		}
 		cameraUpdate();
-
-		if(mouseTilePositionDirty){
-			mouseTilePositionUpdate();
-			mouseTilePositionDirty = false;
-		}
-
-		if(visibleTilesUpdateTime < SDL_GetTicks()){
-			visibleTilesUpdate();
-			visibleTilesUpdateTime = SDL_GetTicks() + 1000;
-		}
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		ImGui_ImplOpenGL3_NewFrame();
@@ -467,12 +379,12 @@ int main(int argc, char** argv) {
 		}
 		if(ShowTileDebugger) {
 			ImGui::Begin("Tile debugger", &ShowTileDebugger);
-			ImGui::Text("Tile x%d y%d", mouseTilePosition[0], mouseTilePosition[1]);
-			struct Terrain::tileinfo t = World.Ter.tiles[mouseTilePosition[0]][mouseTilePosition[1]];
-			ImGui::Text("Flip: %c:%c Rot: %d", t.fx?'X':'_', t.fy?'Y':'_', t.rot);
-			ImGui::Text("Texture: %3d Flip: %c", t.texture, t.triflip?'Y':'N');
-			ImGui::Text("Height: %f", t.height);
-			ImGui::Text("TT: %s", WMT_TerrainTypesStrings[(int)t.tt]);
+			// ImGui::Text("Tile x%d y%d", mouseTilePosition[0], mouseTilePosition[1]);
+			// struct Terrain::tileinfo t = World.Ter.tiles[mouseTilePosition[0]][mouseTilePosition[1]];
+			// ImGui::Text("Flip: %c:%c Rot: %d", t.fx?'X':'_', t.fy?'Y':'_', t.rot);
+			// ImGui::Text("Texture: %3d Flip: %c", t.texture, t.triflip?'Y':'N');
+			// ImGui::Text("Height: %f", t.height);
+			// ImGui::Text("TT: %s", WMT_TerrainTypesStrings[(int)t.tt]);
 			ImGui::End();
 		}
 		if(ShowStructureEditor) {
@@ -519,31 +431,6 @@ int main(int argc, char** argv) {
 		}
 
 		World.RenderScene(viewProjection);
-
-		if(mouseTilePosition.x != -1){
-			glm::ivec2 mouseTileWorldCoordinates = { world_coord(mouseTilePosition.x), world_coord(mouseTilePosition.y) };
-			auto aa = 32+world_coord(World.Ter.tiles[mouseTilePosition.x][mouseTilePosition.y].height);
-			auto ab = 32+world_coord(World.Ter.tiles[mouseTilePosition.x + 1][mouseTilePosition.y].height);
-			auto ba = 32+world_coord(World.Ter.tiles[mouseTilePosition.x][mouseTilePosition.y + 1].height);
-			auto bb = 32+world_coord(World.Ter.tiles[mouseTilePosition.x + 1][mouseTilePosition.y + 1].height);
-
-			TileSelectionVertexArray[0] = { mouseTileWorldCoordinates.x + 0.0f, aa, mouseTileWorldCoordinates.y + 0.0f };
-			TileSelectionVertexArray[1] = { mouseTileWorldCoordinates.x + 0.0f, ba, mouseTileWorldCoordinates.y + 128.0f };
-			TileSelectionVertexArray[2] = { mouseTileWorldCoordinates.x + 128.0f, bb, mouseTileWorldCoordinates.y + 128.0f };
-			TileSelectionVertexArray[3] = { mouseTileWorldCoordinates.x + 0.0f, aa, mouseTileWorldCoordinates.y + 0.0f };
-			TileSelectionVertexArray[4] = { mouseTileWorldCoordinates.x + 128.0f, bb, mouseTileWorldCoordinates.y + 128.0f };
-			TileSelectionVertexArray[5] = { mouseTileWorldCoordinates.x + 128.0f, ab, mouseTileWorldCoordinates.y + 0.0f };
-
-			glBindBuffer(GL_ARRAY_BUFFER, TileSelectionVertexBufferObject);
-			glBufferData(GL_ARRAY_BUFFER, TileSelectionVertexArray.size() * 3 * sizeof(float), &TileSelectionVertexArray[0], GL_STATIC_DRAW);
-
-			TileSelectionShader.use();
-			glUniformMatrix4fv(glGetUniformLocation(TileSelectionShader.program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
-			glBindVertexArray(TileSelectionVertexArrayObject);
-			glDisable(GL_DEPTH_TEST);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-			glEnable(GL_DEPTH_TEST);
-		}
 
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);

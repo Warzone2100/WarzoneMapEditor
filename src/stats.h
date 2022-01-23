@@ -43,7 +43,22 @@ struct Sstructure {
 	int width;
 };
 
+struct Sfeature {
+	int armour;
+	int breadth;
+	int hitpoints;
+	std::string id;
+	int lineOfSight;
+	std::string model;
+	std::string name;
+	int startVisible;
+	int tileDraw;
+	std::string type;
+	int width;
+};
+
 extern std::map<std::string, Sstructure> Sstructures;
+extern std::map<std::string, Sfeature> Sfeatures;
 
 bool ParseStats(std::string path);
 
