@@ -426,11 +426,13 @@ int main(int argc, char** argv) {
 				char label[120] = {0};
 				snprintf(label, 119, "GLpos %d", i);
 				ImGui::InputFloat3(label, (float*)&World.Objects[i]->GLpos.x);
+				snprintf(label, 119, "GLrot %d", i);
+				ImGui::InputFloat3(label, (float*)&World.Objects[i]->GLrot.x);
 			}
 			ImGui::End();
 		}
 
-		World.RenderScene(viewProjection);
+		World.RenderPickScene(viewProjection);
 
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);

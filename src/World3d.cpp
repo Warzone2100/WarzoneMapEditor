@@ -80,6 +80,15 @@ void World3d::RenderScene(glm::mat4 view) {
 	}
 }
 
+void World3d::RenderPickScene(glm::mat4 view) {
+	// Ter.RenderV(view);
+	this->ObjectsPickShader->use();
+	glUniformMatrix4fv(glGetUniformLocation(this->ObjectsPickShader->program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(view));
+	for(auto &a : Objects) {
+		a->RenderColorPick(this->ObjectsPickShader->program);
+	}
+}
+
 World3d::World3d(WZmap* m, SDL_Renderer *r) {
 	Renderer = r;
 	Objects.clear();
@@ -103,6 +112,7 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 	Ter.CreateShader();
 	Ter.BufferData();
 	ObjectsShader = new Shader("./data/shaders/vertex.vs", "./data/shaders/fragment.frag");
+	ObjectsPickShader = new Shader("./data/shaders/plaincolor.vs", "./data/shaders/plaincolor.frag");
 	for(int i=0; i<this->map->numStructures; i++) {
 		WZobject o = this->map->structs[i];
 		if(!Sstructures.count(o.name)) {
@@ -125,6 +135,7 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 		a->GLpos[0] = -((float)o.x);
 		a->GLpos[1] = -((float)o.z)*2;
 		a->GLpos[2] = -((float)o.y);
+		a->GLrot[1] = (((float)o.rotation[0])/16384)*90;
 	}
 	for(int i=0; i<this->map->featuresCount; i++) {
 		WZfeature o = this->map->features[i];

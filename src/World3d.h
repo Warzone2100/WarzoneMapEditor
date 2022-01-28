@@ -42,6 +42,7 @@ private:
 	Texture* GetTexture(std::string filepath);
 	Texture* GetOrLoadTexture(std::string filepath);
 	Shader* ObjectsShader = nullptr;
+	Shader* ObjectsPickShader = nullptr;
 public:
 	WZmap* map;
 	std::vector<Object3d*> Objects;
@@ -53,6 +54,7 @@ public:
 	~World3d();
 	Object3d* AddObject(std::string filename, unsigned int);
 	void RenderScene(glm::mat4 view);
+	void RenderPickScene(glm::mat4 view);
 };
 
 #endif /* end of include guard: WORLD3D_H_INCLUDED */
