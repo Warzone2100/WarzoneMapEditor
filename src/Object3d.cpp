@@ -139,6 +139,19 @@ void Object3d::Render(unsigned int shader) {
 	}
 }
 
+void Object3d::RenderColorPick(unsigned int shader) {
+	int r = (this->pickid & 0x000000FF) >>  0;
+	int g = (this->pickid & 0x0000FF00) >>  8;
+	int b = (this->pickid & 0x00FF0000) >> 16;
+	glUniform4f(glGetUniformLocation(shader, "ColorIn"), r/255.0f, g/255.0f, b/255.0f, 1.0f);
+	glUniformMatrix4fv(glGetUniformLocation(shader, "Model"), 1, GL_FALSE, glm::value_ptr(GetMatrix()));
+	BindVAO();
+	BindVBO();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDrawArrays(RenderingMode, 0, GLvertexesCount);
+	glFlush();
+}
+
 void Object3d::Free() {
 	if(GLvertexes) {
 		free(GLvertexes);

@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
 	const char* glsl_version = "#version 130";
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClearDepth(0.0);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -129,10 +129,10 @@ int main(int argc, char** argv) {
 
 	int drawfb;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (int*)&drawfb);
-	log_info("Framebuffer %d is for drawing");
-	unsigned int idfb[2];
-	glGenFramebuffers(2, (unsigned int*)&idfb);
-	log_info("Framebuffer %d and %d for ids");
+	log_info("Framebuffer %d is for drawing", drawfb);
+	unsigned int idfb[3];
+	glGenFramebuffers(3, (unsigned int*)&idfb);
+	log_info("Framebuffer %d and %d for ids and %d for preview", idfb[0], idfb[1], idfb[2]);
 
 
 	log_info("Loading stats...");
@@ -289,6 +289,8 @@ int main(int argc, char** argv) {
 			}
 		}
 
+		SDL_PumpEvents();
+
 		if(cameraVelocity.x != 0 || cameraVelocity.y != 0 || cameraVelocity.z != 0){
 			cameraPosition.x += glm::sin(glm::radians(cameraRotation.y))*cameraSpeed*cameraVelocity.z;
 			// cameraPosition.y -= glm::sin(glm::radians(cameraRotation.x))*cameraSpeed*cameraVelocity.z;
@@ -314,6 +316,7 @@ int main(int argc, char** argv) {
 		static bool ShowStructureEditor = false;
 		static int StructureEditorN = 0;
 		static bool ShowWorldRenderObjectsDebugger = false;
+		static bool ShowSelectedObject = false;
 		if(ImGui::BeginMainMenuBar()) {
 			if(ImGui::BeginMenu("Debuggers")) {
 				ImGui::MenuItem("Overlay", NULL, &ShowOverlay);
@@ -328,33 +331,14 @@ int main(int argc, char** argv) {
 				ImGui::MenuItem("GUI metrics", NULL, &ShowDemoWindowMetrics);
 				ImGui::EndMenu();
 			}
+			if(ImGui::BeginMenu("Objects")) {
+				ImGui::MenuItem("Selected object", NULL, &ShowSelectedObject);
+				ImGui::EndMenu();
+			}
 			ImGui::EndMainMenuBar();
 		}
 		if(ShowDemoWindow) {ImGui::ShowDemoWindow(&ShowDemoWindow);}
 		if(ShowDemoWindowMetrics) {ImGui::ShowMetricsWindow(&ShowDemoWindowMetrics);}
-		if(ShowOverlay) {
-			ImGui::SetNextWindowPos({0, ImGui::GetItemRectSize()[1]}, 1);
-			ImGui::Begin("##bmain", &ShowOverlay,   ImGuiWindowFlags_NoMove |
-			 										ImGuiWindowFlags_NoResize |
-													ImGuiWindowFlags_NoTitleBar |
-													ImGuiWindowFlags_NoResize |
-													ImGuiWindowFlags_NoCollapse |
-													ImGuiWindowFlags_AlwaysAutoResize |
-													ImGuiWindowFlags_NoBackground);
-			ImGui::Checkbox("Fps limit", &FPSlimiter);
-			ImGui::Checkbox("Fill textures", &World.Ter.FillTextures);
-			ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			ImGui::Text("Cam map pos: %3d %3d", cameraMapPosition.x, cameraMapPosition.y);
-			ImGui::Text("Cam fov: %f", cameraFOV);
-			ImGui::Text("Dataset: %s", TilesetStrings[map->tileset]);
-			if(ImGui::Button("Print camera pos")) {
-	            log_info("Camera:\n\
-	glm::vec3 cameraPosition(%f, %f, %f);\n\
-	glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, cameraPosition.z,
-	                                        cameraRotation.x, cameraRotation.y, cameraRotation.z);
-	        }
-			ImGui::End();
-		}
 		if(ShowTerrainTypesDebugger) {
 			ImGui::SetNextWindowSize({150, 260});
 			ImGui::Begin("Terrain types", &ShowTerrainTypesDebugger);
@@ -422,15 +406,66 @@ int main(int argc, char** argv) {
 			long objsize = World.Objects.size();
 			ImGui::Text("Structures count: %ld", objsize);
 			for(int i = 0; i < objsize; i++) {
-				ImGui::Text("Object: %d", i);
+				ImGui::Text("Object: %d, pick %d", i, World.Objects[i]->pickid);
 				char label[120] = {0};
 				snprintf(label, 119, "GLpos %d", i);
 				ImGui::InputFloat3(label, (float*)&World.Objects[i]->GLpos.x);
+				snprintf(label, 119, "GLrot %d", i);
+				ImGui::InputFloat3(label, (float*)&World.Objects[i]->GLrot.x);
 			}
 			ImGui::End();
 		}
+		if(ShowSelectedObject) {
+			ImGui::Begin("Selected object", &ShowSelectedObject);
+		}
+
+
+
+		// glBindFramebuffer(GL_READ_FRAMEBUFFER, idfb[0]);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		World.RenderPickScene(viewProjection);
+		glFlush();
+		glFinish();
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		unsigned char data[4];
+		int mreadx, mready, windw, windh;
+		SDL_GetMouseState(&mreadx, &mready);
+		SDL_GetWindowSize(window, &windw, &windh); // for some reason framebuffer is Y-flipped
+		glReadPixels(mreadx, windh-mready, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+		Object3d* prev = World.GetPickingObject(data[0] + data[1]*256 + data[2]*256*256);
+		// glBindFramebuffer(GL_FRAMEBUFFER, drawfb);
+		// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		World.RenderScene(viewProjection);
+
+		if(ShowOverlay) {
+			ImGui::SetNextWindowPos({0, ImGui::GetItemRectSize()[1]}, 1);
+			ImGui::Begin("##bmain", &ShowOverlay,   ImGuiWindowFlags_NoMove |
+			 										ImGuiWindowFlags_NoResize |
+													ImGuiWindowFlags_NoTitleBar |
+													ImGuiWindowFlags_NoResize |
+													ImGuiWindowFlags_NoCollapse |
+													ImGuiWindowFlags_AlwaysAutoResize |
+													ImGuiWindowFlags_NoBackground);
+			ImGui::Checkbox("Fps limit", &FPSlimiter);
+			ImGui::Checkbox("Fill textures", &World.Ter.FillTextures);
+			ImGui::Text("%.3f (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::Text("Cam map pos: %3d %3d", cameraMapPosition.x, cameraMapPosition.y);
+			ImGui::Text("Cam fov: %f", cameraFOV);
+			ImGui::Text("Dataset: %s", TilesetStrings[map->tileset]);
+			ImGui::Text("Pixel data: %d %d %d %d", data[0], data[1], data[2], data[3]);
+			if(ImGui::Button("Print camera pos")) {
+	            log_info("Camera:\n\
+	glm::vec3 cameraPosition(%f, %f, %f);\n\
+	glm::vec3 cameraRotation(%f, %f, %f);", cameraPosition.x, cameraPosition.y, cameraPosition.z,
+	                                        cameraRotation.x, cameraRotation.y, cameraRotation.z);
+	        }
+			ImGui::End();
+		}
 
 		ImGui::Render();
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
