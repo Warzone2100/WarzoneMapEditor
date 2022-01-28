@@ -406,7 +406,7 @@ int main(int argc, char** argv) {
 			long objsize = World.Objects.size();
 			ImGui::Text("Structures count: %ld", objsize);
 			for(int i = 0; i < objsize; i++) {
-				ImGui::Text("Object: %d", i);
+				ImGui::Text("Object: %d, pick %d", i, World.Objects[i]->pickid);
 				char label[120] = {0};
 				snprintf(label, 119, "GLpos %d", i);
 				ImGui::InputFloat3(label, (float*)&World.Objects[i]->GLpos.x);
@@ -419,21 +419,28 @@ int main(int argc, char** argv) {
 			ImGui::Begin("Selected object", &ShowSelectedObject);
 		}
 
-		// World.RenderScene(viewProjection);
 
 
 		// glBindFramebuffer(GL_READ_FRAMEBUFFER, idfb[0]);
-		// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		World.RenderPickScene(viewProjection);
-		// glFlush();
-		// glFinish();
-		// glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glFlush();
+		glFinish();
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		unsigned char data[4];
-		int mreadx, mready;
+		int mreadx, mready, windw, windh;
 		SDL_GetMouseState(&mreadx, &mready);
-		glReadPixels(mreadx, mready, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		// Object3d* prev = World.GetPickingObject(data[0] + data[1]*256 + data[2]*256*256);
+		SDL_GetWindowSize(window, &windw, &windh); // for some reason framebuffer is Y-flipped
+		glReadPixels(mreadx, windh-mready, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+		Object3d* prev = World.GetPickingObject(data[0] + data[1]*256 + data[2]*256*256);
 		// glBindFramebuffer(GL_FRAMEBUFFER, drawfb);
+		// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		World.RenderScene(viewProjection);
 
 		if(ShowOverlay) {
 			ImGui::SetNextWindowPos({0, ImGui::GetItemRectSize()[1]}, 1);
