@@ -23,6 +23,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 #include <SDL2/SDL.h>
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
@@ -39,10 +40,13 @@ class World3d {
 private:
 	int texids = 0;
 	int GetNextTextureId();
+	int pickids = 1;
+	int GetNextPickId();
 	Texture* GetTexture(std::string filepath);
 	Texture* GetOrLoadTexture(std::string filepath);
 	Shader* ObjectsShader = nullptr;
 	Shader* ObjectsPickShader = nullptr;
+	std::map<int, Object3d*> ObjectsMapped;
 public:
 	WZmap* map;
 	std::vector<Object3d*> Objects;
@@ -55,6 +59,7 @@ public:
 	Object3d* AddObject(std::string filename, unsigned int);
 	void RenderScene(glm::mat4 view);
 	void RenderPickScene(glm::mat4 view);
+	Object3d* GetPickingObject(int id);
 };
 
 #endif /* end of include guard: WORLD3D_H_INCLUDED */

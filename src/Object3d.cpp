@@ -140,11 +140,10 @@ void Object3d::Render(unsigned int shader) {
 }
 
 void Object3d::RenderColorPick(unsigned int shader) {
-	uint8_t cr = this->pickid & 0x000000ff;
-	uint8_t cg = (this->pickid & 0x0000ff00) >> 8;
-	uint8_t cb = (this->pickid & 0x00ff0000) >> 16;
-	uint8_t ca = (this->pickid & 0xff000000) >> 24;
-	glUniform4ui(glGetUniformLocation(shader, "Color"), cr, cg, cb, 128);
+	int r = (this->pickid & 0x000000FF) >>  0;
+	int g = (this->pickid & 0x0000FF00) >>  8;
+	int b = (this->pickid & 0x00FF0000) >> 16;
+	glUniform4f(glGetUniformLocation(shader, "ColorIn"), r/255.0f, g/255.0f, b/255.0f, 1.0f);
 	glUniformMatrix4fv(glGetUniformLocation(shader, "Model"), 1, GL_FALSE, glm::value_ptr(GetMatrix()));
 	BindVAO();
 	BindVBO();
