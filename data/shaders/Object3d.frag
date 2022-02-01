@@ -1,10 +1,10 @@
 #version 330 core
 
-varying vec2 VaryingTextureCoordinates;
+in vec2 VaryingTextureCoordinates;
 uniform sampler2D Texture;
 
 uniform vec3 ColorMix;
-uniform int DoColorMix;
+uniform bool DoColorMix;
 
 layout(location = 0) out vec4 ColorOut;
 
