@@ -99,7 +99,7 @@ bool PIEmodel::ReadPIE(std::string path) {
 		log_error("Error opening file [%s]: %s", strerror(errno));
 		return false;
 	}
-	log_info("Loading PIE [%s]", path.c_str());
+	log_trace("Loading PIE [%s]", path.c_str());
 
 	int ret = fscanf(f, "PIE %d\nTYPE %d\n", &this->ver, &this->type);
 	if(ret != 2) {
