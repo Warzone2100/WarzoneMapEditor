@@ -69,39 +69,54 @@ int main(int argc, char** argv) {
 		log_fatal("Failed to initialize GLFW: code %d [%s]", er, ep);
 		return 1;
 	}
+	log_info("GLFW init done.");
 
 	if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		log_fatal("SDL init error: %s", SDL_GetError());
 		return 1;
 	}
+	log_info("SDL init done.");
 	if(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1)) {log_fatal("Failed to set SDL_GL_DOUBLEBUFFER: %s", SDL_GetError()); return 1;}
 	if(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8)) 	{log_fatal("Failed to set SDL_GL_RED_SIZE: %s", SDL_GetError()); return 1;}
 	if(SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8))	{log_fatal("Failed to set SDL_GL_GREEN_SIZE: %s", SDL_GetError()); return 1;}
 	if(SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8)) 	{log_fatal("Failed to set SDL_GL_BLUE_SIZE: %s", SDL_GetError()); return 1;}
-
+	if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE)) {log_fatal("Failed to set SDL_GL_CONTEXT_PROFILE_MASK: %s", SDL_GetError()); return 1;}
+	if(SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL,    1)) {log_fatal("Failed to set SDL_GL_ACCELERATED_VISUAL: %s", SDL_GetError()); return 1;}
+	if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3)) {log_fatal("Failed to set SDL_GL_CONTEXT_MAJOR_VERSION: %s", SDL_GetError()); return 1;}
+	if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3)) {log_fatal("Failed to set SDL_GL_CONTEXT_MINOR_VERSION: %s", SDL_GetError()); return 1;}
+	log_info("SDL attributes set.");
 	SDL_Window* window = SDL_CreateWindow("Warzone Map Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	if(window == NULL) {
 		log_fatal("Failed to create window: %s", SDL_GetError());
 		return 1;
 	}
 	SDL_SetWindowResizable(window, SDL_TRUE);
+	log_info("SDL window created.");
 	SDL_Renderer* rend = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	if(rend == NULL) {
 		log_fatal("Failed to create renderer: %s", SDL_GetError());
 		return 1;
 	}
-	if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE)) {log_fatal("Failed to set SDL_GL_CONTEXT_PROFILE_MASK: %s", SDL_GetError()); return 1;}
-	if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3)) {log_fatal("Failed to set SDL_GL_CONTEXT_MAJOR_VERSION: %s", SDL_GetError()); return 1;}
-	if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3)) {log_fatal("Failed to set SDL_GL_CONTEXT_MINOR_VERSION: %s", SDL_GetError()); return 1;}
 	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
 	if(!glcontext) {
 		log_fatal("gl context");
 	}
-	if(!gladLoadGL()) {
+	if(SDL_GL_LoadLibrary(NULL)) {
+		log_fatal("Failed to load OpenGL library: %s", SDL_GetError());
+		return 1;
+	}
+	log_info("SDL loaded GL library.");
+	if(!gladLoadGLLoader(SDL_GL_GetProcAddress)) {
 		log_fatal("gladLoadGL failed");
 		abort();
 	}
-	log_info("OpenGL %s", glGetString(GL_VERSION));
+	log_info("GLAD provided with SDL loader");
+	log_info("OpenGL:   %s", glGetString(GL_VERSION));
+	log_info("Vendor:   %s", glGetString(GL_VENDOR));
+	log_info("Renderer: %s", glGetString(GL_RENDERER));
+	if(SDL_GL_SetSwapInterval(1)) {
+		log_warn("Failed to set vsync!");
+	}
 	if(GLAD_GL_EXT_framebuffer_multisample) {
 		log_info("Supporting framebuffer multisample");
 	}
@@ -151,7 +166,7 @@ int main(int argc, char** argv) {
 	World3d World(map, rend);
 
 	glm::ivec2 mousePosition(0, 0);
-	glm::vec3 cameraPosition(-147.772217, 15040.000000, 372.934570);
+	glm::vec3 cameraPosition(148.939896, 960.000000, 81.356361);
 	glm::vec3 cameraRotation(-53.500000, -135.500000, 0.000000);
 	glm::vec3 cameraVelocity = {0, 0, 0};
 	float cameraSpeed = 2.0f;
@@ -178,6 +193,9 @@ int main(int argc, char** argv) {
 	SDL_Event ev;
 	Uint32 frame_time_start = 0;
 	log_info("Entering render loop...");
+	int camBaseVelocity = 8;
+	Object3d* lastHoverObject = nullptr;
+	bool hoverPick = false;
 	while(running) {
 		frame_time_start = SDL_GetTicks();
 		while(SDL_PollEvent(&ev)) {
@@ -236,26 +254,29 @@ int main(int argc, char** argv) {
 				break;
 				case SDL_KEYDOWN:
 				switch(ev.key.keysym.sym) {
+					case SDLK_LCTRL:
+					camBaseVelocity = 8*4;
+					break;
 					case SDLK_ESCAPE:
 					running = false;
 					break;
 					case SDLK_w:
-					cameraVelocity.z = -8;
+					cameraVelocity.z = -camBaseVelocity;
 					break;
 					case SDLK_a:
-					cameraVelocity.x = -8;
+					cameraVelocity.x = -camBaseVelocity;
 					break;
 					case SDLK_e:
-					cameraVelocity.y = 8;
+					cameraVelocity.y = camBaseVelocity;
 					break;
 					case SDLK_s:
-					cameraVelocity.z = 8;
+					cameraVelocity.z = camBaseVelocity;
 					break;
 					case SDLK_d:
-					cameraVelocity.x = 8;
+					cameraVelocity.x = camBaseVelocity;
 					break;
 					case SDLK_q:
-					cameraVelocity.y = -8;
+					cameraVelocity.y = -camBaseVelocity;
 					break;
 					default:
 					break;
@@ -263,6 +284,9 @@ int main(int argc, char** argv) {
 				break;
 				case SDL_KEYUP:
 				switch(ev.key.keysym.sym) {
+					case SDLK_LCTRL:
+					camBaseVelocity = 8;
+					break;
 					case SDLK_w:
 					cameraVelocity.z = 0;
 					break;
@@ -415,13 +439,13 @@ int main(int argc, char** argv) {
 			}
 			ImGui::End();
 		}
-		if(ShowSelectedObject) {
-			ImGui::Begin("Selected object", &ShowSelectedObject);
-		}
 
+		// glBindFramebuffer(GL_FRAMEBUFFER, idfb[0]);
+		// if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		// 	log_fatal("Framebuffer not ready!");
+		// 	continue;
+		// }
 
-
-		// glBindFramebuffer(GL_READ_FRAMEBUFFER, idfb[0]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		World.RenderPickScene(viewProjection);
 		glFlush();
@@ -432,14 +456,28 @@ int main(int argc, char** argv) {
 		SDL_GetMouseState(&mreadx, &mready);
 		SDL_GetWindowSize(window, &windw, &windh); // for some reason framebuffer is Y-flipped
 		glReadPixels(mreadx, windh-mready, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
 		Object3d* prev = World.GetPickingObject(data[0] + data[1]*256 + data[2]*256*256);
-		// glBindFramebuffer(GL_FRAMEBUFFER, drawfb);
-		// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		if(ShowSelectedObject) {
+			ImGui::Begin("Selected object", &ShowSelectedObject);
+			if(prev == nullptr) {
+				ImGui::Text("No object selected");
+			} else {
+				ImGui::Text("Object %d", prev->pickid);
+				ImGui::InputFloat3("GLpos", (float*)&prev->GLpos.x);
+				ImGui::InputFloat3("GLrot", (float*)&prev->GLrot.x);
+			}
+			ImGui::End();
+		}
+		if(lastHoverObject != nullptr && prev != lastHoverObject) {
+			lastHoverObject->DoColorMix = false;
+		}
+		if(prev != nullptr) {
+			prev->DoColorMix = true;
+		}
+		lastHoverObject = prev;
 
+		// glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawfb);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		World.RenderScene(viewProjection);
 
 		if(ShowOverlay) {

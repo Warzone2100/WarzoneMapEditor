@@ -32,6 +32,8 @@ Object3d::Object3d() {
 	GLscale = 1.0f;
 	UsingTexture = nullptr;
 	Visible = false;
+	ColorMix = {0.7f, 0.0f, 0.0f};
+	DoColorMix = false;
 }
 
 bool Object3d::LoadFromPIE(std::string filepath) {
@@ -125,6 +127,8 @@ void Object3d::Render(unsigned int shader) {
 		glUniform1i(glGetUniformLocation(shader, "Texture"), UsingTexture->id);
 	}
 	glUniformMatrix4fv(glGetUniformLocation(shader, "Model"), 1, GL_FALSE, glm::value_ptr(GetMatrix()));
+	glUniform4f(glGetUniformLocation(shader, "ColorMix"), ColorMix.x, ColorMix.y, ColorMix.z, 1.0f);
+	glUniform1i(glGetUniformLocation(shader, "DoColorMix"), DoColorMix);
 	BindVAO();
 	BindVBO();
 	if(FillTextures) {

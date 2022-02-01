@@ -80,6 +80,8 @@ int World3d::GetNextPickId() {
 
 void World3d::RenderScene(glm::mat4 view) {
 	Ter.RenderV(view);
+	this->ObjectsShader->use();
+	glUniformMatrix4fv(glGetUniformLocation(this->ObjectsShader->program, "ViewProjection"), 1, GL_FALSE, glm::value_ptr(view));
 	for(auto &a : Objects) {
 		// a->BufferData(ObjectsShader->program);
 		a->Render(ObjectsShader->program);
@@ -112,12 +114,12 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 	Tst.AssociateGroundTypesWithTileGrounds();
 	Tst.CreateTexturePage(datapath, 128, Renderer);
 	Ter.TilesetPtr = &Tst;
-	//
+
 	Ter.GetHeightmapFromMWT(this->map);
 	Ter.UpdateTexpageCoords();
 	Ter.CreateShader();
 	Ter.BufferData();
-	ObjectsShader = new Shader("./data/shaders/vertex.vs", "./data/shaders/fragment.frag");
+	ObjectsShader = new Shader("./data/shaders/Object3d.vs", "./data/shaders/Object3d.frag");
 	ObjectsPickShader = new Shader("./data/shaders/plaincolor.vs", "./data/shaders/plaincolor.frag");
 	for(int i=0; i<this->map->numStructures; i++) {
 		WZobject o = this->map->structs[i];

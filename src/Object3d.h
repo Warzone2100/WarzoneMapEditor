@@ -37,6 +37,8 @@ public:
 	glm::vec3 GLpos;
 	glm::vec3 GLrot;
 	float GLscale;
+	glm::vec3 ColorMix;
+	bool DoColorMix;
 	Texture* UsingTexture = nullptr;
 	bool Visible;
 	std::string TexturePath;
