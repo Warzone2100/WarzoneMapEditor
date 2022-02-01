@@ -141,7 +141,8 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 		a->GLpos[0] = -((float)o.x);
 		a->GLpos[1] = -((float)o.z)*2;
 		a->GLpos[2] = -((float)o.y);
-		a->GLrot[1] = (((float)o.rotation[0])/16384)*90;
+		// log_info("Rot %ld", o.direction);
+		a->GLrot[1] = ((float)o.direction); //(((float)o.rotation[2])/16384)*90;
 	}
 	for(int i=0; i<this->map->featuresCount; i++) {
 		WZfeature o = this->map->features[i];
