@@ -13,22 +13,22 @@ Not many people work on map editor so it is pretty incomplete, here is what can 
 - Tile rendering
 - Initializations and resource managment
 - Object browser (GUI)
+- PIE models loader
+- PIE parser
 
 ### What is done but can be improved
 
 - Multi-map support (render many maps at the same time)
 - Tileset manager
 - Stats browser (GUI)
+- Mouse interactions
 
 ### What is still in TODO
 
-- PIE parser that will actually support all the models
-- PIE models loader (fix reloading of same models twice or more)
 - Better texture management
 - Tile editing
 - Loading/saving maps via GUI
 - (eventually) Migrating to [wzmaplib](https://github.com/Warzone2100/warzone2100/tree/master/lib/wzmaplib)
-- Mouse interactions
 
 ## Authors
 
