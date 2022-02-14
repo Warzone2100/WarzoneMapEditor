@@ -43,3 +43,10 @@ target_link_libraries(main "glad" "${CMAKE_DL_LIBS}")
 add_custom_command( TARGET main PRE_BUILD
 						COMMAND ${CMAKE_COMMAND} -E copy_directory
 					${CMAKE_SOURCE_DIR}/data/ $<TARGET_FILE_DIR:main>/data/)
+
+file(DOWNLOAD
+					https://raw.githubusercontent.com/Warzone2100/warzone2100/master/data/base/stats/structure.json
+					${CMAKE_CURRENT_BINARY_DIR}/data/base/stats/structure.json)
+					file(DOWNLOAD
+					https://raw.githubusercontent.com/Warzone2100/warzone2100/master/data/base/stats/features.json
+					${CMAKE_CURRENT_BINARY_DIR}/data/base/stats/features.json)

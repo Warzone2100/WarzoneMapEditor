@@ -25,6 +25,7 @@
 #include "glad/glad.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <src/build.h>
 
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
@@ -151,7 +152,7 @@ int main(int argc, char** argv) {
 
 
 	log_info("Loading stats...");
-	if(!ParseStats("/home/max/warzone2100/data/base/stats/")) {
+	if(!ParseStats(CURRENT_DIR"/data/base/stats/")) {
 		return 1;
 	}
 	log_info("Stats loaded, opening map...");
