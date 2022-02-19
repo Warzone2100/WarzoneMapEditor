@@ -2,7 +2,7 @@
 
 CC = g++
 CFLAGS = -Wall -ggdb -std=c++17 -DLOG_USE_COLOR -DIMGUI_IMPL_OPENGL_LOADER_GLAD -Ilib/WMT/lib/ -Ilib/glad/include/ -Ilib/imgui/ -Ilib/ -Isrc/
-LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lGL -lGLU -lglfw -lpng -ldl -lGLEW
+LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lGL -lGLU -lglfw -lpng -ldl -lGLEW -lconfig++
 
 SOURCES  = $(wildcard src/*.cpp lib/*.cpp lib/imgui/*.cpp lib/glad/src/*.c)
 SOURCES += lib/WMT/lib/zip.cpp lib/WMT/lib/wmt.cpp

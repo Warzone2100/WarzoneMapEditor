@@ -68,6 +68,7 @@ void Texture::Bind(int texid) {
 
 void Texture::Unbind() {
 	if(SDL_GL_UnbindTexture(this->tex)) {
+
 		log_error("Failed to unbind SDL_Texture: %s", SDL_GetError());
 	}
 	return;
