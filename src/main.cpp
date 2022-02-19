@@ -25,6 +25,7 @@
 #include "glad/glad.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <src/build.h>
 
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
@@ -46,6 +47,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <GLFW/glfw3.h>
+#include "config.h"
 
 #define FPS 60
 
@@ -57,7 +59,7 @@ const char* demopieobjectpath2 = "./data/vtolfactory_module1.pie";
 const char* TilesetStrings[] = {"Arizona", "Urban", "Rockies"};
 
 int main(int argc, char** argv) {
-	log_set_level(2);
+	ReadGlobalConfig();
 	ProcessArgs(argc, argv);
 	time_t t;
 	srand((unsigned) time(&t));
@@ -151,7 +153,7 @@ int main(int argc, char** argv) {
 
 
 	log_info("Loading stats...");
-	if(!ParseStats("/home/max/warzone2100/data/base/stats/")) {
+	if(!ParseStats(CURRENT_DIR"/data/base/stats/")) {
 		return 1;
 	}
 	log_info("Stats loaded, opening map...");

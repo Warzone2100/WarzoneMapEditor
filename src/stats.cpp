@@ -22,6 +22,7 @@
 
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <src/build.h>
 
 #include "log.hpp"
 
@@ -32,7 +33,7 @@ std::map<std::string, Sfeature> Sfeatures;
 
 bool ParseStats(std::string path) {
 	{
-		std::ifstream f(path+"structure.json");
+		std::ifstream f(CURRENT_DIR"/data/base/stats/structure.json");
 		if(!f) {
 			log_error("Failed to open structure file: %s", strerror(errno));
 			return false;
@@ -74,7 +75,7 @@ bool ParseStats(std::string path) {
 		f.close();
 	}
 	{
-		std::ifstream f(path+"features.json");
+		std::ifstream f(CURRENT_DIR"/data/base/stats/features.json");
 		if(!f) {
 			log_error("Failed to open features file: %s", strerror(errno));
 			return false;

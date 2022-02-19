@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <cctype>
 #include <string>
+#include <src/build.h>
 
 #include "stats.h"
 
@@ -133,7 +134,7 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 		}
 		std::string firstpie = Sstructures[o.name].structureModel[0];
 		std::transform(firstpie.begin(), firstpie.end(), firstpie.begin(), [](unsigned char c){ return std::tolower(c); });
-		std::string loadpath = "/home/max/warzone2100/data/base/structs/"+firstpie;
+		std::string loadpath = CURRENT_DIR"/data/base/structs/"+firstpie;
 		// log_info("Loading [%s]", loadpath.c_str());
 		Object3d* a = this->AddObject(loadpath, ObjectsShader->program);
 		if(!a) {
@@ -154,7 +155,7 @@ World3d::World3d(WZmap* m, SDL_Renderer *r) {
 		}
 		std::string firstpie = Sfeatures[o.name].model;
 		std::transform(firstpie.begin(), firstpie.end(), firstpie.begin(), [](unsigned char c){ return std::tolower(c); });
-		std::string loadpath = "/home/max/warzone2100/data/base/features/"+firstpie;
+		std::string loadpath = CURRENT_DIR"/data/base/features/"+firstpie;
 		// log_info("Loading [%s]", loadpath.c_str());
 		Object3d* a = this->AddObject(loadpath, ObjectsShader->program);
 		if(!a) {

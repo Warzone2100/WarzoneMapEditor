@@ -260,14 +260,14 @@ bool PIEmodel::ReadPIE(std::string path) {
 					return false;
 				}
 				int pr = sscanf(pstr, "\t%f %f %f %f %f %f %f %f %f",
-						&this->levels[nowlevel].normals[normalnum*3+0].x, 
-						&this->levels[nowlevel].normals[normalnum*3+0].y, 
-						&this->levels[nowlevel].normals[normalnum*3+0].z, 
-						&this->levels[nowlevel].normals[normalnum*3+1].x, 
-						&this->levels[nowlevel].normals[normalnum*3+1].y, 
-						&this->levels[nowlevel].normals[normalnum*3+1].z, 
-						&this->levels[nowlevel].normals[normalnum*3+2].x, 
-						&this->levels[nowlevel].normals[normalnum*3+2].y, 
+						&this->levels[nowlevel].normals[normalnum*3+0].x,
+						&this->levels[nowlevel].normals[normalnum*3+0].y,
+						&this->levels[nowlevel].normals[normalnum*3+0].z,
+						&this->levels[nowlevel].normals[normalnum*3+1].x,
+						&this->levels[nowlevel].normals[normalnum*3+1].y,
+						&this->levels[nowlevel].normals[normalnum*3+1].z,
+						&this->levels[nowlevel].normals[normalnum*3+2].x,
+						&this->levels[nowlevel].normals[normalnum*3+2].y,
 						&this->levels[nowlevel].normals[normalnum*3+2].z);
 				if(pr != 9) {
 					log_error("PIE READ [%s] NORMALS line %d level %d sscanf failed %d", path.c_str(), snum, nowlevel, pr);
