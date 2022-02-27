@@ -21,8 +21,8 @@
 #include "stats.h"
 
 #include <fstream>
-#include <nlohmann/json.hpp>
 
+#include "json.hpp"
 #include "log.hpp"
 
 using json = nlohmann::json;
