@@ -90,13 +90,17 @@ void Tileset::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 			mh = textsa[i].h;
 		}
 	}
-	GroundTilePage = new Texture;
-	GroundTilePage->tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, TotalTextures*mw, mh);
+	GroundTilePage = new Texture();
+	SDL_Texture* tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, TotalTextures*mw, mh);
+	if(tex == NULL) {
+		log_fatal("SDL failed to create texture: %s", SDL_GetError());
+		abort();
+	}
 	GroundTilePage->w = TotalTextures*mw;
 	GroundTilePage->h = mh;
 	DatasetLoaded = TotalTextures;
 	SDL_Texture* savedt = SDL_GetRenderTarget(rend);
-	SDL_SetRenderTarget(rend, GroundTilePage->tex);
+	SDL_SetRenderTarget(rend, tex);
 	SDL_RenderClear(rend);
 	for(int i=0; i<TILEGROUNDSMAX; i++) {
 		int pn = -1;
@@ -127,26 +131,11 @@ void Tileset::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 		SDL_DestroyTexture(textsa[i].t);
 	}
 	SDL_SetRenderTarget(rend, savedt);
+	GroundTilePage->Load(tex);
+	log_info("Loaded terrain texpage to %d", GroundTilePage->GLid);
+	// GroundTilePage->Bind(0);
 	log_info("Tiles max resolution %dx%d", mw, mh);
 	free(folderpath);
-}
-
-static size_t csv_split(FILE * input, char * lineBuf, size_t bufferLen, char ** xptr, size_t xptrCount) {
-	// kept getting fscanf failures
-	fgets(lineBuf, bufferLen, input);
-	xptr[0] = lineBuf;
-	size_t xptrI = 1;
-	// be absolutely sure a null guard is in place for any possible comma
-	lineBuf[bufferLen - 1] = 0;
-	for (size_t j = 0; j < (bufferLen - 1); j++) {
-		if ((lineBuf[j] == ',') || (lineBuf[j] < 32)) {
-			lineBuf[j] = 0;
-			if (xptrI < xptrCount) {
-				xptr[xptrI++] = lineBuf + j + 1;
-			}
-		}
-	}
-	return xptrI;
 }
 
 void Tileset::LoadTerrainGrounds(char* basepath) {
@@ -172,12 +161,17 @@ void Tileset::LoadTerrainGrounds(char* basepath) {
 	}
 	char lineBuf[80];
 	for(int i=0; i<count; i++) {
-		// kept getting fscanf failures
-		char * xptr[4];
-		size_t xptrI = csv_split(f, lineBuf, 80, xptr, 4);
-		for (size_t j = 0; j < xptrI; j++) {
-			if (strlen(xptr[j]) < 25)
-				strcpy(TileGrounds[i].names[j], xptr[j]);
+		char* b = fgets(lineBuf, 80, f);
+		if(b == NULL) {
+			log_fatal("fgets failed (%d)", strerror(errno));
+			abort();
+		}
+		const char* scanfmt = "%23[^,],%23[^,],%23[^,],%23[^\n]";
+		int scanned = sscanf(b, scanfmt, TileGrounds[i].names[0], TileGrounds[i].names[1], TileGrounds[i].names[2], TileGrounds[i].names[3]);
+		if(scanned != 4) {
+			log_fatal("sscanf failed, scanned %d out of 4", scanned);
+			log_fatal("parsing line [%s] with format [%s]", b, scanfmt);
+			abort();
 		}
 	}
 	fclose(f);
@@ -215,15 +209,21 @@ void Tileset::LoadTerrainGroundTypes(char *basepath, SDL_Renderer* rend) {
 	gtypescount = typesnum;
 	char lineBuf[80];
 	for(int i=0; i<typesnum; i++) {
-		// kept getting fscanf failures
-		char * xptr[3];
-		if (csv_split(f, lineBuf, 80, xptr, 3) != 3) {
-			log_error("fscanf readed %d fields instead of %d on %d element.", r, 3, i);
-			continue;
+		char* b = fgets(lineBuf, 80, f);
+		if(b == NULL) {
+			log_fatal("fgets failed (%d)", strerror(errno));
+			abort();
 		}
-		strcpy(gtypes[i].groundtype, xptr[0]);
-		strcpy(gtypes[i].pagename, xptr[1]);
-		gtypes[i].size = atof(xptr[2]);
+		char n[20];
+		memset(n, 0, 20);
+		const char* scanfmt = "%79[^,],%255[^,],%19[^\n]";
+		int scanned = sscanf(b, scanfmt, gtypes[i].groundtype, gtypes[i].pagename, n);
+		if(scanned != 3) {
+			log_fatal("sscanf failed, scanned %d out of 3", scanned);
+			log_fatal("parsing line [%s] with format [%s]", b, scanfmt);
+			abort();
+		}
+		gtypes[i].size = atof(n);
 	}
 	fclose(f);
 	free(filename);

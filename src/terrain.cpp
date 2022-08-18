@@ -267,8 +267,8 @@ void Terrain::RenderV(glm::mat4 view) {
 void Terrain::Render() {
 	int shader = this->TerrainShader->program;
 	auto tilePage = TilesetPtr->GroundTilePage;
-	tilePage->Bind(0);
-	glUniform1i(glGetUniformLocation(shader, "Texture"), 0);
+	tilePage->Bind(tilePage->GLid);
+	glUniform1i(glGetUniformLocation(shader, "Texture"), tilePage->GLid);
 	glUniformMatrix4fv(glGetUniformLocation(shader, "Model"), 1, GL_FALSE, glm::value_ptr(GetMatrix()));
 	BindVAO();
 	BindVBO();
