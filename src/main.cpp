@@ -341,6 +341,7 @@ int main(int argc, char** argv) {
 		static int StructureEditorN = 0;
 		static bool ShowWorldRenderObjectsDebugger = false;
 		static bool ShowSelectedObject = false;
+		static bool ShowGLTexturesDebugger = false;
 		if(ImGui::BeginMainMenuBar()) {
 			if(ImGui::BeginMenu("Debuggers")) {
 				ImGui::MenuItem("Overlay", NULL, &ShowOverlay);
@@ -348,6 +349,7 @@ int main(int argc, char** argv) {
 				ImGui::MenuItem("Tile", NULL, &ShowTileDebugger);
 				ImGui::MenuItem("Structure", NULL, &ShowStructureEditor);
 				ImGui::MenuItem("World - Structures", NULL, &ShowWorldRenderObjectsDebugger);
+				ImGui::MenuItem("OpenGL Textures", NULL, &ShowGLTexturesDebugger);
 				ImGui::EndMenu();
 			}
 			if(ImGui::BeginMenu("Misc")) {
@@ -439,6 +441,13 @@ int main(int argc, char** argv) {
 			}
 			ImGui::End();
 		}
+		if(ShowGLTexturesDebugger) {
+			ImGui::Begin("Texture viewer", &ShowGLTexturesDebugger);
+			int showingTexture;
+			ImGui::InputInt("textureid", &showingTexture);
+			ImGui::Image((void*)(intptr_t)(showingTexture), ImVec2(256, 256));
+			ImGui::End();
+		}
 
 		// glBindFramebuffer(GL_FRAMEBUFFER, idfb[0]);
 		// if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -488,14 +497,6 @@ int main(int argc, char** argv) {
 			prev->DoColorMix = true;
 		}
 		lastHoverObject = prev;
-
-		{
-			ImGui::Begin("Texture viewer");
-			int showingTexture;
-			ImGui::InputInt("textureid", &showingTexture);
-			ImGui::Image((void*)(intptr_t)(showingTexture), ImVec2(256, 256));
-			ImGui::End();
-		}
 
 		// glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawfb);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
