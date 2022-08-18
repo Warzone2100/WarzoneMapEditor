@@ -72,6 +72,7 @@ PIEmodel::~PIEmodel() {
 		for(int i = 0; i < this->levelscount; i++) {
 			this->levels[i].~PIElevel();
 		}
+		free(this->levels);
 	}
 }
 
