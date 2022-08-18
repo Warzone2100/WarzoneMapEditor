@@ -341,6 +341,7 @@ int main(int argc, char** argv) {
 		static int StructureEditorN = 0;
 		static bool ShowWorldRenderObjectsDebugger = false;
 		static bool ShowSelectedObject = false;
+		static int ShowGLTextureN = 0;
 		static bool ShowGLTexturesDebugger = false;
 		if(ImGui::BeginMainMenuBar()) {
 			if(ImGui::BeginMenu("Debuggers")) {
@@ -443,9 +444,8 @@ int main(int argc, char** argv) {
 		}
 		if(ShowGLTexturesDebugger) {
 			ImGui::Begin("Texture viewer", &ShowGLTexturesDebugger);
-			int showingTexture;
-			ImGui::InputInt("textureid", &showingTexture);
-			ImGui::Image((void*)(intptr_t)(showingTexture), ImVec2(256, 256));
+			ImGui::InputInt("textureid", &ShowGLTextureN);
+			ImGui::Image((void*)(intptr_t)(ShowGLTextureN), ImVec2(256, 256));
 			ImGui::End();
 		}
 
