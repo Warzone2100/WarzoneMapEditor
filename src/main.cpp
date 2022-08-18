@@ -465,6 +465,19 @@ int main(int argc, char** argv) {
 				ImGui::Text("Object %d", prev->pickid);
 				ImGui::InputFloat3("GLpos", (float*)&prev->GLpos.x);
 				ImGui::InputFloat3("GLrot", (float*)&prev->GLrot.x);
+				ImGui::Text("Object's texture path: %s", prev->TexturePath.c_str());
+				if(prev->UsingTexture == nullptr) {
+					ImGui::Text("UsingTexture is NULL");
+				} else {
+					ImGui::Text("Loaded texture valid? %s", prev->UsingTexture->valid ? "yes" : "no");
+					ImGui::Text("Loaded texture ID: %d", prev->UsingTexture->id);
+					ImGui::Text("Loaded texture path: %s", prev->UsingTexture->path.c_str());
+					ImGui::Text("Loaded texture OpenGL ID: %d", prev->UsingTexture->GLid);
+					ImGui::Text("Loaded texture size: w%d:h%d", prev->UsingTexture->w, prev->UsingTexture->h);
+					ImGui::Image((void*)(intptr_t)(prev->UsingTexture->GLid), ImVec2(prev->UsingTexture->w, prev->UsingTexture->h));
+					// ImGui::Image((void*)(intptr_t)(GL_TEXTURE0+prev->UsingTexture->GLid), ImVec2(prev->UsingTexture->w, prev->UsingTexture->h));
+					// ImGui::Image((void*)(intptr_t)(0), ImVec2(prev->UsingTexture->w, prev->UsingTexture->h));
+				}
 			}
 			ImGui::End();
 		}
@@ -476,8 +489,17 @@ int main(int argc, char** argv) {
 		}
 		lastHoverObject = prev;
 
+		{
+			ImGui::Begin("Texture viewer");
+			int showingTexture;
+			ImGui::InputInt("textureid", &showingTexture);
+			ImGui::Image((void*)(intptr_t)(showingTexture), ImVec2(256, 256));
+			ImGui::End();
+		}
+
 		// glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawfb);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		World.RenderScene(viewProjection);
 
 		if(ShowOverlay) {
@@ -506,7 +528,6 @@ int main(int argc, char** argv) {
 		}
 
 		ImGui::Render();
-		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
 
