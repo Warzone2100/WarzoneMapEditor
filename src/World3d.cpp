@@ -58,6 +58,7 @@ Texture* World3d::GetOrLoadTexture(std::string filepath) {
 Object3d* World3d::AddObject(std::string filename, unsigned int Shader) {
 	Object3d* creating = new Object3d();
 	if(!creating->LoadFromPIE(filename)) {
+		log_error("Failed to load PIE, filename [%s]", filename.c_str());
 		return nullptr;
 	}
 	std::string texpath = "./data/texpages/" + creating->TexturePath;
@@ -65,6 +66,7 @@ Object3d* World3d::AddObject(std::string filename, unsigned int Shader) {
 	creating->PrepareTextureCoords();
 	creating->BufferData(Shader);
 	creating->pickid = GetNextPickId();
+	// log_info("Loaded object %ld, texture is %x", creating->pickid, creating->UsingTexture);
 	ObjectsMapped.insert_or_assign(creating->pickid, creating);
 	Objects.push_back(creating);
 	return creating;
@@ -172,7 +174,7 @@ Object3d* World3d::GetPickingObject(int id) {
 		return nullptr;
 	}
 	if(!this->ObjectsMapped.count(id)) {
-		log_warn("Object id %d not found!", id);
+		// log_warn("Object id %d not found!", id);
 		return nullptr;
 	}
 	return this->ObjectsMapped[id];

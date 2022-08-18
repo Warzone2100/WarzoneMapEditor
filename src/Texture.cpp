@@ -22,6 +22,8 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <execinfo.h>
+#include <stdio.h>
 
 #include "log.hpp"
 
@@ -35,7 +37,7 @@ void Texture::Load(std::string path, SDL_Renderer *rend) {
 	}
 	SDL_QueryTexture(this->tex, NULL, NULL, &this->w, &this->h);
 	glGenTextures(1, &GLid);
-	log_info("Loaded [%s] texture. (w%f h%f)", this->path.c_str(), this->w, this->h);
+	log_info("Loaded [%s] texture. w%.1f h%.1f GLID %d", this->path.c_str(), this->w, this->h, GLid);
 	this->valid = true;
 	return;
 }
@@ -45,6 +47,8 @@ void Texture::Load(SDL_Texture* texture) {
 	this->tex = texture;
 	SDL_QueryTexture(this->tex, NULL, NULL, &this->w, &this->h);
 	glGenTextures(1, &GLid);
+	log_info("Loaded texture from memory GLID %d", GLid);
+	this->valid = true;
 }
 
 void Texture::Bind() {
@@ -57,6 +61,11 @@ void Texture::Bind() {
 	if(texw != 1.0f || texh != 1.0f) {
 		log_warn("Texture sizes seems to be wrong: %f %f", texw, texh);
 	}
+	// glGenerateMipmap(GL_TEXTURE_2D);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP);
+
+	glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_LINEAR);
 	return;
 }
 
@@ -68,7 +77,7 @@ void Texture::Bind(int texid) {
 
 void Texture::Unbind() {
 	if(SDL_GL_UnbindTexture(this->tex)) {
-		log_error("Failed to unbind SDL_Texture: %s", SDL_GetError());
+		log_error("Failed to unbind SDL_Texture: %s (texture ID was %d, GLid was %d)", SDL_GetError(), this->id, this->GLid);
 	}
 	return;
 }
