@@ -34,7 +34,7 @@ public:
 	SDL_Texture *tex = nullptr;
 	int w = -1, h = -1;
 	bool valid = false;
-	void Load(std::string path, SDL_Renderer *rend);
+	void Load(std::string path);
 	void Load(SDL_Texture* texture);
 	void Bind(int texid);
 	void Bind();

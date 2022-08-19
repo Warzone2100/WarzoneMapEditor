@@ -48,8 +48,8 @@ Texture* World3d::GetOrLoadTexture(std::string filepath) {
 	Texture* newtex = GetTexture(filepath);
 	if(newtex == nullptr) {
 		newtex = new Texture();
-		newtex->Load(filepath, Renderer);
-		newtex->Bind(GetNextTextureId());
+		newtex->Load(filepath);
+		newtex->Bind();
 		Textures.push_back(newtex);
 	}
 	return newtex;

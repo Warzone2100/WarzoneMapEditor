@@ -30,6 +30,7 @@ public:
 	unsigned int program;
 	Shader(const char* vp, const char* fp);
 	~Shader();
+	void SetInt(std::string var, int data);
 	void use();
 };
 #endif

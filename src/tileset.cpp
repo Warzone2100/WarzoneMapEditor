@@ -91,7 +91,7 @@ void Tileset::CreateTexturePage(char* basepath, int qual, SDL_Renderer* rend) {
 		}
 	}
 	GroundTilePage = new Texture();
-	SDL_Texture* tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, TotalTextures*mw, mh);
+	SDL_Texture* tex = SDL_CreateTexture(rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET | SDL_TEXTUREACCESS_STREAMING, TotalTextures*mw, mh);
 	if(tex == NULL) {
 		log_fatal("SDL failed to create texture: %s", SDL_GetError());
 		abort();

@@ -445,7 +445,7 @@ int main(int argc, char** argv) {
 		if(ShowGLTexturesDebugger) {
 			ImGui::Begin("Texture viewer", &ShowGLTexturesDebugger);
 			ImGui::InputInt("textureid", &ShowGLTextureN);
-			ImGui::Image((void*)(intptr_t)(ShowGLTextureN), ImVec2(256, 256));
+			ImGui::Image((void*)(intptr_t)(ShowGLTextureN), ImVec2(512, 512));
 			ImGui::End();
 		}
 

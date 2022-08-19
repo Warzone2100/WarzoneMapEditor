@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 
 #include "Shader.h"
 #include "log.hpp"
@@ -105,6 +106,10 @@ Shader::Shader(const GLchar* vp, const GLchar* fp) {
 
 void Shader::use() {
 	glUseProgram(this->program);
+}
+
+void Shader::SetInt(std::string var, int data) {
+	glUniform1i(glGetUniformLocation(this->program, var.c_str()), data);
 }
 
 Shader::~Shader() {
