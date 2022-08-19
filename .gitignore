@@ -6,3 +6,4 @@ depend
 *.d
 *.diff
 .vscode/*.log
+.cache
